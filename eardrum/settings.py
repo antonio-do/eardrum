@@ -127,6 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [
+    # 'account.ldap_backend.LDAPBackend',
     'django.contrib.auth.backends.ModelBackend',
     'account.ldap_backend.LDAPBackend',
 ]
@@ -182,7 +183,7 @@ MEDIA_ROOT = '/usr/src/uploads'
 STATICFILES_DIRS_DEFAULT = (
     # We do this so that django's collectstatic copies or our bundles to the
     # STATIC_ROOT or syncs them to whatever storage we use.
-    os.path.join(BASE_DIR, 'frontend', 'build', 'static'),
+    os.path.join(BASE_DIR, 'frontend', 'dist', 'static'),
 )
 
 STATICFILES_DIRS = get_config_of('STATICFILES_DIRS', STATICFILES_DIRS_DEFAULT)
@@ -190,7 +191,7 @@ STATICFILES_DIRS = get_config_of('STATICFILES_DIRS', STATICFILES_DIRS_DEFAULT)
 WEBPACK_LOADER_DEFAULT = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': '',
-        'STATS_FILE': os.path.join(BASE_DIR, 'frontend', 'webpack-stats-prod.json'),
+        'STATS_FILE': os.path.join(BASE_DIR, 'frontend', 'webpack-stats.json'),
     }
 }
 

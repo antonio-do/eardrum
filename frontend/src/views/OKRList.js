@@ -22,7 +22,7 @@ import {
   IntegratedFiltering,
   IntegratedSorting,
 } from '@devexpress/dx-react-grid';
-import { 
+import {
   okrFetchAll,
 } from '../actions';
 import WithLongPolling from '../core/WithLongPolling';

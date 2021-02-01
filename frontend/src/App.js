@@ -25,12 +25,17 @@ import RequestList from './views/RequestList';
 import RequestDetails from './views/RequestDetails';
 import OKRList from './views/OKRList';
 import OKRDetail from './views/OKRDetail';
+import Compliment from './views/Compliment'
+import NewBADForm from './views/BrokerageAccDisclosure/NewBADForm'
+import ViewBADForm from './views/BrokerageAccDisclosure/ViewBADForm'
+import EditBADForm from './views/BrokerageAccDisclosure/EditBADForm'
 
 import { signOut, getCurrentUser, accountFetchAll, } from './actions/index';
 import { configFetchGradeOptions } from './actions';
 
 import WithLongPolling from './core/WithLongPolling';
 import Notifier from './core/Notifier';
+import './styles/App.css'
 
 
 const styles = theme => ({
@@ -120,6 +125,7 @@ class App extends Component {
       [RegExp('^/requests'), 'home'],
       [RegExp('^/okrs'), 'okrs'],
       [RegExp('^/other'), 'other'],
+      [RegExp('^/compliment'), 'compliment'],
       // [RegExp(''), 'home'],
     ]
     for(let i = 0; i < urlMap.length; i++) {
@@ -183,7 +189,7 @@ class App extends Component {
               <Typography variant="h6" color="inherit" noWrap className={classes.toolbarTitle}>
                 <Button component={ Link } to='/' onClick={ () => this.onChangeTab(null, 'home') }>Eardrum</Button>
               </Typography>
-              { (!this.props.auth.is_authenticated) && 
+              { (!this.props.auth.is_authenticated) &&
                 (
                   <Button to='/signin' color="primary" component={ Link } variant="outlined">Sign In</Button>
                 ) }
@@ -192,6 +198,7 @@ class App extends Component {
                   <React.Fragment>
                     <Tabs value={ this.state.tabValue } onChange={ this.onChangeTab }>
                       <LinkTab label="Home" to="/" value='home' />
+                      <LinkTab label="Compliment" to="/compliment" value='compliment' />
                       <LinkTab label="OKR" to="/okrs" value='okrs'/>
                       <LinkTab label="Other" to='/other' value='other'/>
                     </Tabs>
@@ -210,6 +217,10 @@ class App extends Component {
               <PrivateRoute exact={ true } path="/okrs/:okrId" component={ OKRDetail } />
               <PrivateRoute exact={ true } path="/okrs" component={ OKRList } />
               <PrivateRoute path="/requests/:requestId/details" component={ RequestDetails } />
+              <PrivateRoute exact={ true } path="/compliment" component={ Compliment } />
+              <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/new" component={ NewBADForm } />
+              <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/:formId" component={ ViewBADForm } />
+              <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/:formId/edit" component={ EditBADForm } />
             </Switch>
           </main>
 
