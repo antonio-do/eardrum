@@ -1,7 +1,9 @@
-import React from 'react'
-import {Table, Space, Menu, Dropdown, Button, Breadcrumb} from 'antd'
+/* eslint-disable no-shadow */
+import React, {useEffect, useState} from 'react'
+import {Popconfirm, Table, Space, Menu, Dropdown, Button, Breadcrumb, message} from 'antd'
 import {DownOutlined, HomeOutlined} from '@ant-design/icons'
 import {Link, useRouteMatch} from 'react-router-dom'
+import axios from 'axios'
 
 const typeToFormName = {
   a: {
@@ -22,47 +24,39 @@ const typeToFormName = {
   },
 }
 
-const data = [
-  {
-    key: '1',
-    id: 1,
-    submit_by: 'User 1',
-    type: 'a',
-  },
-  {
-    key: '2',
-    id: 2,
-    submit_by: 'User 2',
-    type: 'a',
-  },
-  {
-    key: '3',
-    id: 3,
-    submit_by: 'User 3',
-    type: 'a',
-  },
-  {
-    key: '4',
-    id: 4,
-    submit_by: 'User 2',
-    type: 'b',
-  },
-  {
-    key: '5',
-    id: 5,
-    submit_by: 'User 4',
-    type: 'c',
-  },
-  {
-    key: '6',
-    id: 6,
-    submit_by: 'User 5',
-    type: 'd',
-  },
-]
-
 const ComplimentApp = () => {
-  let {path} = useRouteMatch()
+  const {path} = useRouteMatch()
+  const [formList, setFormList] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    setIsLoading(true)
+    axios
+      .get('/api/compliance/')
+      .then(({data}) => {
+        setFormList(data)
+        setIsLoading(false)
+      })
+      .catch((err) => {
+        console.log(err)
+        setIsLoading(false)
+        message.error('Unexpected error encountered')
+      })
+  }, [])
+
+  const onDelete = (formId) => async () => {
+    try {
+      const res = await axios.delete(`/api/compliance/${formId}/`)
+
+      if (res.status === 204) {
+        setFormList((formList) => formList.filter((form) => form.id !== formId))
+        message.success('Form has been deleted successfully!')
+      }
+    } catch (error) {
+      console.log(error)
+      message.error('Unexpected error encountered, please try again!')
+    }
+  }
 
   const menu = (
     <Menu>
@@ -82,7 +76,7 @@ const ComplimentApp = () => {
       dataIndex: 'id',
       key: 'id',
       render: (text, record) => {
-        const form = typeToFormName[record.type]
+        const form = typeToFormName[record.typ]
         return <Link to={`${path}/${form.path}/${record.id}`}>{form.name}</Link>
       },
     },
@@ -93,23 +87,40 @@ const ComplimentApp = () => {
     },
     {
       title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
+      dataIndex: 'typ',
+      key: 'typ',
     },
     {
       title: 'Action',
       key: 'action',
-      render: (text, record) => (
-        <Space size='middle'>
-          <a>Edit</a>
-          <a>Delete</a>
-        </Space>
-      ),
+      render: (text, record) => {
+        const form = typeToFormName[record.typ]
+
+        return (
+          <Space size='middle'>
+            <Link to={`${path}/${form.path}/${record.id}/edit`}>Edit</Link>
+            <Popconfirm
+              title='Are you sure to delete this form?'
+              onConfirm={onDelete(record.id)}
+              okText='Yes'
+              cancelText='No'>
+              <Button type='link' danger>
+                Delete
+              </Button>
+            </Popconfirm>
+          </Space>
+        )
+      },
     },
   ]
 
   return (
-    <div style={{paddingTop: '32px'}}>
+    <div
+      style={{
+        padding: '32px 10px',
+        border: '1px solid rgba(156, 163, 175, 50%)',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      }}>
       <Breadcrumb>
         <Breadcrumb.Item>
           <Link to='/'>
@@ -125,7 +136,7 @@ const ComplimentApp = () => {
           </Button>
         </Dropdown>
       </Space>
-      <Table columns={columns} dataSource={data} />
+      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={formList} />
     </div>
   )
 }

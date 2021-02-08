@@ -29,6 +29,15 @@ import Compliment from './views/Compliment'
 import NewBADForm from './views/BrokerageAccDisclosure/NewBADForm'
 import ViewBADForm from './views/BrokerageAccDisclosure/ViewBADForm'
 import EditBADForm from './views/BrokerageAccDisclosure/EditBADForm'
+import NewESHRForm from './views/EmployeeSecuritiesHoldingsReport/NewESHRForm'
+import ViewESHRForm from './views/EmployeeSecuritiesHoldingsReport/ViewESHRForm'
+import EditESHRForm from './views/EmployeeSecuritiesHoldingsReport/EditESHRForm'
+import NewRPSTForm from './views/RequestForPre-ClearanceOfSecuritiesTrade/NewRPSTForm'
+import EditRPSTForm from './views/RequestForPre-ClearanceOfSecuritiesTrade/EditRPSTForm'
+import ViewRPSTForm from './views/RequestForPre-ClearanceOfSecuritiesTrade/ViewRPSTForm'
+import NewEQTRForm from './views/EmployeeQuarterlyTradeReport/NewEQTRForm'
+import EditEQTRForm from './views/EmployeeQuarterlyTradeReport/EditEQTRForm'
+import ViewEQTRForm from './views/EmployeeQuarterlyTradeReport/ViewEQTRForm'
 
 import { signOut, getCurrentUser, accountFetchAll, } from './actions/index';
 import { configFetchGradeOptions } from './actions';
@@ -45,7 +54,7 @@ const styles = theme => ({
     },
   },
   appBar: {
-    position: 'relative',
+    // position: 'relative',
   },
   toolbarTitle: {
     flex: 1,
@@ -221,6 +230,15 @@ class App extends Component {
               <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/new" component={ NewBADForm } />
               <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/:formId" component={ ViewBADForm } />
               <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/:formId/edit" component={ EditBADForm } />
+              <PrivateRoute exact={ true } path="/compliment/employee-security-holdings-report/new" component={ NewESHRForm } />
+              <PrivateRoute exact={ true } path="/compliment/employee-security-holdings-report/:formId" component={ ViewESHRForm } />
+              <PrivateRoute exact={ true } path="/compliment/employee-security-holdings-report/:formId/edit" component={ EditESHRForm } />
+              <PrivateRoute exact={ true } path="/compliment/request-for-pre-clearance-of-securities-trade/new" component={ NewRPSTForm } />
+              <PrivateRoute exact={ true } path="/compliment/request-for-pre-clearance-of-securities-trade/:formId" component={ ViewRPSTForm } />
+              <PrivateRoute exact={ true } path="/compliment/request-for-pre-clearance-of-securities-trade/:formId/edit" component={ EditRPSTForm } />
+              <PrivateRoute exact={ true } path="/compliment/employee-quarterly-trade-report/new" component={ NewEQTRForm } />
+              <PrivateRoute exact={ true } path="/compliment/employee-quarterly-trade-report/:formId" component={ ViewEQTRForm } />
+              <PrivateRoute exact={ true } path="/compliment/employee-quarterly-trade-report/:formId/edit" component={ EditEQTRForm } />
             </Switch>
           </main>
 
