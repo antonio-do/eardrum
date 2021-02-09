@@ -46,48 +46,39 @@ const checkBoxOptions = [
 const EditEQTRForm = () => {
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
-  const [quarter, setQuarter] = useState()
+  const [quarter, setQuarter] = useState('Q1')
   const [radioValue, setRadioValue] = useState()
   const [tableData, setTableData] = useState(defaultData)
   const [checkboxGroup, setCheckboxGroup] = useState([false, false, false, false])
   const history = useHistory()
   const {formId} = useParams()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    axios
-      .get(`/api/compliance/${formId}/`)
-      .then(({data: {json_data}}) => {
-        const {quarter, year, radioValue, checkboxGroup, formData} = json_data
+    if (formId) {
+      setIsLoading(true)
+      axios
+        .get(`/api/compliance/${formId}/`)
+        .then(({data: {json_data}}) => {
+          const {quarter, year, radioValue, checkboxGroup, formData} = json_data
 
-        setQuarter(quarter)
-        setYear(year)
-        setRadioValue(radioValue)
-        setCheckboxGroup(checkboxGroup)
+          setQuarter(quarter)
+          setYear(year)
+          setRadioValue(radioValue)
+          setCheckboxGroup(checkboxGroup)
 
-        if (Array.isArray(formData) && formData.length) {
-          setTableData(formData)
-        }
+          if (Array.isArray(formData) && formData.length) {
+            setTableData(formData)
+          }
 
-        setIsLoading(false)
-      })
-      .catch((err) => {
-        console.log(err)
-        message.error('Error getting form, please try again!')
-      })
+          setIsLoading(false)
+        })
+        .catch((err) => {
+          console.log(err)
+          message.error('Error getting form, please try again!')
+        })
+    }
   }, [formId])
-
-  const onQChange = (value) => {
-    setQuarter(value)
-  }
-
-  const onYearChange = (value) => {
-    setYear(value)
-  }
-
-  const onRadioChange = (event) => {
-    setRadioValue(event.target.value)
-  }
 
   const onCheckboxGroupChange = (arrIndex) => (event) => {
     const newCheckboxGroup = [...checkboxGroup]
@@ -95,41 +86,25 @@ const EditEQTRForm = () => {
     setCheckboxGroup(newCheckboxGroup)
   }
 
-  const onDateChange = (arrIndex) => (_, dateString) => {
+  const updateStateValue = (arrIndex, key, value) => {
     const newTableData = [...tableData]
-    newTableData[arrIndex].date = dateString
-    setTableData(newTableData)
-  }
-
-  const onTypeChange = (arrIndex) => (value) => {
-    const newTableData = [...tableData]
-    newTableData[arrIndex].type = value
-    setTableData(newTableData)
-  }
-
-  const onInputNumberChange = (arrIndex) => (value) => {
-    const newTableData = [...tableData]
-    newTableData[arrIndex].totalValue = value
-    setTableData(newTableData)
-  }
-
-  const onInputValueChange = (arrIndex, key) => (event) => {
-    const newTableData = [...tableData]
-    newTableData[arrIndex][key] = event.target.value
+    const newItem = {...tableData[arrIndex], [key]: value}
+    newTableData[arrIndex] = newItem
     setTableData(newTableData)
   }
 
   const addTableRow = () => {
-    const newFormData = [...tableData]
-    newFormData.push({
-      id: newFormData.length + 1,
-      date: moment(new Date()).format(dateFormat),
-      stockTicker: '',
-      listedOn: '',
-      totalValue: 0,
-      type: 'Long',
-    })
-    setTableData(newFormData)
+    setTableData((tableData) => [
+      ...tableData,
+      {
+        id: tableData.length + 1,
+        date: moment(new Date()).format(dateFormat),
+        stockTicker: '',
+        listedOn: '',
+        totalValue: 0,
+        type: 'Long',
+      },
+    ])
   }
 
   const columns = [
@@ -147,7 +122,7 @@ const EditEQTRForm = () => {
           <Input
             disabled={radioValue !== 3}
             value={tableData[index].stockTicker}
-            onChange={onInputValueChange(index, 'stockTicker')}
+            onChange={(event) => updateStateValue(index, 'stockTicker', event.target.value)}
           />
         )
       },
@@ -160,7 +135,7 @@ const EditEQTRForm = () => {
           <Input
             disabled={radioValue !== 3}
             value={tableData[index].listedOn}
-            onChange={onInputValueChange(index, 'listedOn')}
+            onChange={(event) => updateStateValue(index, 'listedOn', event.target.value)}
           />
         )
       },
@@ -174,7 +149,7 @@ const EditEQTRForm = () => {
             value={tableData[index].totalValue}
             disabled={radioValue !== 3}
             style={{width: '100%'}}
-            onChange={onInputNumberChange(index)}
+            onChange={(value) => updateStateValue(index, 'totalValue', value)}
             min={0}
           />
         )
@@ -185,7 +160,10 @@ const EditEQTRForm = () => {
       dataIndex: 'type',
       render: (text, record, index) => {
         return (
-          <Select disabled={radioValue !== 3} value={tableData[index].type} onChange={onTypeChange(index)}>
+          <Select
+            disabled={radioValue !== 3}
+            value={tableData[index].type}
+            onChange={(value) => updateStateValue(index, 'type', value)}>
             <Option value='Long'>Long</Option>
             <Option value='Sell'>Sell</Option>
             <Option value='Short'>Short</Option>
@@ -203,7 +181,7 @@ const EditEQTRForm = () => {
             disabled={radioValue !== 3}
             value={moment(tableData[index].date, dateFormat)}
             format={dateFormat}
-            onChange={onDateChange(index)}
+            onChange={(_, dateString) => updateStateValue(index, 'date', dateString)}
           />
         )
       },
@@ -233,16 +211,22 @@ const EditEQTRForm = () => {
         return true
       })
 
-      const {data} = await axios.patch(`/api/compliance/${formId}/`, {
-        typ: 'c',
-        data:
-          radioValue !== 3
-            ? {quarter, year, radioValue, checkboxGroup, formData: []}
-            : {quarter, year, radioValue, checkboxGroup, formData: validRows},
+      const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
+
+      const {data} = await axios({
+        method: formId ? 'PATCH' : 'POST',
+        url,
+        data: {
+          typ: 'c',
+          data:
+            radioValue !== 3
+              ? {quarter, year, radioValue, checkboxGroup, formData: []}
+              : {quarter, year, radioValue, checkboxGroup, formData: validRows},
+        },
       })
 
       if (data.id) {
-        message.success('Request for Pre-Clearance of Securities Trade was created successfully!', 1)
+        message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1)
         history.push('/compliance')
       }
     } catch (error) {
@@ -291,14 +275,14 @@ const EditEQTRForm = () => {
           I declare that:{' '}
           <span>
             As of the end of{' '}
-            <Select value={quarter} style={{width: 120}} onChange={onQChange}>
+            <Select value={quarter} style={{width: 120}} onChange={setQuarter}>
               <Option value='Q1'>Q1</Option>
               <Option value='Q2'>Q2</Option>
               <Option value='Q3'>Q3</Option>
               <Option value='Q4'>Q4</Option>
             </Select>
             ,{' '}
-            <Select value={year} style={{width: 120}} onChange={onYearChange}>
+            <Select value={year} style={{width: 120}} onChange={setYear}>
               {Array.from({length: 100}).map((_, index) => (
                 <Option key={index} value={currentYear + index}>
                   {currentYear + index}
@@ -319,7 +303,7 @@ const EditEQTRForm = () => {
           <Divider style={{position: 'relative', marginBottom: '0px', top: '-12px'}} orientation='left'>
             I hereby declare that (tickbox):
           </Divider>
-          <Radio.Group onChange={onRadioChange} value={radioValue}>
+          <Radio.Group onChange={(event) => setRadioValue(event.target.value)} value={radioValue}>
             <Radio value={1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
               I have not engaged in personal account deadling
             </Radio>
@@ -371,13 +355,15 @@ const EditEQTRForm = () => {
                 Submit
               </Button>
             </Col>
-            <Col>
-              <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-                <Button type='link' danger>
-                  Delete
-                </Button>
-              </Popconfirm>
-            </Col>
+            {formId && (
+              <Col>
+                <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
+                  <Button type='link' danger>
+                    Delete
+                  </Button>
+                </Popconfirm>
+              </Col>
+            )}
           </Row>
         </div>
       </div>

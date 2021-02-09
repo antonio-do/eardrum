@@ -101,7 +101,7 @@ const ViewEQTRForm = () => {
 
         <Row justify='end'>
           <Col>
-            <Link to={`${url}/edit`}>
+            <Link to={`${url.replace('/view', '')}/edit`}>
               <Button type='primary'>
                 <EditOutlined /> Edit
               </Button>
