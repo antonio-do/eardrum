@@ -7,55 +7,73 @@ import axios from 'axios'
 import moment from 'moment'
 
 const dateFormat = 'DD/MM/YYYY'
+const defaultData = Array.from({length: 3}).map((_, index) => {
+  return {
+    id: index + 1,
+    date: moment(new Date()).format(dateFormat),
+    securityName: '',
+    account: '',
+    SHRSOrder: '',
+    approxPrice: '',
+    symbolOrCusipOrder: '',
+    purchaseSale: '',
+  }
+})
 
 const EditRPSTForm = () => {
-  const [tableData, setTableData] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [tableData, setTableData] = useState(defaultData)
+  const [isLoading, setIsLoading] = useState(false)
   const {formId} = useParams()
   const history = useHistory()
 
   useEffect(() => {
-    axios
-      .get(`/api/compliance/${formId}/`)
-      .then(({data: {json_data}}) => {
-        const {formData} = json_data
+    if (formId) {
+      setIsLoading(true)
+      axios
+        .get(`/api/compliance/${formId}/`)
+        .then(({data: {json_data}}) => {
+          const {formData} = json_data
 
-        if (Array.isArray(formData) && formData.length) {
-          setTableData(formData)
-        }
+          if (Array.isArray(formData) && formData.length) {
+            setTableData(formData)
+          }
 
-        setIsLoading(false)
-      })
-      .catch((err) => {
-        console.log(err)
-        message.error('Error getting form, please try again!')
-      })
+          setIsLoading(false)
+        })
+        .catch((err) => {
+          console.log(err)
+          message.error('Error getting form, please try again!')
+        })
+    }
   }, [formId])
 
   const onDateChange = (arrIndex) => (_, dateString) => {
     const newTableData = [...tableData]
-    newTableData[arrIndex].date = dateString
+    const newItem = {...newTableData[arrIndex], date: dateString}
+    newTableData[arrIndex] = newItem
     setTableData(newTableData)
   }
 
   const addTableRow = () => {
-    const newFormData = [...tableData]
-    newFormData.push({
-      id: newFormData.length + 1,
-      date: moment(new Date()).format(dateFormat),
-      securityName: '',
-      account: '',
-      SHRSOrder: '',
-      approxPrice: '',
-      symbolOrCusipOrder: '',
-      purchaseSale: '',
-    })
-    setTableData(newFormData)
+    setTableData((tableData) => [
+      ...tableData,
+      {
+        id: tableData.length + 1,
+        date: moment(new Date()).format(dateFormat),
+        securityName: '',
+        account: '',
+        SHRSOrder: '',
+        approxPrice: '',
+        symbolOrCusipOrder: '',
+        purchaseSale: '',
+      },
+    ])
   }
 
   const onInputValueChange = (arrIndex, key) => (event) => {
     const newTableData = [...tableData]
-    newTableData[arrIndex][key] = event.target.value
+    const newItem = {...tableData[arrIndex], [key]: event.target.value}
+    newTableData[arrIndex] = newItem
     setTableData(newTableData)
   }
 
@@ -68,13 +86,19 @@ const EditRPSTForm = () => {
         return !Object.values(rowClone).every((val) => !val)
       })
 
-      const {data} = await axios.patch(`/api/compliance/${formId}/`, {
-        typ: 'd',
-        data: {formData},
+      const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
+
+      const {data} = await axios({
+        method: formId ? 'PATCH' : 'POST',
+        url,
+        data: {
+          typ: 'd',
+          data: {formData},
+        },
       })
 
       if (data.id) {
-        message.success('Request for Pre-Clearance of Securities Trade was created successfully!', 1)
+        message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1)
         history.push('/compliance')
       }
     } catch (error) {
@@ -185,7 +209,7 @@ const EditRPSTForm = () => {
             <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <EditOutlined /> Edit Request for Pre-Clearance of Securities Trade Form
+            <EditOutlined /> {formId ? 'Edit' : 'New'} Request for Pre-Clearance of Securities Trade Form
           </Breadcrumb.Item>
         </Breadcrumb>
         <div>
@@ -232,13 +256,15 @@ const EditRPSTForm = () => {
                 Submit
               </Button>
             </Col>
-            <Col>
-              <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-                <Button type='link' danger>
-                  Delete
-                </Button>
-              </Popconfirm>
-            </Col>
+            {formId && (
+              <Col>
+                <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
+                  <Button type='link' danger>
+                    Delete
+                  </Button>
+                </Popconfirm>
+              </Col>
+            )}
           </Row>
         </div>
       </div>
