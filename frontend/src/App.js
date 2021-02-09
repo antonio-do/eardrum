@@ -54,7 +54,7 @@ const styles = theme => ({
     },
   },
   appBar: {
-    // position: 'relative',
+    position: 'relative',
   },
   toolbarTitle: {
     flex: 1,
