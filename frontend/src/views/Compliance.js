@@ -77,7 +77,7 @@ const ComplianceApp = () => {
       key: 'id',
       render: (text, record) => {
         const form = typeToFormName[record.typ]
-        return <Link to={`${path}/${form.path}/${record.id}`}>{form.name}</Link>
+        return <Link to={`${path}/${form.path}/${record.id}/view`}>{form.name}</Link>
       },
     },
     {

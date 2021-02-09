@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { withStyles } from '@material-ui/core/styles';
+import {Spin} from 'antd'
 
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -16,6 +17,7 @@ import {
   Route,
   Link,
   Redirect,
+  useRouteMatch,
   Switch,
 } from "react-router-dom";
 
@@ -26,18 +28,6 @@ import RequestDetails from './views/RequestDetails';
 import OKRList from './views/OKRList';
 import OKRDetail from './views/OKRDetail';
 import Compliance from './views/Compliance'
-import NewBADForm from './views/BrokerageAccDisclosure/NewBADForm'
-import ViewBADForm from './views/BrokerageAccDisclosure/ViewBADForm'
-import EditBADForm from './views/BrokerageAccDisclosure/EditBADForm'
-import NewESHRForm from './views/EmployeeSecuritiesHoldingsReport/NewESHRForm'
-import ViewESHRForm from './views/EmployeeSecuritiesHoldingsReport/ViewESHRForm'
-import EditESHRForm from './views/EmployeeSecuritiesHoldingsReport/EditESHRForm'
-import NewRPSTForm from './views/RequestForPre-ClearanceOfSecuritiesTrade/NewRPSTForm'
-import EditRPSTForm from './views/RequestForPre-ClearanceOfSecuritiesTrade/EditRPSTForm'
-import ViewRPSTForm from './views/RequestForPre-ClearanceOfSecuritiesTrade/ViewRPSTForm'
-import NewEQTRForm from './views/EmployeeQuarterlyTradeReport/NewEQTRForm'
-import EditEQTRForm from './views/EmployeeQuarterlyTradeReport/EditEQTRForm'
-import ViewEQTRForm from './views/EmployeeQuarterlyTradeReport/ViewEQTRForm'
 
 import { signOut, getCurrentUser, accountFetchAll, } from './actions/index';
 import { configFetchGradeOptions } from './actions';
@@ -107,6 +97,13 @@ function LinkTab(props) {
     />
   );
 }
+
+const complianceApp = [
+  {path: 'brokerage-account-disclosure', shortName: 'BAD'},
+  {path: 'employee-security-holdings-report', shortName: 'ESHR'},
+  {path: 'employee-quarterly-trade-report', shortName: 'EQTR'},
+  {path: 'request-for-pre-clearance-of-securities-trade', shortName: 'RPST'},
+]
 
 class App extends Component {
   constructor(props) {
@@ -188,6 +185,24 @@ class App extends Component {
       );
     }
 
+    const FormSwitch = () => {
+      let {path} = useRouteMatch()
+      const form = complianceApp.find((f) => path.includes(f.path))
+
+      const ViewForm = lazy(() => import(`./views/${form.path}/View${form.shortName}Form`));
+      const EditForm = lazy(() => import(`./views/${form.path}/Edit${form.shortName}Form`));
+
+      return (
+        <Switch>
+          <Suspense fallback={<Spin style={{display: 'flex', justifyContent: 'center', marginTop: '30vh'}} size="large" />}>
+            <PrivateRoute exact path={`${path}/:formId/view`} component={ViewForm} />
+            <PrivateRoute exact path={`${path}/new`} component={EditForm} />
+            <PrivateRoute exact path={`${path}/:formId/edit`} component={EditForm} />
+          </Suspense>
+        </Switch>
+      )
+    }
+
     return (
       <Router>
         <React.Fragment>
@@ -227,18 +242,11 @@ class App extends Component {
               <PrivateRoute exact={ true } path="/okrs" component={ OKRList } />
               <PrivateRoute path="/requests/:requestId/details" component={ RequestDetails } />
               <PrivateRoute exact={ true } path="/compliance" component={ Compliance } />
-              <PrivateRoute exact={ true } path="/compliance/brokerage-account-disclosure/new" component={ NewBADForm } />
-              <PrivateRoute exact={ true } path="/compliance/brokerage-account-disclosure/:formId" component={ ViewBADForm } />
-              <PrivateRoute exact={ true } path="/compliance/brokerage-account-disclosure/:formId/edit" component={ EditBADForm } />
-              <PrivateRoute exact={ true } path="/compliance/employee-security-holdings-report/new" component={ NewESHRForm } />
-              <PrivateRoute exact={ true } path="/compliance/employee-security-holdings-report/:formId" component={ ViewESHRForm } />
-              <PrivateRoute exact={ true } path="/compliance/employee-security-holdings-report/:formId/edit" component={ EditESHRForm } />
-              <PrivateRoute exact={ true } path="/compliance/request-for-pre-clearance-of-securities-trade/new" component={ NewRPSTForm } />
-              <PrivateRoute exact={ true } path="/compliance/request-for-pre-clearance-of-securities-trade/:formId" component={ ViewRPSTForm } />
-              <PrivateRoute exact={ true } path="/compliance/request-for-pre-clearance-of-securities-trade/:formId/edit" component={ EditRPSTForm } />
-              <PrivateRoute exact={ true } path="/compliance/employee-quarterly-trade-report/new" component={ NewEQTRForm } />
-              <PrivateRoute exact={ true } path="/compliance/employee-quarterly-trade-report/:formId" component={ ViewEQTRForm } />
-              <PrivateRoute exact={ true } path="/compliance/employee-quarterly-trade-report/:formId/edit" component={ EditEQTRForm } />
+              {
+                complianceApp.map(({path}) => {
+                  return <PrivateRoute path={`/compliance/${path}`} component={ FormSwitch } />
+                })
+              }
             </Switch>
           </main>
 
