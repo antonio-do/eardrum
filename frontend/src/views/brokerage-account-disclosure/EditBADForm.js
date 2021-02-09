@@ -8,46 +8,49 @@ import axios from 'axios'
 const EditBADForm = () => {
   const [noAccountOpt, setNoAccountOpt] = useState(false)
   const [hasAccountsOpt, setHasAccountsOpt] = useState(false)
-  const [shouldAgree, setShouldAgree] = useState(true)
-  const [formData, setFormData] = useState([[]])
-  const [isLoading, setIsLoading] = useState(true)
+  const [shouldAgree, setShouldAgree] = useState(false)
+  const [formData, setFormData] = useState(Array.from({length: 4}).map(() => ({})))
+  const [isLoading, setIsLoading] = useState(false)
   const history = useHistory()
   const {formId} = useParams()
 
   const addFormRow = () => {
-    const newFormData = [...formData]
-    newFormData.push([])
-    setFormData(newFormData)
+    setFormData([...formData, {}])
   }
 
   const onInputValueChange = (arrIndex, key) => (event) => {
     const newFormData = [...formData]
-    newFormData[arrIndex][key] = event.target.value
+    const newItem = {...formData[arrIndex], [key]: event.target.value}
+    newFormData[arrIndex] = newItem
     setFormData(newFormData)
   }
 
   useEffect(() => {
-    axios
-      .get(`/api/compliance/${formId}/`)
-      .then(({data: {json_data}}) => {
-        const {hasDisclosedAccounts, formData} = json_data
+    if (formId) {
+      setIsLoading(true)
+      axios
+        .get(`/api/compliance/${formId}/`)
+        .then(({data: {json_data}}) => {
+          const {hasDisclosedAccounts, formData} = json_data
 
-        if (hasDisclosedAccounts) {
-          setHasAccountsOpt(true)
-        } else {
-          setNoAccountOpt(true)
-        }
+          if (hasDisclosedAccounts) {
+            setHasAccountsOpt(true)
+          } else {
+            setNoAccountOpt(true)
+          }
 
-        if (Array.isArray(formData) && formData.length) {
-          setFormData(formData)
-        }
+          if (Array.isArray(formData) && formData.length) {
+            setFormData(formData)
+            // addFormRow()
+          }
 
-        setIsLoading(false)
-      })
-      .catch((err) => {
-        console.log(err)
-        message.error('Error getting form, please try again!')
-      })
+          setIsLoading(false)
+        })
+        .catch((err) => {
+          console.log(err)
+          message.error('Error getting form, please try again!')
+        })
+    }
   }, [formId])
 
   const onSubmit = async () => {
@@ -76,15 +79,21 @@ const EditBADForm = () => {
         return
       }
 
-      const {data} = await axios.patch(`/api/compliance/${formId}/`, {
-        typ: 'a',
-        data: noAccountOpt
-          ? {hasDisclosedAccounts: false, formData: []}
-          : {hasDisclosedAccounts: true, formData: formData.filter((row) => row.account && row.organization)},
+      const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
+
+      const {data} = await axios({
+        method: formId ? 'PATCH' : 'POST',
+        url,
+        data: {
+          typ: 'a',
+          data: noAccountOpt
+            ? {hasDisclosedAccounts: false, formData: []}
+            : {hasDisclosedAccounts: true, formData: formData.filter((row) => row.account && row.organization)},
+        },
       })
 
       if (data.id) {
-        message.success('Brokerage Account Disclosure Form has been updated successfully!', 1)
+        message.success('Brokerage Account Disclosure Form was submitted successfully!', 1)
         history.push('/compliance')
       }
     } catch (error) {
@@ -126,7 +135,7 @@ const EditBADForm = () => {
             <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <EditOutlined /> Edit Brokerage Account Disclosure Form
+            <EditOutlined /> {formId ? 'Edit' : 'New'} Brokerage Account Disclosure Form
           </Breadcrumb.Item>
         </Breadcrumb>
         <p>
@@ -225,13 +234,15 @@ const EditBADForm = () => {
                 Submit
               </Button>
             </Col>
-            <Col>
-              <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-                <Button type='link' danger>
-                  Delete
-                </Button>
-              </Popconfirm>
-            </Col>
+            {formId && (
+              <Col>
+                <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
+                  <Button type='link' danger>
+                    Delete
+                  </Button>
+                </Popconfirm>
+              </Col>
+            )}
           </Row>
         </div>
       </div>
