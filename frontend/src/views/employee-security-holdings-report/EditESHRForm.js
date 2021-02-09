@@ -15,7 +15,7 @@ const EditESHRForm = () => {
   const [hasReportableAccounts, setHasReportableAccounts] = useState(false)
   const history = useHistory()
   const {formId} = useParams()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   const dataUrlToFile = async (dataUrl, fileName, type) => {
     try {
@@ -29,37 +29,40 @@ const EditESHRForm = () => {
   }
 
   useEffect(() => {
-    axios
-      .get(`/api/compliance/${formId}/`)
-      .then(async ({data: {json_data}}) => {
-        const {hasReportableAccounts, year, files} = json_data
+    if (formId) {
+      setIsLoading(true)
+      axios
+        .get(`/api/compliance/${formId}/`)
+        .then(async ({data: {json_data}}) => {
+          const {hasReportableAccounts, year, files} = json_data
 
-        if (hasReportableAccounts) {
-          setHasReportableAccounts(true)
-        } else {
-          setHasNoReportableAccounts(true)
-        }
-        setYear(year)
+          if (hasReportableAccounts) {
+            setHasReportableAccounts(true)
+          } else {
+            setHasNoReportableAccounts(true)
+          }
+          setYear(year)
 
-        if (Array.isArray(files) && files.length) {
-          const convertedFiles = []
+          if (Array.isArray(files) && files.length) {
+            const convertedFiles = []
 
-          for (const file of files) {
-            const {name, type, content} = file
-            const convertedFile = await dataUrlToFile(content, name, type)
-            const url = URL.createObjectURL(convertedFile)
-            convertedFiles.push({uid: url, name, type, content, status: 'done', url})
+            for (const file of files) {
+              const {name, type, content} = file
+              const convertedFile = await dataUrlToFile(content, name, type)
+              const url = URL.createObjectURL(convertedFile)
+              convertedFiles.push({uid: url, name, type, content, status: 'done', url})
+            }
+
+            setFileList(convertedFiles)
           }
 
-          setFileList(convertedFiles)
-        }
-
-        setIsLoading(false)
-      })
-      .catch((err) => {
-        console.log(err)
-        message.error('Error getting form, please try again!')
-      })
+          setIsLoading(false)
+        })
+        .catch((err) => {
+          console.log(err)
+          message.error('Error getting form, please try again!')
+        })
+    }
 
     return () => {
       fileList.forEach((file) => {
@@ -114,15 +117,21 @@ const EditESHRForm = () => {
         files.push({name: file.name, type: file.type, content})
       }
 
-      const {data} = await axios.patch(`/api/compliance/${formId}/`, {
-        typ: 'b',
-        data: hasNoReportableAccounts
-          ? {hasReportableAccounts: false, year, files: []}
-          : {hasReportableAccounts: true, year, files},
+      const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
+
+      const {data} = await axios({
+        method: formId ? 'PATCH' : 'POST',
+        url,
+        data: {
+          typ: 'b',
+          data: hasNoReportableAccounts
+            ? {hasReportableAccounts: false, year, files: []}
+            : {hasReportableAccounts: true, year, files},
+        },
       })
 
       if (data.id) {
-        message.success('Employee Securities Holdings Report was created successfully!', 1)
+        message.success('Employee Securities Holdings Report was submitted successfully!', 1)
         history.push('/compliance')
       }
     } catch (error) {
@@ -216,13 +225,15 @@ const EditESHRForm = () => {
               Submit
             </Button>
           </Col>
-          <Col>
-            <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-              <Button type='link' danger>
-                Delete
-              </Button>
-            </Popconfirm>
-          </Col>
+          {formId && (
+            <Col>
+              <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
+                <Button type='link' danger>
+                  Delete
+                </Button>
+              </Popconfirm>
+            </Col>
+          )}
         </Row>
       </div>
     </Spin>
