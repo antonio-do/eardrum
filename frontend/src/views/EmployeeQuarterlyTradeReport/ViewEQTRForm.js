@@ -94,7 +94,7 @@ const ViewEQTRForm = () => {
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to='/compliment'>Compliment</Link>
+            <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>Employee Quarterly Trade Report Form</Breadcrumb.Item>
         </Breadcrumb>

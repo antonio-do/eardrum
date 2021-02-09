@@ -83,7 +83,7 @@ const ViewRPSTForm = () => {
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to='/compliment'>Compliment</Link>
+            <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>Request for Pre-Clearance of Securities Trade Form</Breadcrumb.Item>
         </Breadcrumb>

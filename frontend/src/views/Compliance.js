@@ -24,7 +24,7 @@ const typeToFormName = {
   },
 }
 
-const ComplimentApp = () => {
+const ComplianceApp = () => {
   const {path} = useRouteMatch()
   const [formList, setFormList] = useState([])
   const [isLoading, setIsLoading] = useState(false)
@@ -127,7 +127,7 @@ const ComplimentApp = () => {
             <HomeOutlined /> Home
           </Link>
         </Breadcrumb.Item>
-        <Breadcrumb.Item>Compliment</Breadcrumb.Item>
+        <Breadcrumb.Item>Compliance</Breadcrumb.Item>
       </Breadcrumb>
       <Space style={{width: '100%', marginBottom: '10px'}} align='end' direction='vertical'>
         <Dropdown overlay={menu} trigger={['click']}>
@@ -141,4 +141,4 @@ const ComplimentApp = () => {
   )
 }
 
-export default ComplimentApp
+export default ComplianceApp

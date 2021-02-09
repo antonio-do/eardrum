@@ -75,7 +75,7 @@ const EditRPSTForm = () => {
 
       if (data.id) {
         message.success('Request for Pre-Clearance of Securities Trade was created successfully!', 1)
-        history.push('/compliment')
+        history.push('/compliance')
       }
     } catch (error) {
       console.log(error)
@@ -88,7 +88,7 @@ const EditRPSTForm = () => {
       const res = await axios.delete(`/api/compliance/${formId}/`)
 
       if (res.status === 204) {
-        history.push('/compliment')
+        history.push('/compliance')
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {
@@ -182,7 +182,7 @@ const EditRPSTForm = () => {
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to='/compliment'>Compliment</Link>
+            <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
             <EditOutlined /> Edit Request for Pre-Clearance of Securities Trade Form

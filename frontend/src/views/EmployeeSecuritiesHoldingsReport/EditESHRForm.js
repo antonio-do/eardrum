@@ -123,7 +123,7 @@ const EditESHRForm = () => {
 
       if (data.id) {
         message.success('Employee Securities Holdings Report was created successfully!', 1)
-        history.push('/compliment')
+        history.push('/compliance')
       }
     } catch (error) {
       console.log(error)
@@ -136,7 +136,7 @@ const EditESHRForm = () => {
       const res = await axios.delete(`/api/compliance/${formId}/`)
 
       if (res.status === 204) {
-        history.push('/compliment')
+        history.push('/compliance')
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {
@@ -161,7 +161,7 @@ const EditESHRForm = () => {
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to='/compliment'>Compliment</Link>
+            <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
             <EditOutlined /> Edit Employee Securities Holdings Form

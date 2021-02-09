@@ -75,7 +75,7 @@ const ViewESHRForm = () => {
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to='/compliment'>Compliment</Link>
+            <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>Employee Securities Holdings Report Form</Breadcrumb.Item>
         </Breadcrumb>

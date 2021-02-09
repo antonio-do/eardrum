@@ -25,7 +25,7 @@ import RequestList from './views/RequestList';
 import RequestDetails from './views/RequestDetails';
 import OKRList from './views/OKRList';
 import OKRDetail from './views/OKRDetail';
-import Compliment from './views/Compliment'
+import Compliance from './views/Compliance'
 import NewBADForm from './views/BrokerageAccDisclosure/NewBADForm'
 import ViewBADForm from './views/BrokerageAccDisclosure/ViewBADForm'
 import EditBADForm from './views/BrokerageAccDisclosure/EditBADForm'
@@ -134,7 +134,7 @@ class App extends Component {
       [RegExp('^/requests'), 'home'],
       [RegExp('^/okrs'), 'okrs'],
       [RegExp('^/other'), 'other'],
-      [RegExp('^/compliment'), 'compliment'],
+      [RegExp('^/compliance'), 'compliance'],
       // [RegExp(''), 'home'],
     ]
     for(let i = 0; i < urlMap.length; i++) {
@@ -207,7 +207,7 @@ class App extends Component {
                   <React.Fragment>
                     <Tabs value={ this.state.tabValue } onChange={ this.onChangeTab }>
                       <LinkTab label="Home" to="/" value='home' />
-                      <LinkTab label="Compliment" to="/compliment" value='compliment' />
+                      <LinkTab label="Compliance" to="/compliance" value='compliance' />
                       <LinkTab label="OKR" to="/okrs" value='okrs'/>
                       <LinkTab label="Other" to='/other' value='other'/>
                     </Tabs>
@@ -226,19 +226,19 @@ class App extends Component {
               <PrivateRoute exact={ true } path="/okrs/:okrId" component={ OKRDetail } />
               <PrivateRoute exact={ true } path="/okrs" component={ OKRList } />
               <PrivateRoute path="/requests/:requestId/details" component={ RequestDetails } />
-              <PrivateRoute exact={ true } path="/compliment" component={ Compliment } />
-              <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/new" component={ NewBADForm } />
-              <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/:formId" component={ ViewBADForm } />
-              <PrivateRoute exact={ true } path="/compliment/brokerage-account-disclosure/:formId/edit" component={ EditBADForm } />
-              <PrivateRoute exact={ true } path="/compliment/employee-security-holdings-report/new" component={ NewESHRForm } />
-              <PrivateRoute exact={ true } path="/compliment/employee-security-holdings-report/:formId" component={ ViewESHRForm } />
-              <PrivateRoute exact={ true } path="/compliment/employee-security-holdings-report/:formId/edit" component={ EditESHRForm } />
-              <PrivateRoute exact={ true } path="/compliment/request-for-pre-clearance-of-securities-trade/new" component={ NewRPSTForm } />
-              <PrivateRoute exact={ true } path="/compliment/request-for-pre-clearance-of-securities-trade/:formId" component={ ViewRPSTForm } />
-              <PrivateRoute exact={ true } path="/compliment/request-for-pre-clearance-of-securities-trade/:formId/edit" component={ EditRPSTForm } />
-              <PrivateRoute exact={ true } path="/compliment/employee-quarterly-trade-report/new" component={ NewEQTRForm } />
-              <PrivateRoute exact={ true } path="/compliment/employee-quarterly-trade-report/:formId" component={ ViewEQTRForm } />
-              <PrivateRoute exact={ true } path="/compliment/employee-quarterly-trade-report/:formId/edit" component={ EditEQTRForm } />
+              <PrivateRoute exact={ true } path="/compliance" component={ Compliance } />
+              <PrivateRoute exact={ true } path="/compliance/brokerage-account-disclosure/new" component={ NewBADForm } />
+              <PrivateRoute exact={ true } path="/compliance/brokerage-account-disclosure/:formId" component={ ViewBADForm } />
+              <PrivateRoute exact={ true } path="/compliance/brokerage-account-disclosure/:formId/edit" component={ EditBADForm } />
+              <PrivateRoute exact={ true } path="/compliance/employee-security-holdings-report/new" component={ NewESHRForm } />
+              <PrivateRoute exact={ true } path="/compliance/employee-security-holdings-report/:formId" component={ ViewESHRForm } />
+              <PrivateRoute exact={ true } path="/compliance/employee-security-holdings-report/:formId/edit" component={ EditESHRForm } />
+              <PrivateRoute exact={ true } path="/compliance/request-for-pre-clearance-of-securities-trade/new" component={ NewRPSTForm } />
+              <PrivateRoute exact={ true } path="/compliance/request-for-pre-clearance-of-securities-trade/:formId" component={ ViewRPSTForm } />
+              <PrivateRoute exact={ true } path="/compliance/request-for-pre-clearance-of-securities-trade/:formId/edit" component={ EditRPSTForm } />
+              <PrivateRoute exact={ true } path="/compliance/employee-quarterly-trade-report/new" component={ NewEQTRForm } />
+              <PrivateRoute exact={ true } path="/compliance/employee-quarterly-trade-report/:formId" component={ ViewEQTRForm } />
+              <PrivateRoute exact={ true } path="/compliance/employee-quarterly-trade-report/:formId/edit" component={ EditEQTRForm } />
             </Switch>
           </main>
 

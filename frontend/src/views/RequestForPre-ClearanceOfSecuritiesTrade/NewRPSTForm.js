@@ -67,7 +67,7 @@ const NewRPSTForm = () => {
 
       if (data.id) {
         message.success('Request for Pre-Clearance of Securities Trade was created successfully!', 1)
-        history.push('/compliment')
+        history.push('/compliance')
       }
     } catch (error) {
       console.log(error)
@@ -155,7 +155,7 @@ const NewRPSTForm = () => {
           </Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
-          <Link to='/compliment'>Compliment</Link>
+          <Link to='/compliance'>Compliance</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
           <PlusOutlined /> New Request for Pre-Clearance of Securities Trade Form

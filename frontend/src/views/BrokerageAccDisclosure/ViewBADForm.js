@@ -50,7 +50,7 @@ const ViewBADForm = () => {
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to='/compliment'>Compliment</Link>
+            <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>Brokerage Account Disclosure Form</Breadcrumb.Item>
         </Breadcrumb>

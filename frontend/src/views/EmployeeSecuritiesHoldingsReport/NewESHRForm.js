@@ -65,7 +65,7 @@ const NewESHRForm = () => {
 
       if (data.id) {
         message.success('Employee Securities Holdings Report was created successfully!', 1)
-        history.push('/compliment')
+        history.push('/compliance')
       }
     } catch (error) {
       console.log(error)
@@ -88,7 +88,7 @@ const NewESHRForm = () => {
           </Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
-          <Link to='/compliment'>Compliment</Link>
+          <Link to='/compliance'>Compliance</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
           <PlusOutlined /> New Employee Securities Holdings Report Form

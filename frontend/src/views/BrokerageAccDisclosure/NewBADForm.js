@@ -59,7 +59,7 @@ const BrokerageAccountDisclosureForm = () => {
 
       if (data.id) {
         message.success('Brokerage Account Disclosure Form has been created successfully!', 1)
-        history.push('/compliment')
+        history.push('/compliance')
       }
     } catch (error) {
       console.log(error)
@@ -82,7 +82,7 @@ const BrokerageAccountDisclosureForm = () => {
           </Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
-          <Link to='/compliment'>Compliment</Link>
+          <Link to='/compliance'>Compliance</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
           <PlusOutlined /> New Brokerage Account Disclosure Form
