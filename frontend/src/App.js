@@ -189,13 +189,12 @@ class App extends Component {
       let {path} = useRouteMatch()
       const form = complianceApp.find((f) => path.includes(f.path))
 
-      const ViewForm = lazy(() => import(`./views/${form.path}/View${form.shortName}Form`));
       const EditForm = lazy(() => import(`./views/${form.path}/Edit${form.shortName}Form`));
 
       return (
         <Switch>
           <Suspense fallback={<Spin style={{display: 'flex', justifyContent: 'center', marginTop: '30vh'}} size="large" />}>
-            <PrivateRoute exact path={`${path}/:formId/view`} component={ViewForm} />
+            <PrivateRoute exact path={`${path}/:formId/view`} component={EditForm} />
             <PrivateRoute exact path={`${path}/new`} component={EditForm} />
             <PrivateRoute exact path={`${path}/:formId/edit`} component={EditForm} />
           </Suspense>
@@ -244,7 +243,7 @@ class App extends Component {
               <PrivateRoute exact={ true } path="/compliance" component={ Compliance } />
               {
                 complianceApp.map(({path}) => {
-                  return <PrivateRoute path={`/compliance/${path}`} component={ FormSwitch } />
+                  return <PrivateRoute key={path} path={`/compliance/${path}`} component={ FormSwitch } />
                 })
               }
             </Switch>

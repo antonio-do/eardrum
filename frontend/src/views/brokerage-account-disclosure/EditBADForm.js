@@ -1,18 +1,23 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
 import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm} from 'antd'
 import {HomeOutlined, PlusOutlined, EditOutlined} from '@ant-design/icons'
-import {Link, useHistory, useParams} from 'react-router-dom'
+import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
+
+const defaultFormData = Array.from({length: 4}).map(() => ({}))
 
 const EditBADForm = () => {
   const [noAccountOpt, setNoAccountOpt] = useState(false)
   const [hasAccountsOpt, setHasAccountsOpt] = useState(false)
   const [shouldAgree, setShouldAgree] = useState(false)
-  const [formData, setFormData] = useState(Array.from({length: 4}).map(() => ({})))
+  const [formData, setFormData] = useState([[]])
   const [isLoading, setIsLoading] = useState(false)
   const history = useHistory()
   const {formId} = useParams()
+  const {url} = useRouteMatch()
+  const isOnViewPage = formId && url.includes('/view')
 
   const addFormRow = () => {
     setFormData([...formData, {}])
@@ -50,6 +55,8 @@ const EditBADForm = () => {
           console.log(err)
           message.error('Error getting form, please try again!')
         })
+    } else {
+      setFormData(defaultFormData)
     }
   }, [formId])
 
@@ -135,9 +142,35 @@ const EditBADForm = () => {
             <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <EditOutlined /> {formId ? 'Edit' : 'New'} Brokerage Account Disclosure Form
+            {formId ? (
+              isOnViewPage ? (
+                ''
+              ) : (
+                <>
+                  <EditOutlined /> Edit{' '}
+                </>
+              )
+            ) : (
+              <>
+                <PlusOutlined /> New{' '}
+              </>
+            )}
+            Brokerage Account Disclosure Form
           </Breadcrumb.Item>
         </Breadcrumb>
+
+        {isOnViewPage && (
+          <Row justify='end'>
+            <Col>
+              <Link to={`${url.replace('/view', '')}/edit`}>
+                <Button type='primary'>
+                  <EditOutlined /> Edit
+                </Button>
+              </Link>
+            </Col>
+          </Row>
+        )}
+
         <p>
           Every employee must disclose to the CCO any and all brokerage accounts in the name of the employee, over which
           the employee exercises discretion (expressor in fact) orin which the employee has an interest.
@@ -162,6 +195,7 @@ const EditBADForm = () => {
         <div>
           <p>Please check one of the following and sign below:</p>
           <Checkbox
+            disabled={isOnViewPage}
             onChange={(event) => {
               setNoAccountOpt(event.target.checked)
             }}
@@ -172,6 +206,7 @@ const EditBADForm = () => {
           </Checkbox>
           <br />
           <Checkbox
+            disabled={isOnViewPage}
             onChange={(event) => {
               setHasAccountsOpt(event.target.checked)
             }}
@@ -194,13 +229,13 @@ const EditBADForm = () => {
             </Col>
           </Row>
           <Row gutter={10}>
-            <Col span={22}>
+            <Col span={isOnViewPage ? 24 : 22}>
               {formData.map((item, index) => {
                 return (
                   <Input.Group key={index} compact>
                     <Input
                       style={{width: '50%'}}
-                      disabled={!hasAccountsOpt}
+                      disabled={!hasAccountsOpt || isOnViewPage}
                       addonBefore={index + 1}
                       value={item.account}
                       onChange={onInputValueChange(index, 'account')}
@@ -208,43 +243,51 @@ const EditBADForm = () => {
                     <Input
                       style={{width: '50%'}}
                       value={item.organization}
-                      disabled={!hasAccountsOpt}
+                      disabled={!hasAccountsOpt || isOnViewPage}
                       onChange={onInputValueChange(index, 'organization')}
                     />
                   </Input.Group>
                 )
               })}
             </Col>
-            <Col>
-              <Button type='primary' icon={<PlusOutlined />} disabled={!hasAccountsOpt} onClick={addFormRow} />
-            </Col>
-          </Row>
-        </div>
-        <div style={{marginTop: '16px'}}>
-          <Checkbox
-            style={{fontSize: '16px'}}
-            checked={shouldAgree}
-            onChange={(event) => setShouldAgree(event.target.checked)}>
-            I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethicsand
-            Compliance Manual, and I agree to abide by such policiesduring the term of my employment..
-          </Checkbox>
-          <Row justify='end' gutter={10}>
-            <Col>
-              <Button type='primary' onClick={onSubmit}>
-                Submit
-              </Button>
-            </Col>
-            {formId && (
+            {!isOnViewPage && (
               <Col>
-                <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-                  <Button type='link' danger>
-                    Delete
-                  </Button>
-                </Popconfirm>
+                <Button type='primary' icon={<PlusOutlined />} disabled={!hasAccountsOpt} onClick={addFormRow} />
               </Col>
             )}
           </Row>
         </div>
+        {!isOnViewPage && (
+          <div style={{marginTop: '16px'}}>
+            <Checkbox
+              style={{fontSize: '16px'}}
+              checked={shouldAgree}
+              onChange={(event) => setShouldAgree(event.target.checked)}>
+              I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethicsand
+              Compliance Manual, and I agree to abide by such policiesduring the term of my employment..
+            </Checkbox>
+            <Row justify='end' gutter={10}>
+              <Col>
+                <Button type='primary' onClick={onSubmit}>
+                  Submit
+                </Button>
+              </Col>
+              {formId && (
+                <Col>
+                  <Popconfirm
+                    title='Are you sure to delete this form?'
+                    onConfirm={onDelete}
+                    okText='Yes'
+                    cancelText='No'>
+                    <Button type='link' danger>
+                      Delete
+                    </Button>
+                  </Popconfirm>
+                </Col>
+              )}
+            </Row>
+          </div>
+        )}
       </div>
     </Spin>
   )

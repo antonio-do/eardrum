@@ -1,8 +1,9 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
 import {Breadcrumb, Button, Input, Spin, Table, DatePicker, Row, Col, message, Popconfirm} from 'antd'
-import {HomeOutlined, EditOutlined} from '@ant-design/icons'
-import {Link, useHistory, useParams} from 'react-router-dom'
+import {HomeOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
+import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
 
@@ -25,6 +26,8 @@ const EditRPSTForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const {formId} = useParams()
   const history = useHistory()
+  const {url} = useRouteMatch()
+  const isOnViewPage = formId && url.includes('/view')
 
   useEffect(() => {
     if (formId) {
@@ -124,69 +127,84 @@ const EditRPSTForm = () => {
     {
       title: 'DATE',
       dataIndex: 'date',
-      width: '16%',
-      render: (text, record, index) => {
-        return (
-          <DatePicker
-            defaultValue={moment(new Date(), dateFormat)}
-            format={dateFormat}
-            onChange={onDateChange(index)}
-          />
-        )
-      },
+
+      ...(!isOnViewPage && {
+        width: '16%',
+        render: (text, record, index) => {
+          return (
+            <DatePicker
+              defaultValue={moment(new Date(), dateFormat)}
+              format={dateFormat}
+              onChange={onDateChange(index)}
+            />
+          )
+        },
+      }),
     },
     {
       title: 'NAME OF SECURITY',
       dataIndex: 'securityName',
-      width: '12%',
-      render: (text, record, index) => {
-        return <Input value={tableData[index].securityName} onChange={onInputValueChange(index, 'securityName')} />
-      },
+      ...(!isOnViewPage && {
+        width: '12%',
+        render: (text, record, index) => {
+          return <Input value={tableData[index].securityName} onChange={onInputValueChange(index, 'securityName')} />
+        },
+      }),
     },
     {
       title: 'ACCOUNT',
       dataIndex: 'account',
-      width: '14%',
-      render: (text, record, index) => {
-        return <Input value={tableData[index].account} onChange={onInputValueChange(index, 'account')} />
-      },
+      ...(!isOnViewPage && {
+        width: '14%',
+        render: (text, record, index) => {
+          return <Input value={tableData[index].account} onChange={onInputValueChange(index, 'account')} />
+        },
+      }),
     },
     {
       title: '# OF SHRS, PRINCIPAL AMOUNT, ETC .',
       dataIndex: 'SHRSOrder',
-      width: '14%',
-      render: (text, record, index) => {
-        return <Input value={tableData[index].SHRSOrder} onChange={onInputValueChange(index, 'SHRSOrder')} />
-      },
+      ...(!isOnViewPage && {
+        width: '14%',
+        render: (text, record, index) => {
+          return <Input value={tableData[index].SHRSOrder} onChange={onInputValueChange(index, 'SHRSOrder')} />
+        },
+      }),
     },
     {
       title: 'APPROX PRICE',
       dataIndex: 'approxPrice',
-      width: '12%',
-      render: (text, record, index) => {
-        return <Input value={tableData[index].approxPrice} onChange={onInputValueChange(index, 'approxPrice')} />
-      },
+      ...(!isOnViewPage && {
+        width: '12%',
+        render: (text, record, index) => {
+          return <Input value={tableData[index].approxPrice} onChange={onInputValueChange(index, 'approxPrice')} />
+        },
+      }),
     },
     {
       title: 'SYMBOL OR CUSIP #',
       dataIndex: 'symbolOrCusipOrder',
-      width: '12%',
-      render: (text, record, index) => {
-        return (
-          <Input
-            value={tableData[index].symbolOrCusipOrder}
-            onChange={onInputValueChange(index, 'symbolOrCusipOrder')}
-          />
-        )
-      },
+      ...(!isOnViewPage && {
+        width: '12%',
+        render: (text, record, index) => {
+          return (
+            <Input
+              value={tableData[index].symbolOrCusipOrder}
+              onChange={onInputValueChange(index, 'symbolOrCusipOrder')}
+            />
+          )
+        },
+      }),
     },
     {
       title: 'PURCHASE(P) SALE(S)',
       dataIndex: 'purchaseSale',
-      width: '20%',
-      render: (text, record, index) => {
-        return <Input value={tableData[index].purchaseSale} onChange={onInputValueChange(index, 'purchaseSale')} />
-      },
+      ...(!isOnViewPage && {
+        width: '20%',
+        render: (text, record, index) => {
+          return <Input value={tableData[index].purchaseSale} onChange={onInputValueChange(index, 'purchaseSale')} />
+        },
+      }),
     },
   ]
 
@@ -209,10 +227,34 @@ const EditRPSTForm = () => {
             <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <EditOutlined /> {formId ? 'Edit' : 'New'} Request for Pre-Clearance of Securities Trade Form
+            {formId ? (
+              isOnViewPage ? (
+                ''
+              ) : (
+                <>
+                  <EditOutlined /> Edit{' '}
+                </>
+              )
+            ) : (
+              <>
+                <PlusOutlined /> New{' '}
+              </>
+            )}
+            Request for Pre-Clearance of Securities Trade Form
           </Breadcrumb.Item>
         </Breadcrumb>
-        <div>
+
+        {isOnViewPage ? (
+          <Row justify='end' style={{marginBottom: '10px'}}>
+            <Col>
+              <Link to={`${url.replace('/view', '')}/edit`}>
+                <Button type='primary'>
+                  <EditOutlined /> Edit
+                </Button>
+              </Link>
+            </Col>
+          </Row>
+        ) : (
           <Button
             onClick={addTableRow}
             type='primary'
@@ -221,6 +263,9 @@ const EditRPSTForm = () => {
             }}>
             Add a row
           </Button>
+        )}
+
+        <div>
           <Table columns={columns} dataSource={tableData} pagination={false} rowKey={(record) => record.id} />
         </div>
 
@@ -249,24 +294,30 @@ const EditRPSTForm = () => {
           </div>
         </div>
 
-        <div>
-          <Row justify='end' gutter={10}>
-            <Col>
-              <Button type='primary' onClick={onSubmit}>
-                Submit
-              </Button>
-            </Col>
-            {formId && (
+        {!isOnViewPage && (
+          <div>
+            <Row justify='end' gutter={10}>
               <Col>
-                <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-                  <Button type='link' danger>
-                    Delete
-                  </Button>
-                </Popconfirm>
+                <Button type='primary' onClick={onSubmit}>
+                  Submit
+                </Button>
               </Col>
-            )}
-          </Row>
-        </div>
+              {formId && (
+                <Col>
+                  <Popconfirm
+                    title='Are you sure to delete this form?'
+                    onConfirm={onDelete}
+                    okText='Yes'
+                    cancelText='No'>
+                    <Button type='link' danger>
+                      Delete
+                    </Button>
+                  </Popconfirm>
+                </Col>
+              )}
+            </Row>
+          </div>
+        )}
       </div>
     </Spin>
   )

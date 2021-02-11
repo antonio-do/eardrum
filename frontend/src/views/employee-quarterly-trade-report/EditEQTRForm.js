@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
 import {
@@ -18,7 +19,7 @@ import {
   Table,
 } from 'antd'
 import {HomeOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
-import {Link, useHistory, useParams} from 'react-router-dom'
+import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
 
@@ -53,6 +54,8 @@ const EditEQTRForm = () => {
   const history = useHistory()
   const {formId} = useParams()
   const [isLoading, setIsLoading] = useState(false)
+  const {url} = useRouteMatch()
+  const isOnViewPage = formId && url.includes('/view')
 
   useEffect(() => {
     if (formId) {
@@ -117,76 +120,89 @@ const EditEQTRForm = () => {
     {
       title: 'Stock Ticker',
       dataIndex: 'stockTicker',
-      render: (text, record, index) => {
-        return (
-          <Input
-            disabled={radioValue !== 3}
-            value={tableData[index].stockTicker}
-            onChange={(event) => updateStateValue(index, 'stockTicker', event.target.value)}
-          />
-        )
-      },
+      ...(!isOnViewPage && {
+        render: (text, record, index) => {
+          return (
+            <Input
+              disabled={radioValue !== 3}
+              value={tableData[index].stockTicker}
+              onChange={(event) => updateStateValue(index, 'stockTicker', event.target.value)}
+            />
+          )
+        },
+      }),
     },
     {
       title: 'Exchange which the security is listed on',
       dataIndex: 'listedOn',
-      render: (text, record, index) => {
-        return (
-          <Input
-            disabled={radioValue !== 3}
-            value={tableData[index].listedOn}
-            onChange={(event) => updateStateValue(index, 'listedOn', event.target.value)}
-          />
-        )
-      },
+      ...(!isOnViewPage && {
+        render: (text, record, index) => {
+          return (
+            <Input
+              disabled={radioValue !== 3}
+              value={tableData[index].listedOn}
+              onChange={(event) => updateStateValue(index, 'listedOn', event.target.value)}
+            />
+          )
+        },
+      }),
     },
     {
       title: 'Total value on the date of accquisition/sale(SGD)',
       dataIndex: 'totalValue',
-      render: (text, record, index) => {
-        return (
-          <InputNumber
-            value={tableData[index].totalValue}
-            disabled={radioValue !== 3}
-            style={{width: '100%'}}
-            onChange={(value) => updateStateValue(index, 'totalValue', value)}
-            min={0}
-          />
-        )
-      },
+      ...(!isOnViewPage && {
+        render: (text, record, index) => {
+          return (
+            <InputNumber
+              value={tableData[index].totalValue}
+              disabled={radioValue !== 3}
+              style={{width: '100%'}}
+              onChange={(value) => updateStateValue(index, 'totalValue', value)}
+              min={0}
+            />
+          )
+        },
+      }),
     },
     {
       title: 'Long/Sell/Short',
       dataIndex: 'type',
-      render: (text, record, index) => {
-        return (
-          <Select
-            disabled={radioValue !== 3}
-            value={tableData[index].type}
-            onChange={(value) => updateStateValue(index, 'type', value)}>
-            <Option value='Long'>Long</Option>
-            <Option value='Sell'>Sell</Option>
-            <Option value='Short'>Short</Option>
-          </Select>
-        )
-      },
+      ...(!isOnViewPage && {
+        render: (text, record, index) => {
+          return (
+            <Select
+              disabled={radioValue !== 3}
+              value={tableData[index].type}
+              onChange={(value) => updateStateValue(index, 'type', value)}>
+              <Option value='Long'>Long</Option>
+              <Option value='Sell'>Sell</Option>
+              <Option value='Short'>Short</Option>
+            </Select>
+          )
+        },
+      }),
     },
     {
       title: 'Date of sale/accquisition or other(DD/MM/YYYY)',
       dataIndex: 'date',
-      width: '16%',
-      render: (text, record, index) => {
-        return (
-          <DatePicker
-            disabled={radioValue !== 3}
-            value={moment(tableData[index].date, dateFormat)}
-            format={dateFormat}
-            onChange={(_, dateString) => updateStateValue(index, 'date', dateString)}
-          />
-        )
-      },
+      ...(!isOnViewPage && {
+        width: '16%',
+        render: (text, record, index) => {
+          return (
+            <DatePicker
+              disabled={radioValue !== 3}
+              value={moment(tableData[index].date, dateFormat)}
+              format={dateFormat}
+              onChange={(_, dateString) => updateStateValue(index, 'date', dateString)}
+            />
+          )
+        },
+      }),
     },
-    {
+  ]
+
+  if (!isOnViewPage) {
+    columns.push({
       title: 'Actions',
       dataIndex: 'action',
       render: (text, record, index) => {
@@ -198,8 +214,8 @@ const EditEQTRForm = () => {
           )
         )
       },
-    },
-  ]
+    })
+  }
 
   const onSubmit = async () => {
     try {
@@ -268,21 +284,46 @@ const EditEQTRForm = () => {
             <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <EditOutlined /> Edit Employee Quarterly Trade Report Form
+            {formId ? (
+              isOnViewPage ? (
+                ''
+              ) : (
+                <>
+                  <EditOutlined /> Edit{' '}
+                </>
+              )
+            ) : (
+              <>
+                <PlusOutlined /> New{' '}
+              </>
+            )}
+            Employee Quarterly Trade Report Form
           </Breadcrumb.Item>
         </Breadcrumb>
+
+        {isOnViewPage && (
+          <Row justify='end'>
+            <Col>
+              <Link to={`${url.replace('/view', '')}/edit`}>
+                <Button type='primary'>
+                  <EditOutlined /> Edit
+                </Button>
+              </Link>
+            </Col>
+          </Row>
+        )}
         <div>
           I declare that:{' '}
           <span>
             As of the end of{' '}
-            <Select value={quarter} style={{width: 120}} onChange={setQuarter}>
+            <Select value={quarter} disabled={isOnViewPage} style={{width: 120}} onChange={setQuarter}>
               <Option value='Q1'>Q1</Option>
               <Option value='Q2'>Q2</Option>
               <Option value='Q3'>Q3</Option>
               <Option value='Q4'>Q4</Option>
             </Select>
             ,{' '}
-            <Select value={year} style={{width: 120}} onChange={setYear}>
+            <Select value={year} disabled={isOnViewPage} style={{width: 120}} onChange={setYear}>
               {Array.from({length: 100}).map((_, index) => (
                 <Option key={index} value={currentYear + index}>
                   {currentYear + index}
@@ -303,7 +344,10 @@ const EditEQTRForm = () => {
           <Divider style={{position: 'relative', marginBottom: '0px', top: '-12px'}} orientation='left'>
             I hereby declare that (tickbox):
           </Divider>
-          <Radio.Group onChange={(event) => setRadioValue(event.target.value)} value={radioValue}>
+          <Radio.Group
+            onChange={(event) => setRadioValue(event.target.value)}
+            disabled={isOnViewPage}
+            value={radioValue}>
             <Radio value={1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
               I have not engaged in personal account deadling
             </Radio>
@@ -340,7 +384,10 @@ const EditEQTRForm = () => {
           {checkBoxOptions.map((value, index) => {
             return (
               <React.Fragment key={index}>
-                <Checkbox checked={checkboxGroup[index]} onChange={onCheckboxGroupChange(index)}>
+                <Checkbox
+                  checked={checkboxGroup[index]}
+                  disabled={isOnViewPage}
+                  onChange={onCheckboxGroupChange(index)}>
                   {value}
                 </Checkbox>
                 <br />
@@ -348,24 +395,31 @@ const EditEQTRForm = () => {
             )
           })}
         </div>
-        <div style={{marginTop: '10px'}}>
-          <Row justify='end' gutter={10}>
-            <Col>
-              <Button type='primary' onClick={onSubmit}>
-                Submit
-              </Button>
-            </Col>
-            {formId && (
+
+        {!isOnViewPage && (
+          <div style={{marginTop: '10px'}}>
+            <Row justify='end' gutter={10}>
               <Col>
-                <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-                  <Button type='link' danger>
-                    Delete
-                  </Button>
-                </Popconfirm>
+                <Button type='primary' onClick={onSubmit}>
+                  Submit
+                </Button>
               </Col>
-            )}
-          </Row>
-        </div>
+              {formId && (
+                <Col>
+                  <Popconfirm
+                    title='Are you sure to delete this form?'
+                    onConfirm={onDelete}
+                    okText='Yes'
+                    cancelText='No'>
+                    <Button type='link' danger>
+                      Delete
+                    </Button>
+                  </Popconfirm>
+                </Col>
+              )}
+            </Row>
+          </div>
+        )}
       </div>
     </Spin>
   )

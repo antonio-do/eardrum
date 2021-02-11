@@ -1,8 +1,9 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {Breadcrumb, Spin, Select, Button, Checkbox, message, Upload, Row, Col, Popconfirm} from 'antd'
-import {HomeOutlined, UploadOutlined, EditOutlined} from '@ant-design/icons'
-import {Link, useHistory, useParams} from 'react-router-dom'
+import {Breadcrumb, Spin, Select, Button, Checkbox, List, message, Upload, Row, Col, Popconfirm} from 'antd'
+import {HomeOutlined, UploadOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
+import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 
 const {Option} = Select
@@ -16,6 +17,8 @@ const EditESHRForm = () => {
   const history = useHistory()
   const {formId} = useParams()
   const [isLoading, setIsLoading] = useState(false)
+  const {url} = useRouteMatch()
+  const isOnViewPage = formId && url.includes('/view')
 
   const dataUrlToFile = async (dataUrl, fileName, type) => {
     try {
@@ -173,12 +176,43 @@ const EditESHRForm = () => {
             <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <EditOutlined /> Edit Employee Securities Holdings Form
+            {formId ? (
+              isOnViewPage ? (
+                ''
+              ) : (
+                <>
+                  <EditOutlined /> Edit{' '}
+                </>
+              )
+            ) : (
+              <>
+                <PlusOutlined /> New{' '}
+              </>
+            )}
+            Employee Securities Holdings Report Form
           </Breadcrumb.Item>
         </Breadcrumb>
+
+        {isOnViewPage && (
+          <Row justify='end'>
+            <Col>
+              <Link to={`${url.replace('/view', '')}/edit`}>
+                <Button type='primary'>
+                  <EditOutlined /> Edit
+                </Button>
+              </Link>
+            </Col>
+          </Row>
+        )}
+
         <div>
           As of:{' '}
-          <Select defaultValue={currentYear} value={year} style={{width: 120}} onChange={onSelectChange}>
+          <Select
+            defaultValue={currentYear}
+            disabled={isOnViewPage}
+            value={year}
+            style={{width: 120}}
+            onChange={onSelectChange}>
             {Array.from({length: 100}).map((_, index) => (
               <Option key={index} value={currentYear + index}>
                 {currentYear + index}
@@ -190,6 +224,7 @@ const EditESHRForm = () => {
           <div>I hereby declare that:</div>
           <Checkbox
             checked={hasNoReportableAccounts}
+            disabled={isOnViewPage}
             onChange={(event) => setHasNoReportableAccounts(event.target.checked)}
             style={{fontSize: '16px'}}>
             I do not have any reportable brokerage accounts.
@@ -198,43 +233,66 @@ const EditESHRForm = () => {
           <div>
             <Checkbox
               checked={hasReportableAccounts}
+              disabled={isOnViewPage}
               onChange={(event) => setHasReportableAccounts(event.target.checked)}
               style={{fontSize: '16px'}}>
               I have reported all reportable holdings in my personal brokerage accounts.
             </Checkbox>
-            <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
-              <div style={{maxWidth: '60%'}}>
-                {!isLoading && (
-                  <Upload
-                    fileList={fileList}
-                    disabled={!hasReportableAccounts}
-                    onChange={onFileChange}
-                    beforeUpload={() => false}
-                    multiple>
-                    <Button icon={<UploadOutlined />}>Attach file(s)</Button>
-                  </Upload>
-                )}
+            {isOnViewPage ? (
+              <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
+                <div>
+                  <div>Attach file(s)</div>
+                  <List
+                    size='small'
+                    bordered
+                    dataSource={fileList}
+                    renderItem={(item) => (
+                      <List.Item>
+                        <a href={item.url} download={item.name}>
+                          {item.name}
+                        </a>
+                      </List.Item>
+                    )}
+                  />
+                </div>
               </div>
-              <div>Please submit your annual statement(s) from each reportable brokerage account.</div>
-            </div>
+            ) : (
+              <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
+                <div style={{maxWidth: '60%'}}>
+                  {!isLoading && (
+                    <Upload
+                      fileList={fileList}
+                      disabled={!hasReportableAccounts}
+                      onChange={onFileChange}
+                      beforeUpload={() => false}
+                      multiple>
+                      <Button icon={<UploadOutlined />}>Attach file(s)</Button>
+                    </Upload>
+                  )}
+                </div>
+                <div>Please submit your annual statement(s) from each reportable brokerage account.</div>
+              </div>
+            )}
           </div>
         </div>
-        <Row gutter={10} style={{marginTop: '10px'}}>
-          <Col>
-            <Button type='primary' onClick={onSubmit}>
-              Submit
-            </Button>
-          </Col>
-          {formId && (
+        {!isOnViewPage && (
+          <Row gutter={10} style={{marginTop: '10px'}}>
             <Col>
-              <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-                <Button type='link' danger>
-                  Delete
-                </Button>
-              </Popconfirm>
+              <Button type='primary' onClick={onSubmit}>
+                Submit
+              </Button>
             </Col>
-          )}
-        </Row>
+            {formId && (
+              <Col>
+                <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
+                  <Button type='link' danger>
+                    Delete
+                  </Button>
+                </Popconfirm>
+              </Col>
+            )}
+          </Row>
+        )}
       </div>
     </Spin>
   )
