@@ -18,7 +18,7 @@ import {
   Popconfirm,
   Table,
 } from 'antd'
-import {HomeOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
+import {HomeOutlined, EditOutlined, PlusOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
@@ -71,7 +71,21 @@ const EditEQTRForm = () => {
           setCheckboxGroup(checkboxGroup)
 
           if (Array.isArray(formData) && formData.length) {
-            setTableData(formData)
+            const newFormData = !isOnViewPage
+              ? [
+                  ...formData,
+                  {
+                    id: formData.length + 1,
+                    date: moment(new Date()).format(dateFormat),
+                    stockTicker: '',
+                    listedOn: '',
+                    totalValue: 0,
+                    type: 'Long',
+                  },
+                ]
+              : formData
+
+            setTableData(newFormData)
           }
 
           setIsLoading(false)
@@ -108,6 +122,10 @@ const EditEQTRForm = () => {
         type: 'Long',
       },
     ])
+  }
+
+  const deleteTableRow = (arrIndex) => () => {
+    setTableData(tableData.filter((_, index) => index !== arrIndex))
   }
 
   const columns = [
@@ -206,12 +224,14 @@ const EditEQTRForm = () => {
       title: 'Actions',
       dataIndex: 'action',
       render: (text, record, index) => {
-        return (
-          index === 0 && (
-            <Button disabled={radioValue !== 3} onClick={addTableRow} type='primary'>
-              <PlusOutlined />
-            </Button>
-          )
+        return index === 0 ? (
+          <Button type='primary' disabled={radioValue !== 3} onClick={addTableRow}>
+            <PlusOutlined />
+          </Button>
+        ) : (
+          <Button type='text' danger disabled={radioValue !== 3} onClick={deleteTableRow(index)}>
+            <MinusOutlined />
+          </Button>
         )
       },
     })

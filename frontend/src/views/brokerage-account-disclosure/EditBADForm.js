@@ -2,7 +2,7 @@
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
 import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm} from 'antd'
-import {HomeOutlined, PlusOutlined, EditOutlined} from '@ant-design/icons'
+import {HomeOutlined, PlusOutlined, EditOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 
@@ -21,6 +21,10 @@ const EditBADForm = () => {
 
   const addFormRow = () => {
     setFormData([...formData, {}])
+  }
+
+  const deleteFormRow = (arrIndex) => () => {
+    setFormData(formData.filter((_, index) => index !== arrIndex))
   }
 
   const onInputValueChange = (arrIndex, key) => (event) => {
@@ -45,8 +49,9 @@ const EditBADForm = () => {
           }
 
           if (Array.isArray(formData) && formData.length) {
-            setFormData(formData)
-            // addFormRow()
+            const newFormData = !isOnViewPage ? [...formData, {}] : formData
+
+            setFormData(newFormData)
           }
 
           setIsLoading(false)
@@ -229,32 +234,50 @@ const EditBADForm = () => {
             </Col>
           </Row>
           <Row gutter={10}>
-            <Col span={isOnViewPage ? 24 : 22}>
-              {formData.map((item, index) => {
-                return (
-                  <Input.Group key={index} compact>
-                    <Input
-                      style={{width: '50%'}}
-                      disabled={!hasAccountsOpt || isOnViewPage}
-                      addonBefore={index + 1}
-                      value={item.account}
-                      onChange={onInputValueChange(index, 'account')}
-                    />
-                    <Input
-                      style={{width: '50%'}}
-                      value={item.organization}
-                      disabled={!hasAccountsOpt || isOnViewPage}
-                      onChange={onInputValueChange(index, 'organization')}
-                    />
-                  </Input.Group>
-                )
-              })}
-            </Col>
-            {!isOnViewPage && (
-              <Col>
-                <Button type='primary' icon={<PlusOutlined />} disabled={!hasAccountsOpt} onClick={addFormRow} />
-              </Col>
-            )}
+            {formData.map((item, index) => {
+              return (
+                <React.Fragment key={index}>
+                  <Col span={isOnViewPage ? 24 : 22}>
+                    <Input.Group compact>
+                      <Input
+                        style={{width: '50%'}}
+                        disabled={!hasAccountsOpt || isOnViewPage}
+                        addonBefore={index + 1}
+                        value={item.account}
+                        onChange={onInputValueChange(index, 'account')}
+                      />
+                      <Input
+                        style={{width: '50%'}}
+                        value={item.organization}
+                        disabled={!hasAccountsOpt || isOnViewPage}
+                        onChange={onInputValueChange(index, 'organization')}
+                      />
+                    </Input.Group>
+                  </Col>
+                  {!isOnViewPage &&
+                    (index === 0 ? (
+                      <Col>
+                        <Button
+                          type='primary'
+                          icon={<PlusOutlined />}
+                          disabled={!hasAccountsOpt}
+                          onClick={addFormRow}
+                        />
+                      </Col>
+                    ) : (
+                      <Col>
+                        <Button
+                          type='text'
+                          danger
+                          disabled={!hasAccountsOpt}
+                          icon={<MinusOutlined />}
+                          onClick={deleteFormRow(index)}
+                        />
+                      </Col>
+                    ))}
+                </React.Fragment>
+              )
+            })}
           </Row>
         </div>
         {!isOnViewPage && (

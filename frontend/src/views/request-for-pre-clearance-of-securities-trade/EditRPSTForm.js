@@ -2,7 +2,7 @@
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
 import {Breadcrumb, Button, Input, Spin, Table, DatePicker, Row, Col, message, Popconfirm} from 'antd'
-import {HomeOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
+import {HomeOutlined, EditOutlined, PlusOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
@@ -71,6 +71,10 @@ const EditRPSTForm = () => {
         purchaseSale: '',
       },
     ])
+  }
+
+  const deleteTableRow = (arrIndex) => () => {
+    setTableData(tableData.filter((_, index) => index !== arrIndex))
   }
 
   const onInputValueChange = (arrIndex, key) => (event) => {
@@ -208,6 +212,24 @@ const EditRPSTForm = () => {
     },
   ]
 
+  if (!isOnViewPage) {
+    columns.push({
+      title: 'Actions',
+      dataIndex: 'action',
+      render: (text, record, index) => {
+        return index === 0 ? (
+          <Button type='primary' onClick={addTableRow}>
+            <PlusOutlined />
+          </Button>
+        ) : (
+          <Button type='text' danger onClick={deleteTableRow(index)}>
+            <MinusOutlined />
+          </Button>
+        )
+      },
+    })
+  }
+
   return (
     <Spin spinning={isLoading}>
       <div
@@ -244,7 +266,7 @@ const EditRPSTForm = () => {
           </Breadcrumb.Item>
         </Breadcrumb>
 
-        {isOnViewPage ? (
+        {isOnViewPage && (
           <Row justify='end' style={{marginBottom: '10px'}}>
             <Col>
               <Link to={`${url.replace('/view', '')}/edit`}>
@@ -254,15 +276,6 @@ const EditRPSTForm = () => {
               </Link>
             </Col>
           </Row>
-        ) : (
-          <Button
-            onClick={addTableRow}
-            type='primary'
-            style={{
-              margin: '10px 0px',
-            }}>
-            Add a row
-          </Button>
         )}
 
         <div>
