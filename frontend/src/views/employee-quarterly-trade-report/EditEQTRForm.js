@@ -22,6 +22,10 @@ import {HomeOutlined, EditOutlined, PlusOutlined, MinusOutlined} from '@ant-desi
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
+import messages from '../../messages'
+
+const {formC} = messages.compliance
+const formText = formC.text
 
 const {Option} = Select
 
@@ -317,7 +321,7 @@ const EditEQTRForm = () => {
                 <PlusOutlined /> New{' '}
               </>
             )}
-            Employee Quarterly Trade Report Form
+            {formC.name} Form
           </Breadcrumb.Item>
         </Breadcrumb>
 
@@ -333,9 +337,9 @@ const EditEQTRForm = () => {
           </Row>
         )}
         <div>
-          I declare that:{' '}
+          {formText.title}{' '}
           <span>
-            As of the end of{' '}
+            {formText.quarterYearSelectTitle}{' '}
             <Select value={quarter} disabled={isOnViewPage} style={{width: 120}} onChange={setQuarter}>
               <Option value='Q1'>Q1</Option>
               <Option value='Q2'>Q2</Option>
@@ -362,28 +366,22 @@ const EditEQTRForm = () => {
             borderTop: 'none',
           }}>
           <Divider style={{position: 'relative', marginBottom: '0px', top: '-12px'}} orientation='left'>
-            I hereby declare that (tickbox):
+            {formText.box1.title}
           </Divider>
           <Radio.Group
             onChange={(event) => setRadioValue(event.target.value)}
             disabled={isOnViewPage}
             value={radioValue}>
-            <Radio value={1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
-              I have not engaged in personal account deadling
-            </Radio>
-            <Radio value={2} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
-              I have engaged in personal account deadling, not exceeding the limit of S$10,000 (ten thousand)
-            </Radio>
-            <Radio value={3} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
-              I have engaged in personal account deadling, and obtained prior approval to trade on a single stock on the
-              same day (i.e 24 hours) for an amount exceeding S$10,000 (ten thousand)
-            </Radio>
+            {formText.box1.radioGroupTitles.map((title, index) => {
+              return (
+                <Radio key={index} value={index + 1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
+                  {title}
+                </Radio>
+              )
+            })}
           </Radio.Group>
           <div>
-            <div>
-              Comple the details below in case of personal account deadling on a single stock on the same day and
-              exceeding the amount of S$10,000 (ten thousand):
-            </div>
+            <div>{formText.box1.lastRadioItemNote}</div>
             <div>
               <Table columns={columns} dataSource={tableData} pagination={false} rowKey={(record) => record.id} />
             </div>
@@ -399,9 +397,9 @@ const EditEQTRForm = () => {
             borderTop: 'none',
           }}>
           <Divider style={{position: 'relative', marginBottom: '0px', top: '-12px'}} orientation='left'>
-            I hereby confirm that:
+            {formText.box2.title}
           </Divider>
-          {checkBoxOptions.map((value, index) => {
+          {formText.box2.checkboxGroupTitles.map((value, index) => {
             return (
               <React.Fragment key={index}>
                 <Checkbox

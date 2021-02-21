@@ -4,24 +4,13 @@ import {Popconfirm, Table, Space, Menu, Dropdown, Button, Breadcrumb, message} f
 import {DownOutlined, HomeOutlined} from '@ant-design/icons'
 import {Link, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
+import messages from '../messages'
 
 const typeToFormName = {
-  a: {
-    name: 'Brokerage Account Disclosure',
-    path: 'brokerage-account-disclosure',
-  },
-  b: {
-    name: 'Employee Securities Holdings Report',
-    path: 'employee-security-holdings-report',
-  },
-  c: {
-    name: 'Employee Quarterly Trade Report',
-    path: 'employee-quarterly-trade-report',
-  },
-  d: {
-    name: 'Request for Pre-Clearance of Securities Trade',
-    path: 'request-for-pre-clearance-of-securities-trade',
-  },
+  a: messages.compliance.formA,
+  b: messages.compliance.formB,
+  c: messages.compliance.formC,
+  d: messages.compliance.formD,
 }
 
 const ComplianceApp = () => {

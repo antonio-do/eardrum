@@ -5,6 +5,10 @@ import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm
 import {HomeOutlined, PlusOutlined, EditOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
+import messages from '../../messages'
+
+const {formA} = messages.compliance
+const formText = formA.text
 
 const defaultFormData = Array.from({length: 4}).map(() => ({}))
 
@@ -160,7 +164,7 @@ const EditBADForm = () => {
                 <PlusOutlined /> New{' '}
               </>
             )}
-            Brokerage Account Disclosure Form
+            {formA.name} Form
           </Breadcrumb.Item>
         </Breadcrumb>
 
@@ -176,29 +180,17 @@ const EditBADForm = () => {
           </Row>
         )}
 
-        <p>
-          Every employee must disclose to the CCO any and all brokerage accounts in the name of the employee, over which
-          the employee exercises discretion (expressor in fact) orin which the employee has an interest.
-        </p>
+        <p>{formText.overview}</p>
         <div>
-          Disclosure is not required for any account:
+          {formText.list.tile}
           <ul>
-            <li>
-              over which the employee has no control or discretionary trading authority (including Managed Accounts), or
-            </li>
-            <li>
-              used exclusively for trading in commodities and futures contracts and do not have discretionary brokerage
-              capability for individual securities ;or
-            </li>
-            <li>
-              that is limited to exempted securities such as bank certificates of deposit, open-end mutual fund shares,
-              and Treasury obligations,and does not have discretionary brokerage capability for individual securities
-              (e.g., 529 and 401(k) accounts).
-            </li>
+            {formText.list.items.map((item) => {
+              return <li key={item}>{item}</li>
+            })}
           </ul>
         </div>
         <div>
-          <p>Please check one of the following and sign below:</p>
+          <p>{formText.radioGroup.title}</p>
           <Checkbox
             disabled={isOnViewPage}
             onChange={(event) => {
@@ -206,8 +198,7 @@ const EditBADForm = () => {
             }}
             checked={noAccountOpt}
             style={{fontSize: '16px'}}>
-            I do not have any accounts that must be disclosed. I agree to notify the CCO prior to any such account being
-            opened in the future.
+            {formText.radioGroup.option1}
           </Checkbox>
           <br />
           <Checkbox
@@ -217,21 +208,20 @@ const EditBADForm = () => {
             }}
             checked={hasAccountsOpt}
             style={{fontSize: '16px'}}>
-            Set forth below is a complete list of all accounts that must be disclosed (use additional forms if
-            necessary).
+            {formText.radioGroup.option2.content}
           </Checkbox>
           <br />
-          The CCO will be sending a letter requesting duplicate confirms and statements foreach of the accounts
-          disclosed below.
+          {formText.radioGroup.option2.note}
         </div>
         <div style={{marginTop: '16px'}}>
           <Row>
-            <Col span={12}>
-              <div>Name and Number of Account</div>
-            </Col>
-            <Col span={12}>
-              <div>Name and Phone Number of Organization Where Account is Located</div>
-            </Col>
+            {formText.formTitles.map((title) => {
+              return (
+                <Col span={12} key={title}>
+                  {title}
+                </Col>
+              )
+            })}
           </Row>
           <Row gutter={10}>
             {formData.map((item, index) => {
@@ -286,8 +276,7 @@ const EditBADForm = () => {
               style={{fontSize: '16px'}}
               checked={shouldAgree}
               onChange={(event) => setShouldAgree(event.target.checked)}>
-              I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethicsand
-              Compliance Manual, and I agree to abide by such policiesduring the term of my employment..
+              {formText.agreeToPolicy}
             </Checkbox>
             <Row justify='end' gutter={10}>
               <Col>

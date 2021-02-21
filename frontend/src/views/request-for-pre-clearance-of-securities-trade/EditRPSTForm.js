@@ -6,6 +6,10 @@ import {HomeOutlined, EditOutlined, PlusOutlined, MinusOutlined} from '@ant-desi
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
+import messages from '../../messages'
+
+const {formD} = messages.compliance
+const formText = formD.text
 
 const dateFormat = 'DD/MM/YYYY'
 const defaultData = Array.from({length: 3}).map((_, index) => {
@@ -262,7 +266,7 @@ const EditRPSTForm = () => {
                 <PlusOutlined /> New{' '}
               </>
             )}
-            Request for Pre-Clearance of Securities Trade Form
+            {formD.name} Form
           </Breadcrumb.Item>
         </Breadcrumb>
 
@@ -283,27 +287,14 @@ const EditRPSTForm = () => {
         </div>
 
         <div style={{marginTop: '16px'}}>
-          <div>The Employee submitting this request understands and specifically represents as follows:*</div>
+          <div>{formText.list.title}</div>
           <ol type='a'>
-            <li>I have no inside information relating to the above-referenced issuer(s);</li>
-            <li>I have not had any contact or communication with the issuer(s) in the last six months;</li>
-            <li>
-              I am not aware of any conflict of interest this transaction may cause with respect to any Client account
-              and I am not aware of any Client account trading activity that may have occurred in the issuers of the
-              above referenced securities during the past four trading days or that may now or in the near future be
-              contemplated;
-            </li>
-            <li>
-              If approval is granted, it is only good for one day and specifically the day it was approved (e.g.,
-              expiring at midnight on the day of approval); and
-            </li>
-            <li>The securities are not being purchased in an initial public offering or private placement.</li>
+            {formText.list.items.map((item) => {
+              return <li key={item}>{item}</li>
+            })}
           </ol>
           <div>
-            <i>
-              *If for any reason an employee cannot make the above required representations or has any questions in this
-              area, the employee MUST contact the CCO before submitting any request for approval.
-            </i>
+            <i>{formText.note}</i>
           </div>
         </div>
 

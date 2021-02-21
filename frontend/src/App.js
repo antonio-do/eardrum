@@ -34,6 +34,7 @@ import { configFetchGradeOptions } from './actions';
 
 import WithLongPolling from './core/WithLongPolling';
 import Notifier from './core/Notifier';
+import messages from './messages'
 import './styles/App.css'
 
 
@@ -98,12 +99,13 @@ function LinkTab(props) {
   );
 }
 
-const complianceApp = [
-  {path: 'brokerage-account-disclosure', shortName: 'BAD'},
-  {path: 'employee-security-holdings-report', shortName: 'ESHR'},
-  {path: 'employee-quarterly-trade-report', shortName: 'EQTR'},
-  {path: 'request-for-pre-clearance-of-securities-trade', shortName: 'RPST'},
-]
+const complianceApp = Object.entries(messages.compliance).map(([_, form]) => {
+  return {
+    name: form.name,
+    path: form.path,
+    shortName: form.shortName,
+  }
+})
 
 class App extends Component {
   constructor(props) {

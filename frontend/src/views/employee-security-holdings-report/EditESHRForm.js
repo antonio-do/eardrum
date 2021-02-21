@@ -5,6 +5,10 @@ import {Breadcrumb, Spin, Select, Button, Checkbox, List, message, Upload, Row, 
 import {HomeOutlined, UploadOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
+import messages from '../../messages'
+
+const {formB} = messages.compliance
+const formText = formB.text
 
 const {Option} = Select
 
@@ -189,7 +193,7 @@ const EditESHRForm = () => {
                 <PlusOutlined /> New{' '}
               </>
             )}
-            Employee Securities Holdings Report Form
+            {formB.name} Form
           </Breadcrumb.Item>
         </Breadcrumb>
 
@@ -206,7 +210,7 @@ const EditESHRForm = () => {
         )}
 
         <div>
-          As of:{' '}
+          {formText.yearSelectTitle}{' '}
           <Select
             defaultValue={currentYear}
             disabled={isOnViewPage}
@@ -221,13 +225,13 @@ const EditESHRForm = () => {
           </Select>
         </div>
         <div>
-          <div>I hereby declare that:</div>
+          <div>{formText.radioGroup.title}</div>
           <Checkbox
             checked={hasNoReportableAccounts}
             disabled={isOnViewPage}
             onChange={(event) => setHasNoReportableAccounts(event.target.checked)}
             style={{fontSize: '16px'}}>
-            I do not have any reportable brokerage accounts.
+            {formText.radioGroup.option1}
           </Checkbox>
           <br />
           <div>
@@ -236,7 +240,7 @@ const EditESHRForm = () => {
               disabled={isOnViewPage}
               onChange={(event) => setHasReportableAccounts(event.target.checked)}
               style={{fontSize: '16px'}}>
-              I have reported all reportable holdings in my personal brokerage accounts.
+              {formText.radioGroup.option2.content}
             </Checkbox>
             {isOnViewPage ? (
               <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
@@ -270,7 +274,7 @@ const EditESHRForm = () => {
                     </Upload>
                   )}
                 </div>
-                <div>Please submit your annual statement(s) from each reportable brokerage account.</div>
+                <div>{formText.radioGroup.option2.note}</div>
               </div>
             )}
           </div>
