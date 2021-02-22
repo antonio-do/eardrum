@@ -5,10 +5,13 @@ import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm
 import {HomeOutlined, PlusOutlined, EditOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
+import moment from 'moment'
 import messages from '../../messages'
 
 const {formA} = messages.compliance
 const formText = formA.text
+
+const dateFormat = 'DD/MM/YYYY'
 
 const defaultFormData = Array.from({length: 4}).map(() => ({}))
 
@@ -18,6 +21,7 @@ const EditBADForm = () => {
   const [shouldAgree, setShouldAgree] = useState(false)
   const [formData, setFormData] = useState([[]])
   const [isLoading, setIsLoading] = useState(false)
+  const [submissionDate, setSubmissionDate] = useState()
   const history = useHistory()
   const {formId} = useParams()
   const {url} = useRouteMatch()
@@ -44,7 +48,8 @@ const EditBADForm = () => {
       axios
         .get(`/api/compliance/${formId}/`)
         .then(({data: {json_data}}) => {
-          const {hasDisclosedAccounts, formData} = json_data
+          const {hasDisclosedAccounts, submissionDate, formData} = json_data
+          setSubmissionDate(submissionDate)
 
           if (hasDisclosedAccounts) {
             setHasAccountsOpt(true)
@@ -96,15 +101,21 @@ const EditBADForm = () => {
       }
 
       const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
+      const newSubmissionDate = formId ? submissionDate : moment(new Date()).format(dateFormat)
 
       const {data} = await axios({
         method: formId ? 'PATCH' : 'POST',
         url,
         data: {
           typ: 'a',
+
           data: noAccountOpt
-            ? {hasDisclosedAccounts: false, formData: []}
-            : {hasDisclosedAccounts: true, formData: formData.filter((row) => row.account && row.organization)},
+            ? {hasDisclosedAccounts: false, submissionDate: newSubmissionDate, formData: []}
+            : {
+                hasDisclosedAccounts: true,
+                submissionDate: newSubmissionDate,
+                formData: formData.filter((row) => row.account && row.organization),
+              },
         },
       })
 

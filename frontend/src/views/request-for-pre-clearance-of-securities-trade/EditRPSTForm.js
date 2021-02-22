@@ -31,6 +31,7 @@ const EditRPSTForm = () => {
   const {formId} = useParams()
   const history = useHistory()
   const {url} = useRouteMatch()
+  const [submissionDate, setSubmissionDate] = useState()
   const isOnViewPage = formId && url.includes('/view')
 
   useEffect(() => {
@@ -39,7 +40,8 @@ const EditRPSTForm = () => {
       axios
         .get(`/api/compliance/${formId}/`)
         .then(({data: {json_data}}) => {
-          const {formData} = json_data
+          const {submissionDate, formData} = json_data
+          setSubmissionDate(submissionDate)
 
           if (Array.isArray(formData) && formData.length) {
             setTableData(formData)
@@ -98,13 +100,14 @@ const EditRPSTForm = () => {
       })
 
       const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
+      const newSubmissionDate = formId ? submissionDate : moment(new Date()).format(dateFormat)
 
       const {data} = await axios({
         method: formId ? 'PATCH' : 'POST',
         url,
         data: {
           typ: 'd',
-          data: {formData},
+          data: {submissionDate: newSubmissionDate, formData},
         },
       })
 
