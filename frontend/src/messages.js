@@ -1,18 +1,18 @@
 const messages = {
   compliance: {
-    formA: {
+    a: {
       name: 'Brokerage Account Disclosure',
       path: 'brokerage-account-disclosure',
       shortName: 'BAD',
       text: {
         overview:
-          'Every employee must disclose to the CCO any and all brokerage accounts in the name of the employee, over which the employee exercises discretion (expressor in fact) orin which the employee has an interest.',
+          'Every employee must disclose to the CCO any and all brokerage accounts in the name of the employee, over which the employee exercises discretion (expressor or in fact) or in which the employee has an interest.',
         list: {
           tile: 'Disclosure is not required for any account:',
           items: [
             'over which the employee has no control or discretionary trading authority (including Managed Accounts), or',
-            'used exclusively for trading in commodities and futures contracts and do not have discretionary brokerage capability for individual securities ;or',
-            'that is limited to exempted securities such as bank certificates of deposit, open-end mutual fund shares, and Treasury obligations,and does not have discretionary brokerage capability for individual securities (e.g., 529 and 401(k) accounts).',
+            'used exclusively for trading in commodities and futures contracts and do not have discretionary brokerage capability for individual securities; or',
+            'that is limited to exempted securities such as bank certificates of deposit, open-end mutual fund shares, and Treasury obligations, and does not have discretionary brokerage capability for individual securities (e.g., 529 and 401(k) accounts).',
           ],
         },
         radioGroup: {
@@ -23,15 +23,15 @@ const messages = {
             content:
               'Set forth below is a complete list of all accounts that must be disclosed (use additional forms if necessary).',
             note:
-              'The CCO will be sending a letter requesting duplicate confirms and statements foreach of the accounts disclosed below.',
+              'The CCO will be sending a letter requesting duplicate confirms and statements for each of the accounts disclosed below.',
           },
         },
         formTitles: ['Name and Number of Account', 'Name and Phone Number of Organization Where Account is Located'],
         agreeToPolicy:
-          'I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethicsand Compliance Manual, and I agree to abide by such policiesduring the term of my employment.',
+          'I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethics and Compliance Manual, and I agree to abide by such policies during the term of my employment.',
       },
     },
-    formB: {
+    b: {
       name: 'Employee Securities Holdings Report',
       path: 'employee-security-holdings-report',
       shortName: 'ESHR',
@@ -47,7 +47,7 @@ const messages = {
         },
       },
     },
-    formC: {
+    c: {
       name: 'Employee Quarterly Trade Report',
       path: 'employee-quarterly-trade-report',
       shortName: 'EQTR',
@@ -75,7 +75,7 @@ const messages = {
         },
       },
     },
-    formD: {
+    d: {
       name: 'Request for Pre-Clearance of Securities Trade',
       path: 'request-for-pre-clearance-of-securities-trade',
       shortName: 'RPST',

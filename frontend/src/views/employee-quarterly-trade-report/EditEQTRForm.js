@@ -18,13 +18,13 @@ import {
   Popconfirm,
   Table,
 } from 'antd'
-import {HomeOutlined, EditOutlined, PlusOutlined, MinusOutlined} from '@ant-design/icons'
+import {MenuOutlined, EditOutlined, PlusOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
 import messages from '../../messages'
 
-const {formC} = messages.compliance
+const formC = messages.compliance.c
 const formText = formC.text
 
 const {Option} = Select
@@ -40,13 +40,6 @@ const defaultData = Array.from({length: 2}).map((_, index) => {
     type: 'Long',
   }
 })
-
-const checkBoxOptions = [
-  'My personal dealing activities and those of any Related Persons are in accordance with the Rules set out in this Manual',
-  'To the best of my knowledge, my personal dealing activities will not raise any conflict of interest with the Company or any of its clients',
-  'I am not aware of any pending client order, current or upcoming client soliciation, in relation to my personal deadling activities',
-  'My personal deadling activities do not breach any relevant holding or blackout period by the Manual',
-]
 
 const EditEQTRForm = () => {
   const currentYear = new Date().getFullYear()
@@ -300,12 +293,9 @@ const EditEQTRForm = () => {
         }}>
         <Breadcrumb style={{fontSize: '14px', marginBottom: '10px'}}>
           <Breadcrumb.Item>
-            <Link to='/'>
-              <HomeOutlined /> Home
+            <Link to='/compliance/c'>
+              <MenuOutlined /> {formC.name} Form List
             </Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            <Link to='/compliance'>Compliance</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
             {formId ? (

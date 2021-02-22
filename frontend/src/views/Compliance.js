@@ -1,28 +1,30 @@
 /* eslint-disable no-shadow */
 import React, {useEffect, useState} from 'react'
 import {Popconfirm, Table, Space, Menu, Dropdown, Button, Breadcrumb, message, Tabs} from 'antd'
-import {DownOutlined, HomeOutlined} from '@ant-design/icons'
-import {Link, useRouteMatch} from 'react-router-dom'
+import {DownOutlined, MenuOutlined} from '@ant-design/icons'
+import {Link, useRouteMatch, useParams, useHistory} from 'react-router-dom'
 import axios from 'axios'
 import messages from '../messages'
 
 const {TabPane} = Tabs
 
-const typeToFormProps = {
-  a: messages.compliance.formA,
-  b: messages.compliance.formB,
-  c: messages.compliance.formC,
-  d: messages.compliance.formD,
-}
+const typeToFormProps = messages.compliance
 
 const ComplianceApp = () => {
-  const {path} = useRouteMatch()
+  const {url} = useRouteMatch()
   const [formList, setFormList] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [tabKey, setTabKey] = useState('Brokerage Account Disclosure')
+  const {formType} = useParams()
+  const [tabKey, setTabKey] = useState(() => (formType in typeToFormProps ? formType : 'a'))
+  const history = useHistory()
 
   useEffect(() => {
     setIsLoading(true)
+
+    if (!formType || !(formType in typeToFormProps)) {
+      history.replace('/compliance/a')
+    }
+
     axios
       .get('/api/compliance/')
       .then(({data}) => {
@@ -38,6 +40,7 @@ const ComplianceApp = () => {
 
   function onTabKeyChange(key) {
     setTabKey(key)
+    history.replace(key)
   }
 
   const onDelete = (formId) => async () => {
@@ -59,7 +62,7 @@ const ComplianceApp = () => {
       {Object.entries(typeToFormProps).map(([_, form]) => {
         return (
           <Menu.Item key={form.name}>
-            <Link to={`${path}/${form.path}/new`}>{form.name}</Link>
+            <Link to={`${url}/new`}>{form.name}</Link>
           </Menu.Item>
         )
       })}
@@ -73,7 +76,7 @@ const ComplianceApp = () => {
       key: 'id',
       render: (text, record) => {
         const form = typeToFormProps[record.typ]
-        return <Link to={`${path}/${form.path}/${record.id}/view`}>{form.name}</Link>
+        return <Link to={`${url}/${record.id}/view`}>{form.name}</Link>
       },
     },
     {
@@ -122,7 +125,7 @@ const ComplianceApp = () => {
 
         return (
           <Space size='middle'>
-            <Link to={`${path}/${form.path}/${record.id}/edit`}>Edit</Link>
+            <Link to={`${url}/${record.id}/edit`}>Edit</Link>
             <Popconfirm
               title='Are you sure to delete this form?'
               onConfirm={onDelete(record.id)}
@@ -145,14 +148,6 @@ const ComplianceApp = () => {
         border: '1px solid rgba(156, 163, 175, 50%)',
         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
       }}>
-      <Breadcrumb>
-        <Breadcrumb.Item>
-          <Link to='/'>
-            <HomeOutlined /> Home
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>{tabKey} Form List</Breadcrumb.Item>
-      </Breadcrumb>
       <Space style={{width: '100%', marginBottom: '10px'}} align='end' direction='vertical'>
         <Dropdown overlay={menu} trigger={['click']}>
           <Button type='primary'>
@@ -161,12 +156,17 @@ const ComplianceApp = () => {
         </Dropdown>
       </Space>
 
-      <Tabs onChange={onTabKeyChange} type='card'>
+      <Tabs onChange={onTabKeyChange} type='card' activeKey={tabKey}>
         {Object.entries(typeToFormProps).map(([type, form]) => {
           const specificFormList = formList.filter((f) => f.typ === type)
 
           return (
-            <TabPane tab={form.name} key={form.name}>
+            <TabPane tab={form.name} key={type}>
+              <Breadcrumb style={{marginBottom: '10px'}}>
+                <Breadcrumb.Item>
+                  <MenuOutlined /> {typeToFormProps[tabKey].name} Form List
+                </Breadcrumb.Item>
+              </Breadcrumb>
               <Table
                 loading={isLoading}
                 rowKey={(record) => record.id}

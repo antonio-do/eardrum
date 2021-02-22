@@ -99,14 +99,6 @@ function LinkTab(props) {
   );
 }
 
-const complianceApp = Object.entries(messages.compliance).map(([_, form]) => {
-  return {
-    name: form.name,
-    path: form.path,
-    shortName: form.shortName,
-  }
-})
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -189,7 +181,8 @@ class App extends Component {
 
     const FormSwitch = () => {
       let {path} = useRouteMatch()
-      const form = complianceApp.find((f) => path.includes(f.path))
+      const formType = path.split("/")[2]
+      const form = messages.compliance[formType]
 
       const EditForm = lazy(() => import(`./views/${form.path}/Edit${form.shortName}Form`));
 
@@ -243,9 +236,10 @@ class App extends Component {
               <PrivateRoute exact={ true } path="/okrs" component={ OKRList } />
               <PrivateRoute path="/requests/:requestId/details" component={ RequestDetails } />
               <PrivateRoute exact={ true } path="/compliance" component={ Compliance } />
+              <PrivateRoute exact={ true } path="/compliance/:formType" component={ Compliance } />
               {
-                complianceApp.map(({path}) => {
-                  return <PrivateRoute key={path} path={`/compliance/${path}`} component={ FormSwitch } />
+                Object.keys(messages.compliance).map((type) => {
+                  return <PrivateRoute key={type} path={`/compliance/${type}`} component={ FormSwitch } />
                 })
               }
             </Switch>
