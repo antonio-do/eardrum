@@ -59,10 +59,12 @@ const ComplianceApp = () => {
 
   const menu = (
     <Menu>
-      {Object.entries(typeToFormProps).map(([_, form]) => {
+      {Object.entries(typeToFormProps).map(([type, form]) => {
+        const newUrl = url.replace(`/compliance/${formType}`, `/compliance/${type}/new`)
+
         return (
           <Menu.Item key={form.name}>
-            <Link to={`${url}/new`}>{form.name}</Link>
+            <Link to={newUrl}>{form.name}</Link>
           </Menu.Item>
         )
       })}

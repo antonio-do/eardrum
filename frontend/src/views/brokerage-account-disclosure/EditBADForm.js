@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm} from 'antd'
+import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm, Radio} from 'antd'
 import {MenuOutlined, PlusOutlined, EditOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
@@ -16,12 +16,11 @@ const dateFormat = 'DD/MM/YYYY'
 const defaultFormData = Array.from({length: 4}).map(() => ({}))
 
 const EditBADForm = () => {
-  const [noAccountOpt, setNoAccountOpt] = useState(false)
-  const [hasAccountsOpt, setHasAccountsOpt] = useState(false)
   const [shouldAgree, setShouldAgree] = useState(false)
   const [formData, setFormData] = useState([[]])
   const [isLoading, setIsLoading] = useState(false)
   const [submissionDate, setSubmissionDate] = useState()
+  const [radioOptionValue, setRadioOptionValue] = useState(false)
   const history = useHistory()
   const {formId} = useParams()
   const {url} = useRouteMatch()
@@ -42,6 +41,10 @@ const EditBADForm = () => {
     setFormData(newFormData)
   }
 
+  const onRadioValueChange = (event) => {
+    setRadioOptionValue(event.target.value)
+  }
+
   useEffect(() => {
     if (formId) {
       setIsLoading(true)
@@ -52,9 +55,9 @@ const EditBADForm = () => {
           setSubmissionDate(submissionDate)
 
           if (hasDisclosedAccounts) {
-            setHasAccountsOpt(true)
+            setRadioOptionValue(2)
           } else {
-            setNoAccountOpt(true)
+            setRadioOptionValue(1)
           }
 
           if (Array.isArray(formData) && formData.length) {
@@ -75,12 +78,7 @@ const EditBADForm = () => {
   }, [formId])
 
   const onSubmit = async () => {
-    if (noAccountOpt && hasAccountsOpt) {
-      message.error('You can only check 1 option!')
-      return
-    }
-
-    if (!noAccountOpt && !hasAccountsOpt) {
+    if (!radioOptionValue) {
       message.error('Please check one of the following option!')
       return
     }
@@ -91,15 +89,6 @@ const EditBADForm = () => {
     }
 
     try {
-      const invalidRow = formData.find(
-        (row) => (row.account && !row.organization) || (!row.account && row.organization)
-      )
-
-      if (invalidRow) {
-        message.error('Either none or all the fields of the row must be filled!')
-        return
-      }
-
       const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
       const newSubmissionDate = formId ? submissionDate : moment(new Date()).format(dateFormat)
 
@@ -109,13 +98,14 @@ const EditBADForm = () => {
         data: {
           typ: 'a',
 
-          data: noAccountOpt
-            ? {hasDisclosedAccounts: false, submissionDate: newSubmissionDate, formData: []}
-            : {
-                hasDisclosedAccounts: true,
-                submissionDate: newSubmissionDate,
-                formData: formData.filter((row) => row.account && row.organization),
-              },
+          data:
+            radioOptionValue === 1
+              ? {hasDisclosedAccounts: false, submissionDate: newSubmissionDate, formData: []}
+              : {
+                  hasDisclosedAccounts: true,
+                  submissionDate: newSubmissionDate,
+                  formData: formData.filter((row) => row.firmName && row.accountName && row.accountNumber),
+                },
         },
       })
 
@@ -199,25 +189,14 @@ const EditBADForm = () => {
         </div>
         <div>
           <p>{formText.radioGroup.title}</p>
-          <Checkbox
-            disabled={isOnViewPage}
-            onChange={(event) => {
-              setNoAccountOpt(event.target.checked)
-            }}
-            checked={noAccountOpt}
-            style={{fontSize: '16px'}}>
-            {formText.radioGroup.option1}
-          </Checkbox>
-          <br />
-          <Checkbox
-            disabled={isOnViewPage}
-            onChange={(event) => {
-              setHasAccountsOpt(event.target.checked)
-            }}
-            checked={hasAccountsOpt}
-            style={{fontSize: '16px'}}>
-            {formText.radioGroup.option2.content}
-          </Checkbox>
+          <Radio.Group disabled={isOnViewPage} onChange={onRadioValueChange} value={radioOptionValue}>
+            <Radio value={1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
+              {formText.radioGroup.option1}
+            </Radio>
+            <Radio value={2} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
+              {formText.radioGroup.option2.content}
+            </Radio>
+          </Radio.Group>
           <br />
           {formText.radioGroup.option2.note}
         </div>
@@ -225,7 +204,7 @@ const EditBADForm = () => {
           <Row>
             {formText.formTitles.map((title) => {
               return (
-                <Col span={12} key={title}>
+                <Col span={8} key={title}>
                   {title}
                 </Col>
               )
@@ -236,21 +215,30 @@ const EditBADForm = () => {
               return (
                 <React.Fragment key={index}>
                   <Col span={isOnViewPage ? 24 : 22}>
-                    <Input.Group compact>
-                      <Input
-                        style={{width: '50%'}}
-                        disabled={!hasAccountsOpt || isOnViewPage}
-                        addonBefore={index + 1}
-                        value={item.account}
-                        onChange={onInputValueChange(index, 'account')}
-                      />
-                      <Input
-                        style={{width: '50%'}}
-                        value={item.organization}
-                        disabled={!hasAccountsOpt || isOnViewPage}
-                        onChange={onInputValueChange(index, 'organization')}
-                      />
-                    </Input.Group>
+                    <Row>
+                      <Col span={8}>
+                        <Input
+                          disabled={radioOptionValue !== 2 || isOnViewPage}
+                          addonBefore={index + 1}
+                          value={item.firmName}
+                          onChange={onInputValueChange(index, 'firmName')}
+                        />
+                      </Col>
+                      <Col span={8}>
+                        <Input
+                          value={item.accountName}
+                          disabled={radioOptionValue !== 2 || isOnViewPage}
+                          onChange={onInputValueChange(index, 'accountName')}
+                        />
+                      </Col>
+                      <Col span={8}>
+                        <Input
+                          value={item.accountNumber}
+                          disabled={radioOptionValue !== 2 || isOnViewPage}
+                          onChange={onInputValueChange(index, 'accountNumber')}
+                        />
+                      </Col>
+                    </Row>
                   </Col>
                   {!isOnViewPage &&
                     (index === 0 ? (
@@ -258,7 +246,7 @@ const EditBADForm = () => {
                         <Button
                           type='primary'
                           icon={<PlusOutlined />}
-                          disabled={!hasAccountsOpt}
+                          disabled={radioOptionValue !== 2}
                           onClick={addFormRow}
                         />
                       </Col>
@@ -267,7 +255,7 @@ const EditBADForm = () => {
                         <Button
                           type='text'
                           danger
-                          disabled={!hasAccountsOpt}
+                          disabled={radioOptionValue !== 2}
                           icon={<MinusOutlined />}
                           onClick={deleteFormRow(index)}
                         />

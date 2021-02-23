@@ -26,7 +26,7 @@ const messages = {
               'The CCO will be sending a letter requesting duplicate confirms and statements for each of the accounts disclosed below.',
           },
         },
-        formTitles: ['Name and Number of Account', 'Name and Phone Number of Organization Where Account is Located'],
+        formTitles: ['Name of Firm Where Account is Held', 'Name on Account', 'Account Number'],
         agreeToPolicy:
           'I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethics and Compliance Manual, and I agree to abide by such policies during the term of my employment.',
       },

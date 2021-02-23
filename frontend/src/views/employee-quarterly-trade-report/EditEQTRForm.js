@@ -47,12 +47,12 @@ const EditEQTRForm = () => {
   const [quarter, setQuarter] = useState('Q1')
   const [radioValue, setRadioValue] = useState()
   const [tableData, setTableData] = useState(defaultData)
-  const [checkboxGroup, setCheckboxGroup] = useState([false, false, false, false])
   const history = useHistory()
   const {formId} = useParams()
   const [isLoading, setIsLoading] = useState(false)
   const {url} = useRouteMatch()
   const isOnViewPage = formId && url.includes('/view')
+  const [checkboxGroup, setCheckboxGroup] = useState(() => !isOnViewPage && Array.from({length: 4}).fill(true))
 
   useEffect(() => {
     if (formId) {

@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {Breadcrumb, Spin, Select, Button, Checkbox, List, message, Upload, Row, Col, Popconfirm} from 'antd'
+import {Breadcrumb, Spin, Select, Button, List, message, Upload, Row, Col, Popconfirm, Radio} from 'antd'
 import {MenuOutlined, UploadOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
@@ -16,8 +16,7 @@ const EditESHRForm = () => {
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
   const [fileList, setFileList] = useState([])
-  const [hasNoReportableAccounts, setHasNoReportableAccounts] = useState(false)
-  const [hasReportableAccounts, setHasReportableAccounts] = useState(false)
+  const [radioOptionValue, setRadioOptionValue] = useState(false)
   const history = useHistory()
   const {formId} = useParams()
   const [isLoading, setIsLoading] = useState(false)
@@ -44,9 +43,9 @@ const EditESHRForm = () => {
           const {hasReportableAccounts, year, files} = json_data
 
           if (hasReportableAccounts) {
-            setHasReportableAccounts(true)
+            setRadioOptionValue(2)
           } else {
-            setHasNoReportableAccounts(true)
+            setRadioOptionValue(1)
           }
           setYear(year)
 
@@ -102,14 +101,13 @@ const EditESHRForm = () => {
     setFileList(fileList)
   }
 
-  const onSubmit = async () => {
-    if (hasReportableAccounts && hasNoReportableAccounts) {
-      message.error('You can only check 1 option!')
-      return
-    }
+  const onRadioValueChange = (event) => {
+    setRadioOptionValue(event.target.value)
+  }
 
-    if (!hasReportableAccounts && !hasNoReportableAccounts) {
-      message.error('Please check one of the following option!')
+  const onSubmit = async () => {
+    if (!radioOptionValue) {
+      message.error('Please check one of the following options!')
       return
     }
 
@@ -131,9 +129,10 @@ const EditESHRForm = () => {
         url,
         data: {
           typ: 'b',
-          data: hasNoReportableAccounts
-            ? {hasReportableAccounts: false, year, files: []}
-            : {hasReportableAccounts: true, year, files},
+          data:
+            radioOptionValue === 1
+              ? {hasReportableAccounts: false, year, files: []}
+              : {hasReportableAccounts: true, year, files},
         },
       })
 
@@ -223,58 +222,51 @@ const EditESHRForm = () => {
         </div>
         <div>
           <div>{formText.radioGroup.title}</div>
-          <Checkbox
-            checked={hasNoReportableAccounts}
-            disabled={isOnViewPage}
-            onChange={(event) => setHasNoReportableAccounts(event.target.checked)}
-            style={{fontSize: '16px'}}>
-            {formText.radioGroup.option1}
-          </Checkbox>
-          <br />
-          <div>
-            <Checkbox
-              checked={hasReportableAccounts}
-              disabled={isOnViewPage}
-              onChange={(event) => setHasReportableAccounts(event.target.checked)}
-              style={{fontSize: '16px'}}>
+          <Radio.Group disabled={isOnViewPage} onChange={onRadioValueChange} value={radioOptionValue}>
+            <Radio value={1} style={{whiteSpace: 'break-spaces', display: 'block', fontSize: '16px'}}>
+              {formText.radioGroup.option1}
+            </Radio>
+            <Radio value={2} style={{whiteSpace: 'break-spaces', display: 'block', fontSize: '16px'}}>
               {formText.radioGroup.option2.content}
-            </Checkbox>
-            {isOnViewPage ? (
-              <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
-                <div>
-                  <div>Attach file(s)</div>
-                  <List
-                    size='small'
-                    bordered
-                    dataSource={fileList}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <a href={item.url} download={item.name}>
-                          {item.name}
-                        </a>
-                      </List.Item>
-                    )}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
-                <div style={{maxWidth: '60%'}}>
-                  {!isLoading && (
-                    <Upload
-                      fileList={fileList}
-                      disabled={!hasReportableAccounts}
-                      onChange={onFileChange}
-                      beforeUpload={() => false}
-                      multiple>
-                      <Button icon={<UploadOutlined />}>Attach file(s)</Button>
-                    </Upload>
+            </Radio>
+          </Radio.Group>
+        </div>
+        <div>
+          {isOnViewPage ? (
+            <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
+              <div>
+                <div>Attach file(s)</div>
+                <List
+                  size='small'
+                  bordered
+                  dataSource={fileList}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <a href={item.url} download={item.name}>
+                        {item.name}
+                      </a>
+                    </List.Item>
                   )}
-                </div>
-                <div>{formText.radioGroup.option2.note}</div>
+                />
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
+              <div style={{maxWidth: '60%'}}>
+                {!isLoading && (
+                  <Upload
+                    fileList={fileList}
+                    disabled={radioOptionValue !== 2}
+                    onChange={onFileChange}
+                    beforeUpload={() => false}
+                    multiple>
+                    <Button icon={<UploadOutlined />}>Attach file(s)</Button>
+                  </Upload>
+                )}
+              </div>
+              <div>{formText.radioGroup.option2.note}</div>
+            </div>
+          )}
         </div>
         {!isOnViewPage && (
           <Row gutter={10} style={{marginTop: '10px'}}>
