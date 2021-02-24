@@ -12,7 +12,7 @@ const {TabPane} = Tabs
 const typeToFormProps = messages.compliance
 const complianceRoutes = routes.compliance
 
-const FormAList = ({formName, onRowDelete, isLoading, data}) => {
+const FormAList = ({onRowDelete, isLoading, data}) => {
   const {url} = useRouteMatch()
 
   const columns = [
@@ -36,12 +36,14 @@ const FormAList = ({formName, onRowDelete, isLoading, data}) => {
       title: 'Submit By',
       dataIndex: 'submit_by',
       key: 'submit_by',
-    },
-    {
-      title: 'Status',
-      render: () => {
-        return 'Complete'
+      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
+      filterMultiple: true,
+      onFilter: (value, record) => record.submit_by.indexOf(value) === 0,
+      sorter: (a, b) => {
+        console.log(typeof a.submit_by)
+        return a.submit_by.localeCompare(b.submit_by)
       },
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Action',
@@ -65,19 +67,10 @@ const FormAList = ({formName, onRowDelete, isLoading, data}) => {
     },
   ]
 
-  return (
-    <>
-      <Breadcrumb style={{marginBottom: '10px'}}>
-        <Breadcrumb.Item>
-          <MenuOutlined /> {formName} Form List
-        </Breadcrumb.Item>
-      </Breadcrumb>
-      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
-    </>
-  )
+  return <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
 }
 
-const FormBList = ({formName, onRowDelete, isLoading, data}) => {
+const FormBList = ({onRowDelete, isLoading, data}) => {
   const {url} = useRouteMatch()
 
   const columns = [
@@ -101,12 +94,14 @@ const FormBList = ({formName, onRowDelete, isLoading, data}) => {
       title: 'Submit By',
       dataIndex: 'submit_by',
       key: 'submit_by',
-    },
-    {
-      title: 'Status',
-      render: () => {
-        return 'Complete'
+      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
+      filterMultiple: true,
+      onFilter: (value, record) => record.submit_by.indexOf(value) === 0,
+      sorter: (a, b) => {
+        console.log(typeof a.submit_by)
+        return a.submit_by.localeCompare(b.submit_by)
       },
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Action',
@@ -130,19 +125,10 @@ const FormBList = ({formName, onRowDelete, isLoading, data}) => {
     },
   ]
 
-  return (
-    <>
-      <Breadcrumb style={{marginBottom: '10px'}}>
-        <Breadcrumb.Item>
-          <MenuOutlined /> {formName} Form List
-        </Breadcrumb.Item>
-      </Breadcrumb>
-      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
-    </>
-  )
+  return <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
 }
 
-const FormCList = ({formName, onRowDelete, isLoading, data}) => {
+const FormCList = ({onRowDelete, isLoading, data}) => {
   const {url} = useRouteMatch()
 
   const columns = [
@@ -166,12 +152,14 @@ const FormCList = ({formName, onRowDelete, isLoading, data}) => {
       title: 'Submit By',
       dataIndex: 'submit_by',
       key: 'submit_by',
-    },
-    {
-      title: 'Status',
-      render: () => {
-        return 'Complete'
+      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
+      filterMultiple: true,
+      onFilter: (value, record) => record.submit_by.indexOf(value) === 0,
+      sorter: (a, b) => {
+        console.log(typeof a.submit_by)
+        return a.submit_by.localeCompare(b.submit_by)
       },
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Action',
@@ -195,19 +183,10 @@ const FormCList = ({formName, onRowDelete, isLoading, data}) => {
     },
   ]
 
-  return (
-    <>
-      <Breadcrumb style={{marginBottom: '10px'}}>
-        <Breadcrumb.Item>
-          <MenuOutlined /> {formName} Form List
-        </Breadcrumb.Item>
-      </Breadcrumb>
-      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
-    </>
-  )
+  return <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
 }
 
-const FormDList = ({formName, onRowDelete, isLoading, data}) => {
+const FormDList = ({onRowDelete, isLoading, data}) => {
   const {url} = useRouteMatch()
 
   const columns = [
@@ -231,6 +210,14 @@ const FormDList = ({formName, onRowDelete, isLoading, data}) => {
       title: 'Submit By',
       dataIndex: 'submit_by',
       key: 'submit_by',
+      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
+      filterMultiple: true,
+      onFilter: (value, record) => record.submit_by.indexOf(value) === 0,
+      sorter: (a, b) => {
+        console.log(typeof a.submit_by)
+        return a.submit_by.localeCompare(b.submit_by)
+      },
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Status',
@@ -260,16 +247,7 @@ const FormDList = ({formName, onRowDelete, isLoading, data}) => {
     },
   ]
 
-  return (
-    <>
-      <Breadcrumb style={{marginBottom: '10px'}}>
-        <Breadcrumb.Item>
-          <MenuOutlined /> {formName} Form List
-        </Breadcrumb.Item>
-      </Breadcrumb>
-      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
-    </>
-  )
+  return <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
 }
 
 const ComplianceApp = () => {
@@ -330,6 +308,14 @@ const ComplianceApp = () => {
     <Menu>
       {Object.entries(typeToFormProps).map(([type, form]) => {
         const newUrl = url.replace(`/compliance/${formType}`, `/compliance/${type}/new`)
+
+        if (type === 'd') {
+          return (
+            <Button key='d' type='text' disabled>
+              {form.name}
+            </Button>
+          )
+        }
 
         return (
           <Menu.Item key={form.name}>
