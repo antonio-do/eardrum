@@ -213,9 +213,9 @@ const EditESHRForm = () => {
             value={year}
             style={{width: 120}}
             onChange={onSelectChange}>
-            {Array.from({length: 100}).map((_, index) => (
-              <Option key={index} value={currentYear + index}>
-                {currentYear + index}
+            {Array.from({length: 3}).map((_, index) => (
+              <Option key={index} value={year + index - 1}>
+                {year + index - 1}
               </Option>
             ))}
           </Select>

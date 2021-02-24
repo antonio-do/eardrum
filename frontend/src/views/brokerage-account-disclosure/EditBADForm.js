@@ -1,14 +1,18 @@
+/* eslint-disable prefer-promise-reject-errors */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm, Radio} from 'antd'
+import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm, Radio, Form} from 'antd'
 import {MenuOutlined, PlusOutlined, EditOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
 import messages from '../../messages'
+import routes from '../../routes'
+import '../../styles/formA.css'
 
 const formA = messages.compliance.a
+const complianceRoutes = routes.compliance
 const formText = formA.text
 
 const dateFormat = 'DD/MM/YYYY'
@@ -20,11 +24,12 @@ const EditBADForm = () => {
   const [formData, setFormData] = useState([[]])
   const [isLoading, setIsLoading] = useState(false)
   const [submissionDate, setSubmissionDate] = useState()
-  const [radioOptionValue, setRadioOptionValue] = useState(false)
+  const [radioOptionValue, setRadioOptionValue] = useState()
   const history = useHistory()
   const {formId} = useParams()
   const {url} = useRouteMatch()
   const isOnViewPage = formId && url.includes('/view')
+  const [form] = Form.useForm()
 
   const addFormRow = () => {
     setFormData([...formData, {}])
@@ -49,19 +54,31 @@ const EditBADForm = () => {
     if (formId) {
       setIsLoading(true)
       axios
-        .get(`/api/compliance/${formId}/`)
+        .get(complianceRoutes.detailsURL(formId))
         .then(({data: {json_data}}) => {
           const {hasDisclosedAccounts, submissionDate, formData} = json_data
           setSubmissionDate(submissionDate)
 
           if (hasDisclosedAccounts) {
+            form.setFieldsValue({radioGroup: 2})
             setRadioOptionValue(2)
           } else {
             setRadioOptionValue(1)
+            form.setFieldsValue({radioGroup: 1})
           }
 
           if (Array.isArray(formData) && formData.length) {
-            const newFormData = !isOnViewPage ? [...formData, {}] : formData
+            const newFormData = [...formData]
+
+            newFormData.forEach((row, index) => {
+              Object.entries(row).forEach(([key, value]) => {
+                form.setFieldsValue({[`${key}-${index}`]: value})
+              })
+            })
+
+            if (!isOnViewPage) {
+              newFormData.push({})
+            }
 
             setFormData(newFormData)
           }
@@ -77,27 +94,15 @@ const EditBADForm = () => {
     }
   }, [formId])
 
-  const onSubmit = async () => {
-    if (!radioOptionValue) {
-      message.error('Please check one of the following option!')
-      return
-    }
-
-    if (!shouldAgree) {
-      message.error('Please check "I have read and understand..." to continue!')
-      return
-    }
-
+  const createForm = async () => {
     try {
-      const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
-      const newSubmissionDate = formId ? submissionDate : moment(new Date()).format(dateFormat)
-
+      await form.validateFields()
+      const newSubmissionDate = moment(new Date()).format(dateFormat)
       const {data} = await axios({
-        method: formId ? 'PATCH' : 'POST',
-        url,
+        method: 'POST',
+        url: complianceRoutes.list(),
         data: {
           typ: 'a',
-
           data:
             radioOptionValue === 1
               ? {hasDisclosedAccounts: false, submissionDate: newSubmissionDate, formData: []}
@@ -110,18 +115,51 @@ const EditBADForm = () => {
       })
 
       if (data.id) {
-        message.success('Brokerage Account Disclosure Form was submitted successfully!', 1)
+        message.success('Brokerage Account Disclosure Form was created successfully!', 1)
         history.push('/compliance')
       }
     } catch (error) {
       console.log(error)
-      message.error('Unexpected error encountered, please try again!')
+      if (error instanceof Error) {
+        message.error('Unexpected error encountered, please try again!')
+      }
+    }
+  }
+
+  const updateForm = async () => {
+    try {
+      await form.validateFields()
+      const {data} = await axios({
+        method: 'PATCH',
+        url: complianceRoutes.detailsURL(formId),
+        data: {
+          typ: 'a',
+          data:
+            radioOptionValue === 1
+              ? {hasDisclosedAccounts: false, submissionDate, formData: []}
+              : {
+                  hasDisclosedAccounts: true,
+                  submissionDate,
+                  formData: formData.filter((row) => row.firmName && row.accountName && row.accountNumber),
+                },
+        },
+      })
+
+      if (data.id) {
+        message.success('Brokerage Account Disclosure Form was updated successfully!', 1)
+        history.push('/compliance')
+      }
+    } catch (error) {
+      console.log(error)
+      if (error instanceof Error) {
+        message.error('Unexpected error encountered, please try again!')
+      }
     }
   }
 
   const onDelete = async () => {
     try {
-      const res = await axios.delete(`/api/compliance/${formId}/`)
+      const res = await axios.delete(complianceRoutes.detailsURL(formId))
 
       if (res.status === 204) {
         history.push('/compliance/a')
@@ -187,115 +225,164 @@ const EditBADForm = () => {
             })}
           </ul>
         </div>
-        <div>
-          <p>{formText.radioGroup.title}</p>
-          <Radio.Group disabled={isOnViewPage} onChange={onRadioValueChange} value={radioOptionValue}>
-            <Radio value={1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
-              {formText.radioGroup.option1}
-            </Radio>
-            <Radio value={2} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
-              {formText.radioGroup.option2.content}
-            </Radio>
-          </Radio.Group>
-          <br />
-          {formText.radioGroup.option2.note}
-        </div>
-        <div style={{marginTop: '16px'}}>
-          <Row>
-            {formText.formTitles.map((title) => {
-              return (
-                <Col span={8} key={title}>
-                  {title}
-                </Col>
-              )
-            })}
-          </Row>
-          <Row gutter={10}>
-            {formData.map((item, index) => {
-              return (
-                <React.Fragment key={index}>
-                  <Col span={isOnViewPage ? 24 : 22}>
-                    <Row>
-                      <Col span={8}>
-                        <Input
-                          disabled={radioOptionValue !== 2 || isOnViewPage}
-                          addonBefore={index + 1}
-                          value={item.firmName}
-                          onChange={onInputValueChange(index, 'firmName')}
-                        />
-                      </Col>
-                      <Col span={8}>
-                        <Input
-                          value={item.accountName}
-                          disabled={radioOptionValue !== 2 || isOnViewPage}
-                          onChange={onInputValueChange(index, 'accountName')}
-                        />
-                      </Col>
-                      <Col span={8}>
-                        <Input
-                          value={item.accountNumber}
-                          disabled={radioOptionValue !== 2 || isOnViewPage}
-                          onChange={onInputValueChange(index, 'accountNumber')}
-                        />
-                      </Col>
-                    </Row>
-                  </Col>
-                  {!isOnViewPage &&
-                    (index === 0 ? (
-                      <Col>
-                        <Button
-                          type='primary'
-                          icon={<PlusOutlined />}
-                          disabled={radioOptionValue !== 2}
-                          onClick={addFormRow}
-                        />
-                      </Col>
-                    ) : (
-                      <Col>
-                        <Button
-                          type='text'
-                          danger
-                          disabled={radioOptionValue !== 2}
-                          icon={<MinusOutlined />}
-                          onClick={deleteFormRow(index)}
-                        />
-                      </Col>
-                    ))}
-                </React.Fragment>
-              )
-            })}
-          </Row>
-        </div>
-        {!isOnViewPage && (
+        <Form layout='vertical' form={form}>
+          <div>
+            <Form.Item
+              style={{fontSize: '16px', margin: 0}}
+              name='radioGroup'
+              label={formText.radioGroup.title}
+              rules={[{required: true, message: 'Please check 1 option!'}]}>
+              <Radio.Group disabled={isOnViewPage} onChange={onRadioValueChange} value={radioOptionValue}>
+                <Radio value={1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
+                  {formText.radioGroup.option1}
+                </Radio>
+                <Radio value={2} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
+                  {formText.radioGroup.option2.content}
+                </Radio>
+              </Radio.Group>
+            </Form.Item>
+            <div>{formText.radioGroup.option2.note}</div>
+          </div>
           <div style={{marginTop: '16px'}}>
-            <Checkbox
-              style={{fontSize: '16px'}}
-              checked={shouldAgree}
-              onChange={(event) => setShouldAgree(event.target.checked)}>
-              {formText.agreeToPolicy}
-            </Checkbox>
-            <Row justify='end' gutter={10}>
-              <Col>
-                <Button type='primary' onClick={onSubmit}>
-                  Submit
-                </Button>
-              </Col>
-              {formId && (
-                <Col>
-                  <Popconfirm
-                    title='Are you sure to delete this form?'
-                    onConfirm={onDelete}
-                    okText='Yes'
-                    cancelText='No'>
-                    <Button type='link' danger>
-                      Delete
-                    </Button>
-                  </Popconfirm>
-                </Col>
-              )}
+            <Row style={{marginBottom: '10px'}}>
+              {formText.formTitles.map((title) => {
+                return (
+                  <Col span={8} key={title}>
+                    {title}
+                  </Col>
+                )
+              })}
+            </Row>
+            <Row gutter={10}>
+              {formData.map((item, index) => {
+                return (
+                  <React.Fragment key={index}>
+                    <Col span={isOnViewPage ? 24 : 22}>
+                      <Row className='hide-message'>
+                        <Col span={8}>
+                          <Form.Item
+                            name={`firmName-${index}`}
+                            style={{margin: 0}}
+                            rules={[{required: radioOptionValue === 2, message: ''}]}>
+                            <Input
+                              disabled={radioOptionValue !== 2 || isOnViewPage}
+                              addonBefore={index + 1}
+                              value={item.firmName}
+                              onChange={onInputValueChange(index, 'firmName')}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            name={`accountName-${index}`}
+                            style={{margin: 0}}
+                            rules={[{required: radioOptionValue === 2, message: ''}]}>
+                            <Input
+                              value={item.accountName}
+                              disabled={radioOptionValue !== 2 || isOnViewPage}
+                              onChange={onInputValueChange(index, 'accountName')}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            name={`accountNumber-${index}`}
+                            style={{margin: 0}}
+                            rules={[{required: radioOptionValue === 2, message: ''}]}>
+                            <Input
+                              value={item.accountNumber}
+                              disabled={radioOptionValue !== 2 || isOnViewPage}
+                              onChange={onInputValueChange(index, 'accountNumber')}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Col>
+                    {!isOnViewPage &&
+                      (index === 0 ? (
+                        <Col>
+                          <Button
+                            type='primary'
+                            icon={<PlusOutlined />}
+                            disabled={radioOptionValue !== 2}
+                            onClick={addFormRow}
+                          />
+                        </Col>
+                      ) : (
+                        <Col>
+                          <Button
+                            type='text'
+                            danger
+                            disabled={radioOptionValue !== 2}
+                            icon={<MinusOutlined />}
+                            onClick={deleteFormRow(index)}
+                          />
+                        </Col>
+                      ))}
+                  </React.Fragment>
+                )
+              })}
             </Row>
           </div>
-        )}
+          {!isOnViewPage && (
+            <div style={{marginTop: '16px'}}>
+              <Form.Item
+                name='policyCheckbox'
+                rules={[
+                  {message: 'Please check the checkbox to continute!'},
+                  {
+                    validator() {
+                      if (shouldAgree) {
+                        return Promise.resolve()
+                      }
+
+                      return Promise.reject('Please check the checkbox to continue!')
+                    },
+                  },
+                ]}>
+                <Checkbox
+                  style={{fontSize: '16px'}}
+                  checked={shouldAgree}
+                  onChange={(event) => setShouldAgree(event.target.checked)}>
+                  {formText.agreeToPolicy}
+                </Checkbox>
+              </Form.Item>
+
+              <Row justify='end' gutter={10}>
+                {formId ? (
+                  <>
+                    <Col>
+                      <Form.Item>
+                        <Button type='primary' onClick={updateForm}>
+                          Update
+                        </Button>
+                      </Form.Item>
+                    </Col>
+                    <Col>
+                      <Popconfirm
+                        title='Are you sure to delete this form?'
+                        onConfirm={onDelete}
+                        okText='Yes'
+                        cancelText='No'>
+                        <Button type='link' danger>
+                          Delete
+                        </Button>
+                      </Popconfirm>
+                    </Col>
+                  </>
+                ) : (
+                  <Col>
+                    <Form.Item>
+                      <Button type='primary' onClick={createForm}>
+                        Submit
+                      </Button>
+                    </Form.Item>
+                  </Col>
+                )}
+              </Row>
+            </div>
+          )}
+        </Form>
       </div>
     </Spin>
   )
