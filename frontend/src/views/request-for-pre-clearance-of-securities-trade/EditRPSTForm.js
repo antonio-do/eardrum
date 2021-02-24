@@ -1,7 +1,20 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {Breadcrumb, Button, Input, Spin, Table, DatePicker, Row, Col, message, Popconfirm} from 'antd'
+import {
+  InputNumber,
+  Breadcrumb,
+  Button,
+  Select,
+  Input,
+  Spin,
+  Table,
+  DatePicker,
+  Row,
+  Col,
+  message,
+  Popconfirm,
+} from 'antd'
 import {MenuOutlined, EditOutlined, PlusOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
@@ -18,21 +31,23 @@ const defaultData = Array.from({length: 3}).map((_, index) => {
     date: moment(new Date()).format(dateFormat),
     securityName: '',
     account: '',
-    SHRSOrder: '',
-    approxPrice: '',
+    SHRSOrder: 0,
+    approxPrice: 0,
     symbolOrCusipOrder: '',
-    purchaseSale: '',
+    purchaseSale: 'PURCHASE',
   }
 })
 
+const {Option} = Select
+
 const EditRPSTForm = () => {
-  const [tableData, setTableData] = useState(defaultData)
   const [isLoading, setIsLoading] = useState(false)
   const {formId} = useParams()
   const history = useHistory()
   const {url} = useRouteMatch()
   const [submissionDate, setSubmissionDate] = useState()
   const isOnViewPage = formId && url.includes('/view')
+  const [tableData, setTableData] = useState(!formId && !isOnViewPage ? defaultData : [])
 
   useEffect(() => {
     if (formId) {
@@ -44,7 +59,22 @@ const EditRPSTForm = () => {
           setSubmissionDate(submissionDate)
 
           if (Array.isArray(formData) && formData.length) {
-            setTableData(formData)
+            const newFormData = [...formData]
+
+            if (!isOnViewPage) {
+              newFormData.push({
+                id: formData.length + 1,
+                date: moment(new Date()).format(dateFormat),
+                securityName: '',
+                account: '',
+                SHRSOrder: 0,
+                approxPrice: 0,
+                symbolOrCusipOrder: '',
+                purchaseSale: 'PURCHASE',
+              })
+            }
+
+            setTableData(newFormData)
           }
 
           setIsLoading(false)
@@ -71,10 +101,10 @@ const EditRPSTForm = () => {
         date: moment(new Date()).format(dateFormat),
         securityName: '',
         account: '',
-        SHRSOrder: '',
-        approxPrice: '',
+        SHRSOrder: 0,
+        approxPrice: 0,
         symbolOrCusipOrder: '',
-        purchaseSale: '',
+        purchaseSale: 'PURCHASE',
       },
     ])
   }
@@ -83,9 +113,9 @@ const EditRPSTForm = () => {
     setTableData(tableData.filter((_, index) => index !== arrIndex))
   }
 
-  const onInputValueChange = (arrIndex, key) => (event) => {
+  const updateStateValue = (arrIndex, key, value) => {
     const newTableData = [...tableData]
-    const newItem = {...tableData[arrIndex], [key]: event.target.value}
+    const newItem = {...tableData[arrIndex], [key]: value}
     newTableData[arrIndex] = newItem
     setTableData(newTableData)
   }
@@ -95,6 +125,7 @@ const EditRPSTForm = () => {
       const formData = tableData.filter((row) => {
         const rowClone = {...row}
         delete rowClone.date
+        delete rowClone.purchaseSale
         delete rowClone.id
         return !Object.values(rowClone).every((val) => !val)
       })
@@ -113,7 +144,7 @@ const EditRPSTForm = () => {
 
       if (data.id) {
         message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1)
-        history.push('/compliance')
+        history.push('/compliance/d')
       }
     } catch (error) {
       console.log(error)
@@ -126,7 +157,7 @@ const EditRPSTForm = () => {
       const res = await axios.delete(`/api/compliance/${formId}/`)
 
       if (res.status === 204) {
-        history.push('/compliance')
+        history.push('/compliance/d')
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {
@@ -158,7 +189,12 @@ const EditRPSTForm = () => {
       ...(!isOnViewPage && {
         width: '12%',
         render: (text, record, index) => {
-          return <Input value={tableData[index].securityName} onChange={onInputValueChange(index, 'securityName')} />
+          return (
+            <Input
+              value={tableData[index].securityName}
+              onChange={(event) => updateStateValue(index, 'securityName', event.target.value)}
+            />
+          )
         },
       }),
     },
@@ -168,7 +204,12 @@ const EditRPSTForm = () => {
       ...(!isOnViewPage && {
         width: '14%',
         render: (text, record, index) => {
-          return <Input value={tableData[index].account} onChange={onInputValueChange(index, 'account')} />
+          return (
+            <Input
+              value={tableData[index].account}
+              onChange={(event) => updateStateValue(index, 'account', event.target.value)}
+            />
+          )
         },
       }),
     },
@@ -178,7 +219,13 @@ const EditRPSTForm = () => {
       ...(!isOnViewPage && {
         width: '14%',
         render: (text, record, index) => {
-          return <Input value={tableData[index].SHRSOrder} onChange={onInputValueChange(index, 'SHRSOrder')} />
+          return (
+            <InputNumber
+              min={0}
+              value={tableData[index].SHRSOrder}
+              onChange={(value) => updateStateValue(index, 'SHRSOrder', value)}
+            />
+          )
         },
       }),
     },
@@ -188,7 +235,13 @@ const EditRPSTForm = () => {
       ...(!isOnViewPage && {
         width: '12%',
         render: (text, record, index) => {
-          return <Input value={tableData[index].approxPrice} onChange={onInputValueChange(index, 'approxPrice')} />
+          return (
+            <InputNumber
+              min={0}
+              value={tableData[index].approxPrice}
+              onChange={(value) => updateStateValue(index, 'approxPrice', value)}
+            />
+          )
         },
       }),
     },
@@ -201,7 +254,7 @@ const EditRPSTForm = () => {
           return (
             <Input
               value={tableData[index].symbolOrCusipOrder}
-              onChange={onInputValueChange(index, 'symbolOrCusipOrder')}
+              onChange={(event) => updateStateValue(index, 'symbolOrCusipOrder', event.target.value)}
             />
           )
         },
@@ -211,9 +264,16 @@ const EditRPSTForm = () => {
       title: 'PURCHASE(P) SALE(S)',
       dataIndex: 'purchaseSale',
       ...(!isOnViewPage && {
-        width: '20%',
+        width: '10%',
         render: (text, record, index) => {
-          return <Input value={tableData[index].purchaseSale} onChange={onInputValueChange(index, 'purchaseSale')} />
+          return (
+            <Select
+              value={tableData[index].purchaseSale}
+              onChange={(value) => updateStateValue(index, 'purchaseSale', value)}>
+              <Option value='PURCHASE'>PURCHASE</Option>
+              <Option value='SALE'>SALE</Option>
+            </Select>
+          )
         },
       }),
     },

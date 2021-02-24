@@ -52,7 +52,13 @@ const EditEQTRForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const {url} = useRouteMatch()
   const isOnViewPage = formId && url.includes('/view')
-  const [checkboxGroup, setCheckboxGroup] = useState(() => !isOnViewPage && Array.from({length: 4}).fill(true))
+  const [confirmationStatements1, setConfirmationStatements1] = useState(
+    () => !isOnViewPage && Array.from({length: 4}).fill(true)
+  )
+
+  const [confirmationStatements2, setConfirmationStatements2] = useState(
+    () => !isOnViewPage && Array.from({length: 8}).fill(true)
+  )
 
   useEffect(() => {
     if (formId) {
@@ -60,12 +66,13 @@ const EditEQTRForm = () => {
       axios
         .get(`/api/compliance/${formId}/`)
         .then(({data: {json_data}}) => {
-          const {quarter, year, radioValue, checkboxGroup, formData} = json_data
+          const {quarter, year, radioValue, confirmationStatements1, confirmationStatements2, formData} = json_data
 
           setQuarter(quarter)
           setYear(year)
           setRadioValue(radioValue)
-          setCheckboxGroup(checkboxGroup)
+          setConfirmationStatements1(confirmationStatements1)
+          setConfirmationStatements2(confirmationStatements2)
 
           if (Array.isArray(formData) && formData.length) {
             const newFormData = !isOnViewPage
@@ -94,10 +101,16 @@ const EditEQTRForm = () => {
     }
   }, [formId])
 
-  const onCheckboxGroupChange = (arrIndex) => (event) => {
-    const newCheckboxGroup = [...checkboxGroup]
-    newCheckboxGroup[arrIndex] = event.target.checked
-    setCheckboxGroup(newCheckboxGroup)
+  const onConfirmationStatements1Change = (arrIndex) => (event) => {
+    const newConfirmationStatements1 = [...confirmationStatements1]
+    newConfirmationStatements1[arrIndex] = event.target.checked
+    setConfirmationStatements1(newConfirmationStatements1)
+  }
+
+  const onConfirmationStatements2Change = (arrIndex) => (event) => {
+    const newConfirmationStatements2 = [...confirmationStatements2]
+    newConfirmationStatements2[arrIndex] = event.target.checked
+    setConfirmationStatements2(newConfirmationStatements2)
   }
 
   const updateStateValue = (arrIndex, key, value) => {
@@ -253,14 +266,14 @@ const EditEQTRForm = () => {
           typ: 'c',
           data:
             radioValue !== 3
-              ? {quarter, year, radioValue, checkboxGroup, formData: []}
-              : {quarter, year, radioValue, checkboxGroup, formData: validRows},
+              ? {quarter, year, radioValue, confirmationStatements1, confirmationStatements2, formData: []}
+              : {quarter, year, radioValue, confirmationStatements1, confirmationStatements2, formData: validRows},
         },
       })
 
       if (data.id) {
-        message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1)
-        history.push('/compliance')
+        history.push('/compliance/c')
+        message.success('Employee Quarterly Trade Report was submitted successfully!', 1)
       }
     } catch (error) {
       console.log(error)
@@ -273,7 +286,7 @@ const EditEQTRForm = () => {
       const res = await axios.delete(`/api/compliance/${formId}/`)
 
       if (res.status === 204) {
-        history.push('/compliance')
+        history.push('/compliance/c')
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {
@@ -377,6 +390,7 @@ const EditEQTRForm = () => {
             </div>
           </div>
         </div>
+
         <div
           style={{
             marginTop: '10px',
@@ -393,15 +407,47 @@ const EditEQTRForm = () => {
             return (
               <React.Fragment key={index}>
                 <Checkbox
-                  checked={checkboxGroup[index]}
+                  checked={confirmationStatements1[index]}
                   disabled={isOnViewPage}
-                  onChange={onCheckboxGroupChange(index)}>
+                  onChange={onConfirmationStatements1Change(index)}>
                   {value}
                 </Checkbox>
                 <br />
               </React.Fragment>
             )
           })}
+        </div>
+
+        <div
+          style={{
+            marginTop: '10px',
+            padding: '6px',
+            paddingTop: 0,
+            border: '1px solid transparent',
+            borderColor: 'inherit',
+            borderTop: 'none',
+          }}>
+          <Divider style={{position: 'relative', marginBottom: '0px', top: '-12px'}} orientation='left'>
+            {formText.box3.title}
+          </Divider>
+
+          {formText.box3.checkboxGroupTitles.map((value, index) => {
+            return (
+              <React.Fragment key={index}>
+                <Checkbox
+                  checked={confirmationStatements2[index]}
+                  disabled={isOnViewPage}
+                  onChange={onConfirmationStatements2Change(index)}>
+                  {value}
+                </Checkbox>
+                <br />
+              </React.Fragment>
+            )
+          })}
+        </div>
+
+        <div style={{marginTop: '10px'}}>
+          <strong>{formText.confirm}</strong>
         </div>
 
         {!isOnViewPage && (

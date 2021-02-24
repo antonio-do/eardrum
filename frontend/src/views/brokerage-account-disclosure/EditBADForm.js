@@ -124,7 +124,7 @@ const EditBADForm = () => {
       const res = await axios.delete(`/api/compliance/${formId}/`)
 
       if (res.status === 204) {
-        history.push('/compliance')
+        history.push('/compliance/a')
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {

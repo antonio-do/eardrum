@@ -138,7 +138,7 @@ const EditESHRForm = () => {
 
       if (data.id) {
         message.success('Employee Securities Holdings Report was submitted successfully!', 1)
-        history.push('/compliance')
+        history.push('/compliance/b')
       }
     } catch (error) {
       console.log(error)
@@ -151,7 +151,7 @@ const EditESHRForm = () => {
       const res = await axios.delete(`/api/compliance/${formId}/`)
 
       if (res.status === 204) {
-        history.push('/compliance')
+        history.push('/compliance/b')
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {

@@ -73,6 +73,20 @@ const messages = {
             'My personal deadling activities do not breach any relevant holding or blackout period by the Manual',
           ],
         },
+        box3: {
+          title: 'Furthermore, I hereby confirm that:',
+          checkboxGroupTitles: [
+            'I have not been engaged in and will do everything in my power to abstain from engaging in the prohibited market practices set out in this Manual',
+            'I do not possess or have access to relevant material non-public and price sensitive information when dealing on behalf of my personal account, or that of the Company or its clients',
+            'I am aware of the rules and standards set out in the DTL Compliance Manual, and I am and will be fully compliant with these rules and standards',
+            'I agree to bring to the attention of the CCO any change in circumstances that could or would render this statement false',
+            'I agree to appropriately file Form F1A if required according to the circumstances',
+            'I understand that failure to comply with the Rules may result in disciplinary action and possible dismissal',
+            'I understand that violation of the rules may also lead to civil or criminal penalties under the applicable laws and regulations',
+            'The CCO has the power to recommend the relevant trade to be reversed and if there is any financial gain, it will be donated to a charity of DTL choice',
+          ],
+        },
+        confirm: 'I declare that all information given in this form is true and correct.',
       },
     },
     d: {
