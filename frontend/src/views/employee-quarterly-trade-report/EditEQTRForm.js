@@ -48,12 +48,6 @@ const defaultData = Array.from({length: 2}).map((_, index) => {
 
 const checkboxGroup1Options = formText.box2.checkboxGroupTitles.map((name, index) => ({label: name, value: index}))
 const checkboxGroup2Options = formText.box3.checkboxGroupTitles.map((name, index) => ({label: name, value: index}))
-const defaultCheckboxGroup1Values = Array.from({length: formText.box2.checkboxGroupTitles.length}).map(
-  (_, index) => index
-)
-const defaultCheckboxGroup2Values = Array.from({length: formText.box3.checkboxGroupTitles.length}).map(
-  (_, index) => index
-)
 
 const EditEQTRForm = () => {
   const currentYear = new Date().getFullYear()
@@ -65,8 +59,6 @@ const EditEQTRForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const {url} = useRouteMatch()
   const isOnViewPage = formId && url.includes('/view')
-  const [confirmationStatements1, setConfirmationStatements1] = useState(defaultCheckboxGroup1Values)
-  const [confirmationStatements2, setConfirmationStatements2] = useState(defaultCheckboxGroup2Values)
   const [tableData, setTableData] = useState(!formId || !isOnViewPage ? defaultData : [])
   const [form] = Form.useForm()
 
@@ -76,21 +68,10 @@ const EditEQTRForm = () => {
       axios
         .get(`/api/compliance/${formId}/`)
         .then(({data: {json_data}}) => {
-          const {quarter, year, radioValue, confirmationStatements1, confirmationStatements2, formData} = json_data
+          const {quarter, year, radioValue, formData} = json_data
 
           setQuarter(quarter)
           setYear(year)
-
-          setConfirmationStatements1(confirmationStatements1)
-          form.setFieldsValue({
-            checkboxGroup1: confirmationStatements1,
-          })
-
-          setConfirmationStatements2(confirmationStatements2)
-          form.setFieldsValue({
-            checkboxGroup2: confirmationStatements2,
-          })
-
           setRadioValue(radioValue)
           form.setFieldsValue({radioGroup: radioValue})
 
@@ -116,13 +97,6 @@ const EditEQTRForm = () => {
           console.log(err)
           message.error('Error getting form, please try again!')
         })
-    } else {
-      form.setFieldsValue({
-        checkboxGroup1: defaultCheckboxGroup1Values,
-      })
-      form.setFieldsValue({
-        checkboxGroup2: defaultCheckboxGroup2Values,
-      })
     }
   }, [formId])
 
@@ -275,8 +249,8 @@ const EditEQTRForm = () => {
           typ: 'c',
           data:
             radioValue !== 3
-              ? {quarter, year, radioValue, confirmationStatements1, confirmationStatements2, formData: []}
-              : {quarter, year, radioValue, confirmationStatements1, confirmationStatements2, formData: tableData},
+              ? {quarter, year, radioValue, formData: []}
+              : {quarter, year, radioValue, formData: tableData},
         },
       })
 
@@ -302,8 +276,8 @@ const EditEQTRForm = () => {
           typ: 'c',
           data:
             radioValue !== 3
-              ? {quarter, year, radioValue, confirmationStatements1, confirmationStatements2, formData: []}
-              : {quarter, year, radioValue, confirmationStatements1, confirmationStatements2, formData: tableData},
+              ? {quarter, year, radioValue, formData: []}
+              : {quarter, year, radioValue, formData: tableData},
         },
       })
 
@@ -378,7 +352,13 @@ const EditEQTRForm = () => {
           </Row>
         )}
 
-        <Form layout='vertical' form={form}>
+        <Form
+          layout='vertical'
+          form={form}
+          initialValues={{
+            checkboxGroup1: Array.from({length: formText.box2.checkboxGroupTitles.length}).map((_, index) => index),
+            checkboxGroup2: Array.from({length: formText.box3.checkboxGroupTitles.length}).map((_, index) => index),
+          }}>
           <div>
             {formText.title}{' '}
             <span>
@@ -457,22 +437,16 @@ const EditEQTRForm = () => {
             <Form.Item
               name='checkboxGroup1'
               rules={[
-                {
+                ({getFieldValue}) => ({
                   validator() {
-                    if (confirmationStatements1.length === formText.box2.checkboxGroupTitles.length) {
+                    if (getFieldValue('checkboxGroup1').length === formText.box2.checkboxGroupTitles.length) {
                       return Promise.resolve()
                     }
-
                     return Promise.reject('Please check all the checkboxes to continue!')
                   },
-                },
+                }),
               ]}>
-              <Checkbox.Group
-                disabled={isOnViewPage}
-                options={checkboxGroup1Options}
-                value={confirmationStatements1}
-                onChange={(checkedList) => setConfirmationStatements1(checkedList)}
-              />
+              <Checkbox.Group disabled={isOnViewPage} options={checkboxGroup1Options} />
             </Form.Item>
           </div>
 
@@ -492,22 +466,16 @@ const EditEQTRForm = () => {
             <Form.Item
               name='checkboxGroup2'
               rules={[
-                {
+                ({getFieldValue}) => ({
                   validator() {
-                    if (confirmationStatements2.length === formText.box3.checkboxGroupTitles.length) {
+                    if (getFieldValue('checkboxGroup2').length === formText.box3.checkboxGroupTitles.length) {
                       return Promise.resolve()
                     }
-
                     return Promise.reject('Please check all the checkboxes to continue!')
                   },
-                },
+                }),
               ]}>
-              <Checkbox.Group
-                disabled={isOnViewPage}
-                options={checkboxGroup2Options}
-                value={confirmationStatements2}
-                onChange={(checkedList) => setConfirmationStatements2(checkedList)}
-              />
+              <Checkbox.Group disabled={isOnViewPage} options={checkboxGroup2Options} />
             </Form.Item>
           </div>
           <div style={{marginTop: '10px'}}>
