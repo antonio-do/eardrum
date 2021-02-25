@@ -311,9 +311,11 @@ const ComplianceApp = () => {
 
         if (type === 'd') {
           return (
-            <Button key='d' type='text' disabled>
-              {form.name}
-            </Button>
+            <Menu.Item key={form.name}>
+              <Button type='text' disabled style={{padding: 0, height: 'auto'}}>
+                {form.name}
+              </Button>
+            </Menu.Item>
           )
         }
 

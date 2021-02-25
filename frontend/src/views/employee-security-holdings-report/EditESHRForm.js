@@ -1,12 +1,14 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {Breadcrumb, Spin, Select, Button, List, message, Upload, Row, Col, Popconfirm, Radio} from 'antd'
+import {Breadcrumb, Spin, Select, Button, Form, List, message, Upload, Row, Col, Popconfirm, Radio} from 'antd'
 import {MenuOutlined, UploadOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import messages from '../../messages'
+import routes from '../../routes'
 
+const complianceRoutes = routes.compliance
 const formB = messages.compliance.b
 const formText = formB.text
 
@@ -22,6 +24,8 @@ const EditESHRForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const {url} = useRouteMatch()
   const isOnViewPage = formId && url.includes('/view')
+  const [form] = Form.useForm()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const dataUrlToFile = async (dataUrl, fileName, type) => {
     try {
@@ -38,14 +42,16 @@ const EditESHRForm = () => {
     if (formId) {
       setIsLoading(true)
       axios
-        .get(`/api/compliance/${formId}/`)
+        .get(complianceRoutes.detailsURL(formId))
         .then(async ({data: {json_data}}) => {
           const {hasReportableAccounts, year, files} = json_data
 
           if (hasReportableAccounts) {
             setRadioOptionValue(2)
+            form.setFieldsValue({radioGroup: 2})
           } else {
             setRadioOptionValue(1)
+            form.setFieldsValue({radioGroup: 1})
           }
           setYear(year)
 
@@ -105,28 +111,28 @@ const EditESHRForm = () => {
     setRadioOptionValue(event.target.value)
   }
 
-  const onSubmit = async () => {
-    if (!radioOptionValue) {
-      message.error('Please check one of the following options!')
-      return
+  const getFiles = async () => {
+    const files = []
+    for (const file of fileList) {
+      let {content} = file
+      if ('originFileObj' in file) {
+        content = await fileToBase64(file.originFileObj)
+      }
+      files.push({name: file.name, type: file.type, content})
     }
 
+    return files
+  }
+
+  const createForm = async () => {
     try {
-      const files = []
+      await form.validateFields()
+      setIsSubmitting(true)
 
-      for (const file of fileList) {
-        let {content} = file
-        if ('originFileObj' in file) {
-          content = await fileToBase64(file.originFileObj)
-        }
-        files.push({name: file.name, type: file.type, content})
-      }
-
-      const url = formId ? `/api/compliance/${formId}/` : '/api/compliance/'
-
+      const files = await getFiles()
       const {data} = await axios({
-        method: formId ? 'PATCH' : 'POST',
-        url,
+        method: 'POST',
+        url: complianceRoutes.list(),
         data: {
           typ: 'b',
           data:
@@ -137,18 +143,54 @@ const EditESHRForm = () => {
       })
 
       if (data.id) {
-        message.success('Employee Securities Holdings Report was submitted successfully!', 1)
+        setIsSubmitting(false)
+        message.success('Employee Securities Holdings Report was created successfully!', 1)
         history.push('/compliance/b')
       }
     } catch (error) {
+      setIsSubmitting(false)
       console.log(error)
-      message.error('Unexpected error encountered, please try again!')
+      if (error instanceof Error) {
+        message.error('Unexpected error encountered, please try again!')
+      }
+    }
+  }
+
+  const updateForm = async () => {
+    try {
+      await form.validateFields()
+      setIsSubmitting(true)
+
+      const files = await getFiles()
+      const {data} = await axios({
+        method: 'PATCH',
+        url: complianceRoutes.detailsURL(formId),
+        data: {
+          typ: 'b',
+          data:
+            radioOptionValue === 1
+              ? {hasReportableAccounts: false, year, files: []}
+              : {hasReportableAccounts: true, year, files},
+        },
+      })
+
+      if (data.id) {
+        setIsSubmitting(false)
+        message.success('Employee Securities Holdings Report was updated successfully!', 1)
+        history.push('/compliance/b')
+      }
+    } catch (error) {
+      setIsSubmitting(false)
+      console.log(error)
+      if (error instanceof Error) {
+        message.error('Unexpected error encountered, please try again!')
+      }
     }
   }
 
   const onDelete = async () => {
     try {
-      const res = await axios.delete(`/api/compliance/${formId}/`)
+      const res = await axios.delete(complianceRoutes.detailsURL(formId))
 
       if (res.status === 204) {
         history.push('/compliance/b')
@@ -156,7 +198,9 @@ const EditESHRForm = () => {
       }
     } catch (error) {
       console.log(error)
-      message.error('Unexpected error encountered, please try again!')
+      if (error instanceof Error) {
+        message.error('Unexpected error encountered, please try again!')
+      }
     }
   }
 
@@ -205,32 +249,44 @@ const EditESHRForm = () => {
           </Row>
         )}
 
-        <div>
-          {formText.yearSelectTitle}{' '}
-          <Select
-            defaultValue={currentYear}
-            disabled={isOnViewPage}
-            value={year}
-            style={{width: 120}}
-            onChange={onSelectChange}>
-            {Array.from({length: 3}).map((_, index) => (
-              <Option key={index} value={year + index - 1}>
-                {year + index - 1}
-              </Option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <div>{formText.radioGroup.title}</div>
-          <Radio.Group disabled={isOnViewPage} onChange={onRadioValueChange} value={radioOptionValue}>
-            <Radio value={1} style={{whiteSpace: 'break-spaces', display: 'block', fontSize: '16px'}}>
-              {formText.radioGroup.option1}
-            </Radio>
-            <Radio value={2} style={{whiteSpace: 'break-spaces', display: 'block', fontSize: '16px'}}>
-              {formText.radioGroup.option2.content}
-            </Radio>
-          </Radio.Group>
-        </div>
+        <Form layout='vertical' form={form}>
+          <div>
+            {formText.yearSelectTitle}{' '}
+            <Select
+              defaultValue={currentYear}
+              disabled={isOnViewPage}
+              value={year}
+              style={{width: 120}}
+              onChange={onSelectChange}>
+              {Array.from({length: 3}).map((_, index) => (
+                <Option key={index} value={year + index - 1}>
+                  {year + index - 1}
+                </Option>
+              ))}
+            </Select>
+          </div>
+          <div style={{marginTop: '10px'}}>
+            <Form.Item
+              name='radioGroup'
+              label={formText.radioGroup.title}
+              style={{margin: 0, fontSize: '16px'}}
+              rules={[
+                {
+                  required: true,
+                  message: 'Please choose 1 option!',
+                },
+              ]}>
+              <Radio.Group disabled={isOnViewPage} onChange={onRadioValueChange} value={radioOptionValue}>
+                <Radio value={1} style={{whiteSpace: 'break-spaces', display: 'block', fontSize: '16px'}}>
+                  {formText.radioGroup.option1}
+                </Radio>
+                <Radio value={2} style={{whiteSpace: 'break-spaces', display: 'block', fontSize: '16px'}}>
+                  {formText.radioGroup.option2.content}
+                </Radio>
+              </Radio.Group>
+            </Form.Item>
+          </div>
+        </Form>
         <div>
           {isOnViewPage ? (
             <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
@@ -260,7 +316,9 @@ const EditESHRForm = () => {
                     onChange={onFileChange}
                     beforeUpload={() => false}
                     multiple>
-                    <Button icon={<UploadOutlined />}>Attach file(s)</Button>
+                    <Button disabled={radioOptionValue !== 2} icon={<UploadOutlined />}>
+                      Attach file(s)
+                    </Button>
                   </Upload>
                 )}
               </div>
@@ -270,18 +328,30 @@ const EditESHRForm = () => {
         </div>
         {!isOnViewPage && (
           <Row gutter={10} style={{marginTop: '10px'}}>
-            <Col>
-              <Button type='primary' onClick={onSubmit}>
-                Submit
-              </Button>
-            </Col>
-            {formId && (
-              <Col>
-                <Popconfirm title='Are you sure to delete this form?' onConfirm={onDelete} okText='Yes' cancelText='No'>
-                  <Button type='link' danger>
-                    Delete
+            {formId ? (
+              <>
+                <Col>
+                  <Button type='primary' onClick={updateForm} loading={isSubmitting}>
+                    Update
                   </Button>
-                </Popconfirm>
+                </Col>
+                <Col>
+                  <Popconfirm
+                    title='Are you sure to delete this form?'
+                    onConfirm={onDelete}
+                    okText='Yes'
+                    cancelText='No'>
+                    <Button type='link' danger>
+                      Delete
+                    </Button>
+                  </Popconfirm>
+                </Col>
+              </>
+            ) : (
+              <Col>
+                <Button type='primary' onClick={createForm} loading={isSubmitting}>
+                  Submit
+                </Button>
               </Col>
             )}
           </Row>

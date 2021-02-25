@@ -147,7 +147,7 @@ const EditBADForm = () => {
 
       if (data.id) {
         message.success('Brokerage Account Disclosure Form was updated successfully!', 1)
-        history.push('/compliance')
+        history.push('/compliance/a')
       }
     } catch (error) {
       console.log(error)
@@ -329,7 +329,6 @@ const EditBADForm = () => {
               <Form.Item
                 name='policyCheckbox'
                 rules={[
-                  {message: 'Please check the checkbox to continute!'},
                   {
                     validator() {
                       if (shouldAgree) {

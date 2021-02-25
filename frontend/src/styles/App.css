@@ -4,3 +4,7 @@
   z-index: 2000;
   margin-top: 60px;
 }
+
+.ant-form-item-label > label {
+  font-size: 16px;
+}

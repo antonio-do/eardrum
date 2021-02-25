@@ -47,7 +47,7 @@ const EditRPSTForm = () => {
   const {url} = useRouteMatch()
   const [submissionDate, setSubmissionDate] = useState()
   const isOnViewPage = formId && url.includes('/view')
-  const [tableData, setTableData] = useState(!formId && !isOnViewPage ? defaultData : [])
+  const [tableData, setTableData] = useState(!formId || !isOnViewPage ? defaultData : [])
 
   useEffect(() => {
     if (formId) {
@@ -58,7 +58,7 @@ const EditRPSTForm = () => {
           const {submissionDate, formData} = json_data
           setSubmissionDate(submissionDate)
 
-          if (Array.isArray(formData) && formData.length) {
+          if (Array.isArray(formData)) {
             const newFormData = [...formData]
 
             if (!isOnViewPage) {
