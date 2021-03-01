@@ -26,11 +26,16 @@ import RequestDetails from './views/RequestDetails';
 import OKRList from './views/OKRList';
 import OKRDetail from './views/OKRDetail';
 
+import ComplianceApp from './compliance';
+import FormAEdit from './compliance/FormAEdit';
+
 import { signOut, getCurrentUser, accountFetchAll, } from './actions/index';
 import { configFetchGradeOptions } from './actions';
 
 import WithLongPolling from './core/WithLongPolling';
 import Notifier from './core/Notifier';
+
+import 'antd/dist/antd.css';
 
 
 const styles = theme => ({
@@ -194,6 +199,7 @@ class App extends Component {
                       <LinkTab label="Home" to="/" value='home' />
                       <LinkTab label="OKR" to="/okrs" value='okrs'/>
                       <LinkTab label="Other" to='/other' value='other'/>
+                      <LinkTab label="compliance" to='/compliance' value='compliance' />
                     </Tabs>
                     <Button to='/' color="primary" variant="outlined" component={ Link } onClick={ this.onSignOut }>Sign Out</Button>
                   </React.Fragment>
@@ -210,6 +216,10 @@ class App extends Component {
               <PrivateRoute exact={ true } path="/okrs/:okrId" component={ OKRDetail } />
               <PrivateRoute exact={ true } path="/okrs" component={ OKRList } />
               <PrivateRoute path="/requests/:requestId/details" component={ RequestDetails } />
+              <PrivateRoute path="/compliance" component={ ComplianceApp } />
+              <PrivateRoute path="/compliance/a/:action" component={ FormAEdit } />
+              <PrivateRoute path="/compliance/a/:id/:action" component={ FormAEdit } />
+              <PrivateRoute path="/compliance/:typ" component={ ComplianceApp } />
             </Switch>
           </main>
 
