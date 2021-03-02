@@ -78,6 +78,13 @@ const EditableTable = ({ dataSource, setData, initColumns }) => {
     }
   };
 
+  const del = (key) => {
+    const newData = [...dataSource];
+    const index = newData.findIndex((item) => key === item.key);
+    newData.splice(index, 1);
+    setData(newData);
+  }
+
   const columns = [
     ...initColumns,
     {
@@ -87,23 +94,21 @@ const EditableTable = ({ dataSource, setData, initColumns }) => {
         const editable = isEditing(record);
         return editable ? (
           <span>
-            <a
-              href="#"
-              onClick={() => save(record.key)}
-              style={{
-                marginRight: 8,
-              }}
-            >
-              Save
-            </a>
+            <Button onClick={() => save(record.key)}>Save</Button>
             <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <a>Cancel</a>
+              <Button>Cancel</Button>
             </Popconfirm>
           </span>
         ) : (
-          <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
-            Edit
-          </Typography.Link>
+          <span>
+            <Button disabled={editingKey !== ''} onClick={() => edit(record)}>
+              Edit
+            </Button>
+            <Popconfirm title="Are you sure?" onConfirm={ () => del(record.key) }>
+              <Button disabled={ editingKey !== ''}>Delete</Button>
+            </Popconfirm>
+          </span>
+
         );
       },
     },

@@ -5,17 +5,21 @@ import axios from 'axios';
 import routes from './routes';
 
 
-function FormA(data) {
-  this.optionValue = data.json_data.optionValue || null;
-  this.accounts = data.json_data.accounts || [];
+function FormA(optionValue, accounts) {
+  this.optionValue = optionValue || null;
+  this.accounts = accounts || [];
 
   return this;
+}
+
+function newFormA() {
+  return new FormA(null, []);
 }
 
 function dataFactory(data, formType) {
   switch(formType) {
     case 'a':
-      return new FormA(data);
+      return data === null? newFormA(): new FormA(data.json_data.optionValue, data.json_data.accounts);
     case 'b':
       return {};
   } 
@@ -40,7 +44,7 @@ function useFetchOne(pk, formType) {
 
   useEffect(() => {
     if (pk === null || pk === undefined) {
-      setData(dataFactory({}, formType));
+      setData(dataFactory(null, formType));
     } else {
       awaitAndSet(axios.get(routes.api.detailsURL(pk)));
     }

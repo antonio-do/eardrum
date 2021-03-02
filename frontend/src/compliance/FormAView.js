@@ -36,7 +36,7 @@ const FormAView = function() {
   }
 
   let dataSource = data.accounts.map((account, idx) => {
-    const ret = { no: idx + 1 };
+    const ret = { key: idx };
     for(let i = 0; i < account.length; i++) {
       ret[i] = account[i];
     }
@@ -48,7 +48,6 @@ const FormAView = function() {
     dataIndex: idx,
     key: `${idx}`,
   }));
-  columns = [{ title: <b>.No</b>, dataIndex: 'no', key: 'no'}, ...columns];
 
   return (
     <div style={ {marginTop: '100px'}}>
