@@ -51,7 +51,7 @@ const FormAList = ({onRowDelete, isLoading, data}) => {
         return (
           <Space size='middle'>
             <Link to={ routes.formA.edit.url(record.id) }>Edit</Link>
-              <Popconfirm onConfirm={ onRowDelete }>
+              <Popconfirm onConfirm={ onRowDelete } title="Are you sure?">
                 <Button type='link' danger>Delete</Button>
               </Popconfirm>
           </Space>

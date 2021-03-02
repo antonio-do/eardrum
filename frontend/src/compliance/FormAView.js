@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import {
   Radio,
-  Form,
   message,
   Spin,
   Table,
@@ -53,23 +52,21 @@ const FormAView = function() {
 
   return (
     <div style={ {marginTop: '100px'}}>
-      <Form>
-        <p>{ formText.overview }</p>
-        <p>{ formText.non_required_title }</p>
-        <ol>
-          { formText.non_required_items.map( non_required_account => (<li><p>{ non_required_account }</p></li>))}
-        </ol>
-        <p>{ formText.option_title }</p>
-        <Radio.Group value={ data.optionValue } disabled={ true }>
-          { formText.options.map( (option, idx) => (
-            <Radio value={ option.key } key={ `option-key-${idx}`}>
-              { option.label }
-            </Radio>))}
-        </Radio.Group> 
-        <p>{ formText.note }</p>
-        <Table bordered columns={ columns } dataSource={ dataSource} />
-        <p>{ formText.policy }</p>
-      </Form>
+      <p>{ formText.overview }</p>
+      <p>{ formText.non_required_title }</p>
+      <ol>
+        { formText.non_required_items.map( (non_required_account, idx) => (<li key={`no-required-account-key-${idx}`}><p>{ non_required_account }</p></li>))}
+      </ol>
+      <p>{ formText.option_title }</p>
+      <Radio.Group value={ data.optionValue } disabled={ true }>
+        { formText.options.map( (option, idx) => (
+          <Radio value={ option.key } key={ `option-key-${idx}`}>
+            { option.label }
+          </Radio>))}
+      </Radio.Group>
+      <p>{ formText.note }</p>
+      <Table bordered columns={ columns } dataSource={ dataSource} />
+      <p>{ formText.policy }</p>
     </div>
   )
 }

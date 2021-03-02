@@ -6,9 +6,7 @@ import routes from './routes';
 
 
 function FormA(data) {
-  this.submit_by = data.submit_by;
-  this.optionValue = data.json_data.optionValue || false;
-  this.date = data.json_data.date || null;
+  this.optionValue = data.json_data.optionValue || null;
   this.accounts = data.json_data.accounts || [];
 
   return this;
@@ -41,7 +39,11 @@ function useFetchOne(pk, formType) {
   }
 
   useEffect(() => {
-    awaitAndSet(axios.get(routes.api.detailsURL(pk)));
+    if (pk === null || pk === undefined) {
+      setData(dataFactory({}, formType));
+    } else {
+      awaitAndSet(axios.get(routes.api.detailsURL(pk)));
+    }
   }, []);
 
   return [data, error]
