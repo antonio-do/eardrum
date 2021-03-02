@@ -2,11 +2,18 @@
 import React, {useEffect, useState} from 'react'
 import {Popconfirm, Table, Space, Menu, Dropdown, Button, message, Tabs} from 'antd'
 import { DownOutlined } from '@ant-design/icons'
-import {Link, useParams, useHistory} from 'react-router-dom'
+import {Link, useParams, useHistory, Switch, Route } from 'react-router-dom'
 import axios from 'axios'
 
 import routes from './routes'
 import messages from './messages'
+
+
+require('react-dom');
+window.React2 = require('react');
+console.log('Check react-dom');
+console.log(window.React1 === window.React2);
+console.log('End Check')
 
 const {TabPane} = Tabs
 
@@ -76,7 +83,7 @@ const ComplianceApp = () => {
   const [forms, setFormList] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const { typ } = useParams()
-  console.log(typ);
+  console.log('FormType: ' + typ);
 
   const history = useHistory()
   const typeToFormComponent = {
@@ -156,3 +163,9 @@ const ComplianceApp = () => {
 }
 
 export default ComplianceApp;
+
+
+// {/* <PrivateRoute path="/compliance/a/new" component={ FormAEdit } /> */}
+// <PrivateRoute path="/compliance/a/:pk/view" component={ FormAView } />
+// {/* <PrivateRoute path="/compliance/a/:pk/edit" component={ FormAEdit } /> */}
+// <PrivateRoute path="/compliance/:typ" component={ ComplianceApp } />

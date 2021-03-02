@@ -27,7 +27,6 @@ import OKRList from './views/OKRList';
 import OKRDetail from './views/OKRDetail';
 
 import ComplianceApp from './compliance';
-import FormAEdit from './compliance/FormAEdit';
 
 import { signOut, getCurrentUser, accountFetchAll, } from './actions/index';
 import { configFetchGradeOptions } from './actions';
@@ -125,6 +124,7 @@ class App extends Component {
       [RegExp('^/requests'), 'home'],
       [RegExp('^/okrs'), 'okrs'],
       [RegExp('^/other'), 'other'],
+      [RegExp('^/compliance'), 'compliance'],
       // [RegExp(''), 'home'],
     ]
     for(let i = 0; i < urlMap.length; i++) {
@@ -217,9 +217,6 @@ class App extends Component {
               <PrivateRoute exact={ true } path="/okrs" component={ OKRList } />
               <PrivateRoute path="/requests/:requestId/details" component={ RequestDetails } />
               <PrivateRoute path="/compliance" component={ ComplianceApp } />
-              <PrivateRoute path="/compliance/a/:action" component={ FormAEdit } />
-              <PrivateRoute path="/compliance/a/:id/:action" component={ FormAEdit } />
-              <PrivateRoute path="/compliance/:typ" component={ ComplianceApp } />
             </Switch>
           </main>
 
