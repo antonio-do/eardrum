@@ -54,6 +54,7 @@ const messages = {
       text: {
         title: 'I declare that:',
         quarterYearSelectTitle: 'As of the end of',
+        quarters: ['Q1', 'Q2', 'Q3', 'Q4'],
         box1: {
           title: 'I hereby declare that (tickbox):',
           radioGroupTitles: [

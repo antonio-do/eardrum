@@ -11,12 +11,10 @@ import {
   Breadcrumb,
   Select,
   Button,
-  Checkbox,
   message,
   InputNumber,
   Radio,
   Spin,
-  Popconfirm,
   Form,
   Table,
 } from 'antd'
@@ -27,6 +25,8 @@ import moment from 'moment'
 import messages from '../../messages'
 import routes from '../../routes'
 import '../../styles/formC.css'
+import DeleteFormButton from '../DeleteFormButton'
+import CheckSquareOutlined from '../CheckSquareOutlined'
 
 const complianceRoutes = routes.compliance
 const formC = messages.compliance.c
@@ -46,9 +46,6 @@ const defaultData = Array.from({length: 2}).map((_, index) => {
   return {id: new Date().getTime() + index, ...defaultRow}
 })
 
-const checkboxGroup1Options = formText.box2.checkboxGroupTitles.map((name, index) => ({label: name, value: index}))
-const checkboxGroup2Options = formText.box3.checkboxGroupTitles.map((name, index) => ({label: name, value: index}))
-
 const EditEQTRForm = () => {
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
@@ -62,11 +59,14 @@ const EditEQTRForm = () => {
   const [tableData, setTableData] = useState(!formId || !isOnViewPage ? defaultData : [])
   const [form] = Form.useForm()
 
+  const isInputDisabled = radioValue !== 3
+  const inputRule = {required: radioValue === 3, message: ''}
+
   useEffect(() => {
     if (formId) {
       setIsLoading(true)
       axios
-        .get(`/api/compliance/${formId}/`)
+        .get(complianceRoutes.detailsURL(formId))
         .then(({data: {json_data}}) => {
           const {quarter, year, radioValue, formData} = json_data
 
@@ -115,6 +115,14 @@ const EditEQTRForm = () => {
     setTableData(tableData.filter((_, index) => index !== arrIndex))
   }
 
+  const getFormData = () => {
+    return {
+      typ: 'c',
+      data:
+        radioValue !== 3 ? {quarter, year, radioValue, formData: []} : {quarter, year, radioValue, formData: tableData},
+    }
+  }
+
   const columns = [
     {
       title: '#',
@@ -128,12 +136,9 @@ const EditEQTRForm = () => {
       ...(!isOnViewPage && {
         render: (text, record, index) => {
           return (
-            <Form.Item
-              name={`stockTicker-${index}`}
-              style={{margin: 0}}
-              rules={[{required: radioValue === 3, message: ''}]}>
+            <Form.Item name={`stockTicker-${index}`} style={{margin: 0}} rules={[inputRule]}>
               <Input
-                disabled={radioValue !== 3}
+                disabled={isInputDisabled}
                 value={tableData[index].stockTicker}
                 onChange={(event) => updateStateValue(index, 'stockTicker', event.target.value)}
               />
@@ -148,12 +153,9 @@ const EditEQTRForm = () => {
       ...(!isOnViewPage && {
         render: (text, record, index) => {
           return (
-            <Form.Item
-              name={`listedOn-${index}`}
-              style={{margin: 0}}
-              rules={[{required: radioValue === 3, message: ''}]}>
+            <Form.Item name={`listedOn-${index}`} style={{margin: 0}} rules={[inputRule]}>
               <Input
-                disabled={radioValue !== 3}
+                disabled={isInputDisabled}
                 value={tableData[index].listedOn}
                 onChange={(event) => updateStateValue(index, 'listedOn', event.target.value)}
               />
@@ -168,13 +170,10 @@ const EditEQTRForm = () => {
       ...(!isOnViewPage && {
         render: (text, record, index) => {
           return (
-            <Form.Item
-              name={`totalValue-${index}`}
-              style={{margin: 0}}
-              rules={[{required: radioValue === 3, message: ''}]}>
+            <Form.Item name={`totalValue-${index}`} style={{margin: 0}} rules={[inputRule]}>
               <InputNumber
                 value={tableData[index].totalValue}
-                disabled={radioValue !== 3}
+                disabled={isInputDisabled}
                 style={{width: '100%'}}
                 onChange={(value) => updateStateValue(index, 'totalValue', value)}
                 min={0}
@@ -191,7 +190,7 @@ const EditEQTRForm = () => {
         render: (text, record, index) => {
           return (
             <Select
-              disabled={radioValue !== 3}
+              disabled={isInputDisabled}
               value={tableData[index].type}
               onChange={(value) => updateStateValue(index, 'type', value)}>
               <Option value='Long'>Long</Option>
@@ -210,7 +209,7 @@ const EditEQTRForm = () => {
         render: (text, record, index) => {
           return (
             <DatePicker
-              disabled={radioValue !== 3}
+              disabled={isInputDisabled}
               value={moment(tableData[index].date, dateFormat)}
               format={dateFormat}
               onChange={(_, dateString) => updateStateValue(index, 'date', dateString)}
@@ -227,11 +226,11 @@ const EditEQTRForm = () => {
       dataIndex: 'action',
       render: (text, record, index) => {
         return index === 0 ? (
-          <Button type='primary' disabled={radioValue !== 3} onClick={addTableRow}>
+          <Button type='primary' disabled={isInputDisabled} onClick={addTableRow}>
             <PlusOutlined />
           </Button>
         ) : (
-          <Button type='text' danger disabled={radioValue !== 3} onClick={deleteTableRow(index)}>
+          <Button type='text' danger disabled={isInputDisabled} onClick={deleteTableRow(index)}>
             <MinusOutlined />
           </Button>
         )
@@ -245,17 +244,11 @@ const EditEQTRForm = () => {
       const {data} = await axios({
         method: 'POST',
         url: complianceRoutes.list(),
-        data: {
-          typ: 'c',
-          data:
-            radioValue !== 3
-              ? {quarter, year, radioValue, formData: []}
-              : {quarter, year, radioValue, formData: tableData},
-        },
+        data: getFormData(),
       })
 
       if (data.id) {
-        history.push('/compliance/c')
+        history.push(complianceRoutes.formListView('c'))
         message.success('Employee Quarterly Trade Report was submitted successfully!', 1)
       }
     } catch (error) {
@@ -272,17 +265,11 @@ const EditEQTRForm = () => {
       const {data} = await axios({
         method: 'PATCH',
         url: complianceRoutes.detailsURL(formId),
-        data: {
-          typ: 'c',
-          data:
-            radioValue !== 3
-              ? {quarter, year, radioValue, formData: []}
-              : {quarter, year, radioValue, formData: tableData},
-        },
+        data: getFormData(),
       })
 
       if (data.id) {
-        history.push('/compliance/c')
+        history.push(complianceRoutes.formListView('c'))
         message.success('Employee Quarterly Trade Report was updated successfully!', 1)
       }
     } catch (error) {
@@ -298,7 +285,7 @@ const EditEQTRForm = () => {
       const res = await axios.delete(complianceRoutes.detailsURL(formId))
 
       if (res.status === 204) {
-        history.push('/compliance/c')
+        history.push(complianceRoutes.formListView('c'))
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {
@@ -312,13 +299,12 @@ const EditEQTRForm = () => {
       <div
         style={{
           padding: '32px 16px',
-          fontSize: '16px',
           border: '1px solid rgba(156, 163, 175, 50%)',
           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         }}>
-        <Breadcrumb style={{fontSize: '14px', marginBottom: '10px'}}>
+        <Breadcrumb style={{marginBottom: '10px'}}>
           <Breadcrumb.Item>
-            <Link to='/compliance/c'>
+            <Link to={complianceRoutes.formListView('c')}>
               <MenuOutlined /> {formC.name} Form List
             </Link>
           </Breadcrumb.Item>
@@ -352,22 +338,15 @@ const EditEQTRForm = () => {
           </Row>
         )}
 
-        <Form
-          layout='vertical'
-          form={form}
-          initialValues={{
-            checkboxGroup1: Array.from({length: formText.box2.checkboxGroupTitles.length}).map((_, index) => index),
-            checkboxGroup2: Array.from({length: formText.box3.checkboxGroupTitles.length}).map((_, index) => index),
-          }}>
+        <Form layout='vertical' form={form}>
           <div>
             {formText.title}{' '}
             <span>
               {formText.quarterYearSelectTitle}{' '}
               <Select value={quarter} disabled={isOnViewPage} style={{width: 120}} onChange={setQuarter}>
-                <Option value='Q1'>Q1</Option>
-                <Option value='Q2'>Q2</Option>
-                <Option value='Q3'>Q3</Option>
-                <Option value='Q4'>Q4</Option>
+                {formText.quarters.map((q) => {
+                  return <Option value={q}>{q}</Option>
+                })}
               </Select>
               ,{' '}
               <Select value={year} disabled={isOnViewPage} style={{width: 120}} onChange={setYear}>
@@ -406,7 +385,7 @@ const EditEQTRForm = () => {
                 value={radioValue}>
                 {formText.box1.radioGroupTitles.map((title, index) => {
                   return (
-                    <Radio key={index} value={index + 1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
+                    <Radio key={index} value={index + 1} style={{whiteSpace: 'break-spaces'}}>
                       {title}
                     </Radio>
                   )
@@ -434,20 +413,7 @@ const EditEQTRForm = () => {
               {formText.box2.title}
             </Divider>
 
-            <Form.Item
-              name='checkboxGroup1'
-              rules={[
-                ({getFieldValue}) => ({
-                  validator() {
-                    if (getFieldValue('checkboxGroup1').length === formText.box2.checkboxGroupTitles.length) {
-                      return Promise.resolve()
-                    }
-                    return Promise.reject('Please check all the checkboxes to continue!')
-                  },
-                }),
-              ]}>
-              <Checkbox.Group disabled={isOnViewPage} options={checkboxGroup1Options} />
-            </Form.Item>
+            <CheckSquareOutlined titles={formText.box2.checkboxGroupTitles} />
           </div>
 
           <div
@@ -463,20 +429,7 @@ const EditEQTRForm = () => {
               {formText.box3.title}
             </Divider>
 
-            <Form.Item
-              name='checkboxGroup2'
-              rules={[
-                ({getFieldValue}) => ({
-                  validator() {
-                    if (getFieldValue('checkboxGroup2').length === formText.box3.checkboxGroupTitles.length) {
-                      return Promise.resolve()
-                    }
-                    return Promise.reject('Please check all the checkboxes to continue!')
-                  },
-                }),
-              ]}>
-              <Checkbox.Group disabled={isOnViewPage} options={checkboxGroup2Options} />
-            </Form.Item>
+            <CheckSquareOutlined titles={formText.box3.checkboxGroupTitles} />
           </div>
           <div style={{marginTop: '10px'}}>
             <strong>{formText.confirm}</strong>
@@ -492,15 +445,7 @@ const EditEQTRForm = () => {
                       </Button>
                     </Col>
                     <Col>
-                      <Popconfirm
-                        title='Are you sure to delete this form?'
-                        onConfirm={onDelete}
-                        okText='Yes'
-                        cancelText='No'>
-                        <Button type='link' danger>
-                          Delete
-                        </Button>
-                      </Popconfirm>
+                      <DeleteFormButton onDelete={onDelete} />
                     </Col>
                   </>
                 ) : (

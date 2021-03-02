@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 import React, {useEffect, useState} from 'react'
-import {Popconfirm, Table, Space, Menu, Dropdown, Button, Breadcrumb, message, Tabs} from 'antd'
-import {DownOutlined, MenuOutlined} from '@ant-design/icons'
+import {Popconfirm, Table, Space, Menu, Dropdown, Button, message, Tabs} from 'antd'
+import {DownOutlined} from '@ant-design/icons'
 import {Link, useRouteMatch, useParams, useHistory} from 'react-router-dom'
 import axios from 'axios'
 import routes from '../routes'
@@ -268,7 +268,7 @@ const ComplianceApp = () => {
     setIsLoading(true)
 
     if (!formType || !(formType in typeToFormProps)) {
-      history.replace(`/compliance/${Object.keys(typeToFormProps)[0]}`)
+      history.replace(complianceRoutes.formListView(Object.keys(typeToFormProps)[0]))
     }
 
     axios
@@ -307,7 +307,10 @@ const ComplianceApp = () => {
   const menu = (
     <Menu>
       {Object.entries(typeToFormProps).map(([type, form]) => {
-        const newUrl = url.replace(`/compliance/${formType}`, `/compliance/${type}/new`)
+        const newUrl = url.replace(
+          complianceRoutes.formListView(formType),
+          `${complianceRoutes.formListView(type)}/new`
+        )
 
         if (type === 'd') {
           return (

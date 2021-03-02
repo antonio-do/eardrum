@@ -2,7 +2,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Popconfirm, Radio, Form} from 'antd'
+import {Breadcrumb, Button, Input, Checkbox, Row, Col, message, Spin, Radio, Form} from 'antd'
 import {MenuOutlined, PlusOutlined, EditOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
@@ -10,6 +10,7 @@ import moment from 'moment'
 import messages from '../../messages'
 import routes from '../../routes'
 import '../../styles/formA.css'
+import DeleteFormButton from '../DeleteFormButton'
 
 const formA = messages.compliance.a
 const complianceRoutes = routes.compliance
@@ -116,7 +117,7 @@ const EditBADForm = () => {
 
       if (data.id) {
         message.success('Brokerage Account Disclosure Form was created successfully!', 1)
-        history.push('/compliance')
+        history.push(complianceRoutes.formListView('a'))
       }
     } catch (error) {
       console.log(error)
@@ -147,7 +148,7 @@ const EditBADForm = () => {
 
       if (data.id) {
         message.success('Brokerage Account Disclosure Form was updated successfully!', 1)
-        history.push('/compliance/a')
+        history.push(complianceRoutes.formListView('a'))
       }
     } catch (error) {
       console.log(error)
@@ -162,7 +163,7 @@ const EditBADForm = () => {
       const res = await axios.delete(complianceRoutes.detailsURL(formId))
 
       if (res.status === 204) {
-        history.push('/compliance/a')
+        history.push(complianceRoutes.formListView('a'))
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {
@@ -176,13 +177,12 @@ const EditBADForm = () => {
       <div
         style={{
           padding: '32px 16px',
-          fontSize: '16px',
           border: '1px solid rgba(156, 163, 175, 50%)',
           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         }}>
-        <Breadcrumb style={{fontSize: '14px', marginBottom: '10px'}}>
+        <Breadcrumb style={{marginBottom: '10px'}}>
           <Breadcrumb.Item>
-            <Link to='/compliance/a'>
+            <Link to={complianceRoutes.formListView('a')}>
               <MenuOutlined /> {formA.name} Form List
             </Link>
           </Breadcrumb.Item>
@@ -228,15 +228,15 @@ const EditBADForm = () => {
         <Form layout='vertical' form={form}>
           <div>
             <Form.Item
-              style={{fontSize: '16px', margin: 0}}
+              style={{margin: 0}}
               name='radioGroup'
               label={formText.radioGroup.title}
               rules={[{required: true, message: 'Please check 1 option!'}]}>
               <Radio.Group disabled={isOnViewPage} onChange={onRadioValueChange} value={radioOptionValue}>
-                <Radio value={1} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
+                <Radio value={1} style={{whiteSpace: 'break-spaces'}}>
                   {formText.radioGroup.option1}
                 </Radio>
-                <Radio value={2} style={{whiteSpace: 'break-spaces', fontSize: '16px'}}>
+                <Radio value={2} style={{whiteSpace: 'break-spaces'}}>
                   {formText.radioGroup.option2.content}
                 </Radio>
               </Radio.Group>
@@ -339,10 +339,7 @@ const EditBADForm = () => {
                     },
                   },
                 ]}>
-                <Checkbox
-                  style={{fontSize: '16px'}}
-                  checked={shouldAgree}
-                  onChange={(event) => setShouldAgree(event.target.checked)}>
+                <Checkbox checked={shouldAgree} onChange={(event) => setShouldAgree(event.target.checked)}>
                   {formText.agreeToPolicy}
                 </Checkbox>
               </Form.Item>
@@ -358,15 +355,7 @@ const EditBADForm = () => {
                       </Form.Item>
                     </Col>
                     <Col>
-                      <Popconfirm
-                        title='Are you sure to delete this form?'
-                        onConfirm={onDelete}
-                        okText='Yes'
-                        cancelText='No'>
-                        <Button type='link' danger>
-                          Delete
-                        </Button>
-                      </Popconfirm>
+                      <DeleteFormButton onDelete={onDelete} />
                     </Col>
                   </>
                 ) : (

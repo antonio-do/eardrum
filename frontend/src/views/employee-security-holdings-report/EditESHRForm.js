@@ -1,12 +1,13 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {Breadcrumb, Spin, Select, Button, Form, List, message, Upload, Row, Col, Popconfirm, Radio} from 'antd'
+import {Breadcrumb, Spin, Select, Button, Form, List, message, Upload, Row, Col, Radio} from 'antd'
 import {MenuOutlined, UploadOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import messages from '../../messages'
 import routes from '../../routes'
+import DeleteFormButton from '../DeleteFormButton'
 
 const complianceRoutes = routes.compliance
 const formB = messages.compliance.b
@@ -145,7 +146,7 @@ const EditESHRForm = () => {
       if (data.id) {
         setIsSubmitting(false)
         message.success('Employee Securities Holdings Report was created successfully!', 1)
-        history.push('/compliance/b')
+        history.push(complianceRoutes.formListView('b'))
       }
     } catch (error) {
       setIsSubmitting(false)
@@ -177,7 +178,7 @@ const EditESHRForm = () => {
       if (data.id) {
         setIsSubmitting(false)
         message.success('Employee Securities Holdings Report was updated successfully!', 1)
-        history.push('/compliance/b')
+        history.push(complianceRoutes.formListView('b'))
       }
     } catch (error) {
       setIsSubmitting(false)
@@ -193,7 +194,7 @@ const EditESHRForm = () => {
       const res = await axios.delete(complianceRoutes.detailsURL(formId))
 
       if (res.status === 204) {
-        history.push('/compliance/b')
+        history.push(complianceRoutes.formListView('b'))
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {
@@ -209,13 +210,12 @@ const EditESHRForm = () => {
       <div
         style={{
           padding: '32px 16px',
-          fontSize: '16px',
           border: '1px solid rgba(156, 163, 175, 50%)',
           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         }}>
-        <Breadcrumb style={{fontSize: '14px', marginBottom: '10px'}}>
+        <Breadcrumb style={{marginBottom: '10px'}}>
           <Breadcrumb.Item>
-            <Link to='/compliance/b'>
+            <Link to={complianceRoutes.formListView('b')}>
               <MenuOutlined /> {formB.name} Form List
             </Link>
           </Breadcrumb.Item>
@@ -269,7 +269,7 @@ const EditESHRForm = () => {
             <Form.Item
               name='radioGroup'
               label={formText.radioGroup.title}
-              style={{margin: 0, fontSize: '16px'}}
+              style={{margin: 0}}
               rules={[
                 {
                   required: true,
@@ -277,10 +277,10 @@ const EditESHRForm = () => {
                 },
               ]}>
               <Radio.Group disabled={isOnViewPage} onChange={onRadioValueChange} value={radioOptionValue}>
-                <Radio value={1} style={{whiteSpace: 'break-spaces', display: 'block', fontSize: '16px'}}>
+                <Radio value={1} style={{whiteSpace: 'break-spaces', display: 'block'}}>
                   {formText.radioGroup.option1}
                 </Radio>
-                <Radio value={2} style={{whiteSpace: 'break-spaces', display: 'block', fontSize: '16px'}}>
+                <Radio value={2} style={{whiteSpace: 'break-spaces', display: 'block'}}>
                   {formText.radioGroup.option2.content}
                 </Radio>
               </Radio.Group>
@@ -289,7 +289,7 @@ const EditESHRForm = () => {
         </Form>
         <div>
           {isOnViewPage ? (
-            <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
+            <div style={{marginLeft: '10px', marginTop: '6px'}}>
               <div>
                 <div>Attach file(s)</div>
                 <List
@@ -307,7 +307,7 @@ const EditESHRForm = () => {
               </div>
             </div>
           ) : (
-            <div style={{marginLeft: '10px', marginTop: '6px', fontSize: '14px'}}>
+            <div style={{marginLeft: '10px', marginTop: '6px'}}>
               <div style={{maxWidth: '60%'}}>
                 {!isLoading && (
                   <Upload
@@ -336,15 +336,7 @@ const EditESHRForm = () => {
                   </Button>
                 </Col>
                 <Col>
-                  <Popconfirm
-                    title='Are you sure to delete this form?'
-                    onConfirm={onDelete}
-                    okText='Yes'
-                    cancelText='No'>
-                    <Button type='link' danger>
-                      Delete
-                    </Button>
-                  </Popconfirm>
+                  <DeleteFormButton onDelete={onDelete} />
                 </Col>
               </>
             ) : (

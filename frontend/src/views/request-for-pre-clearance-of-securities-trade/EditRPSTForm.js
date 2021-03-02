@@ -1,26 +1,16 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 import React, {useState, useEffect} from 'react'
-import {
-  InputNumber,
-  Breadcrumb,
-  Button,
-  Select,
-  Input,
-  Spin,
-  Table,
-  DatePicker,
-  Row,
-  Col,
-  message,
-  Popconfirm,
-} from 'antd'
+import {InputNumber, Breadcrumb, Button, Select, Input, Spin, Table, DatePicker, Row, Col, message} from 'antd'
 import {MenuOutlined, EditOutlined, PlusOutlined, MinusOutlined} from '@ant-design/icons'
 import {Link, useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
 import messages from '../../messages'
+import DeleteFormButton from '../DeleteFormButton'
+import routes from '../../routes'
 
+const complianceRoutes = routes.compliance
 const formD = messages.compliance.d
 const formText = formD.text
 
@@ -144,7 +134,7 @@ const EditRPSTForm = () => {
 
       if (data.id) {
         message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1)
-        history.push('/compliance/d')
+        history.push(complianceRoutes.formListView('d'))
       }
     } catch (error) {
       console.log(error)
@@ -157,7 +147,7 @@ const EditRPSTForm = () => {
       const res = await axios.delete(`/api/compliance/${formId}/`)
 
       if (res.status === 204) {
-        history.push('/compliance/d')
+        history.push(complianceRoutes.formListView('d'))
         message.success('Form has been deleted successfully!')
       }
     } catch (error) {
@@ -302,13 +292,12 @@ const EditRPSTForm = () => {
       <div
         style={{
           padding: '32px 16px',
-          fontSize: '16px',
           border: '1px solid rgba(156, 163, 175, 50%)',
           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         }}>
-        <Breadcrumb style={{fontSize: '14px', marginBottom: '10px'}}>
+        <Breadcrumb style={{marginBottom: '10px'}}>
           <Breadcrumb.Item>
-            <Link to='/compliance/d'>
+            <Link to={complianceRoutes.formListView('d')}>
               <MenuOutlined /> {formD.name} Form List
             </Link>
           </Breadcrumb.Item>
@@ -368,15 +357,7 @@ const EditRPSTForm = () => {
               </Col>
               {formId && (
                 <Col>
-                  <Popconfirm
-                    title='Are you sure to delete this form?'
-                    onConfirm={onDelete}
-                    okText='Yes'
-                    cancelText='No'>
-                    <Button type='link' danger>
-                      Delete
-                    </Button>
-                  </Popconfirm>
+                  <DeleteFormButton onDelete={onDelete} />
                 </Col>
               )}
             </Row>
