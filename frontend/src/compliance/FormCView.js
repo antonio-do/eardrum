@@ -1,50 +1,48 @@
 /* eslint-disable prefer-promise-reject-errors */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
-import React, {useEffect} from 'react'
-import {Divider, Breadcrumb, Select, Table, message, Radio, Spin} from 'antd'
-import {MenuOutlined} from '@ant-design/icons'
-import {Link, useParams} from 'react-router-dom'
-import messages from './messages'
-import routes from './routes'
-import Container from './components/Container'
-import CheckSquareOutlined from './components/CheckSquareOutlined'
-import {useFetchOne} from './hooks'
-import './styles/formC.css'
+import React, { useEffect } from 'react';
+import { Divider, Breadcrumb, Select, Table, message, Radio, Spin } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
+import { Link, useParams } from 'react-router-dom';
+import messages from './messages';
+import routes from './routes';
+import Container from './components/Container';
+import CheckBoxGroup from './components/CheckBoxGroup';
+import { useFetchOne } from './hooks';
+import './styles/formC.css';
 
-const formText = messages.c.text
-const formName = messages.c.name
-
-const {Option} = Select
+const formText = messages.c.text;
+const formName = messages.c.name;
 
 const FormCView = () => {
-  const {pk} = useParams()
-  const [data, error] = useFetchOne(pk, 'c')
+  const { pk } = useParams();
+  const [data, error] = useFetchOne(pk, 'c');
 
   useEffect(() => {
     if (error !== null) {
-      message.error('Errors ocurred while fetching data')
+      message.error('Errors ocurred while fetching data');
     }
-  }, [error])
+  }, [error]);
 
   if (error !== null) {
-    return <p>{error.toString()}</p>
+    return <p>{error.toString()}</p>;
   }
 
   if (data === null) {
-    return <Spin size='large' />
+    return <Spin size='large' />;
   }
-  const columns = [{title: '#', render: (text, record, index) => index + 1}]
+  const columns = [{ title: '#', render: (text, record, index) => index + 1 }];
 
-  columns.push(...messages.c.text.box1.dealingDetailsColumns)
+  columns.push(...messages.c.text.box1.dealingDetailsColumns);
 
   const dataSource = data.dealingDetails.map((row, idx) => {
-    return {key: idx, ...row}
-  })
+    return { key: idx, ...row };
+  });
 
   return (
     <Container>
-      <Breadcrumb style={{marginBottom: '100px'}}>
+      <Breadcrumb style={{ marginBottom: '100px' }}>
         <Breadcrumb.Item>
           <MenuOutlined /> <Link to={routes.formC.url()}>{formName} Form List</Link>
         </Breadcrumb.Item>
@@ -52,10 +50,10 @@ const FormCView = () => {
       </Breadcrumb>
 
       <div>{formText.title} </div>
-      <div style={{display: 'flex', alignItems: 'center'}}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <div>{formText.quarterYearSelectTitle} </div>
-        <Select style={{width: 120}} value={data.quarter} disabled />,{' '}
-        <Select style={{width: 120}} value={data.year} disabled />
+        <Select style={{ width: 120 }} value={data.quarter} disabled />,{' '}
+        <Select style={{ width: 120 }} value={data.year} disabled />
       </div>
       <div
         style={{
@@ -66,17 +64,17 @@ const FormCView = () => {
           borderColor: 'lightgray',
           borderTop: 'none',
         }}>
-        <Divider style={{position: 'relative', marginBottom: '0px', top: '-12px'}} orientation='left'>
+        <Divider style={{ position: 'relative', marginBottom: '0px', top: '-12px' }} orientation='left'>
           {formText.box1.title}
         </Divider>
 
         <Radio.Group value={data.optionValue} disabled>
           {formText.box1.radioGroupOptions.map((option, index) => {
             return (
-              <Radio key={index} value={option.key} style={{whiteSpace: 'break-spaces'}}>
+              <Radio key={index} value={option.key} style={{ whiteSpace: 'break-spaces' }}>
                 {option.label}
               </Radio>
-            )
+            );
           })}
         </Radio.Group>
         <p>{formText.box1.lastRadioItemNote}</p>
@@ -93,11 +91,11 @@ const FormCView = () => {
           borderColor: 'lightgray',
           borderTop: 'none',
         }}>
-        <Divider style={{position: 'relative', marginBottom: '0px', top: '-12px'}} orientation='left'>
+        <Divider style={{ position: 'relative', marginBottom: '0px', top: '-12px' }} orientation='left'>
           {formText.box2.title}
         </Divider>
 
-        <CheckSquareOutlined titles={formText.box2.checkboxGroupTitles} />
+        <CheckBoxGroup titles={formText.box2.checkboxGroupTitles} />
       </div>
 
       <div
@@ -109,14 +107,14 @@ const FormCView = () => {
           borderColor: 'lightgray',
           borderTop: 'none',
         }}>
-        <Divider style={{position: 'relative', marginBottom: '0px', top: '-12px'}} orientation='left'>
+        <Divider style={{ position: 'relative', marginBottom: '0px', top: '-12px' }} orientation='left'>
           {formText.box3.title}
         </Divider>
 
-        <CheckSquareOutlined titles={formText.box3.checkboxGroupTitles} />
+        <CheckBoxGroup titles={formText.box3.checkboxGroupTitles} />
       </div>
     </Container>
-  )
-}
+  );
+};
 
-export default FormCView
+export default FormCView;

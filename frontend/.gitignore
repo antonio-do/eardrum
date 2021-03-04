@@ -30,7 +30,3 @@ webpack-stats*.json
 
 # configs
 src/configs
-
-yarn.lock
-
-.eslintrc

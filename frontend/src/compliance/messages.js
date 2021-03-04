@@ -1,9 +1,10 @@
 const messages = {
   a: {
     name: 'Brokerage Account Disclosure',
+    path: 'brokerage-account-disclosure',
+    shortName: 'BAD',
     text: {
-      overview:
-        'Every employee must disclose to the CCO any and all brokerage accounts in the name of the employee, over which the employee exercises discretion (expressor or in fact) or in which the employee has an interest.',
+      overview: 'Every employee must disclose to the CCO any and all brokerage accounts in the name of the employee, over which the employee exercises discretion (expressor or in fact) or in which the employee has an interest.',
       non_required_title: 'Disclosure is not required for any account:',
       non_required_items: [
         'over which the employee has no control or discretionary trading authority (including Managed Accounts), or',
@@ -14,20 +15,16 @@ const messages = {
       options: [
         {
           key: 'do_not_have',
-          label:
-            'I do not have any accounts that must be disclosed. I agree to notify the CCO prior to any such account being opened in the future.',
+          label: 'I do not have any accounts that must be disclosed. I agree to notify the CCO prior to any such account being opened in the future.',
         },
         {
           key: 'have',
-          label:
-            'Set forth below is a complete list of all accounts that must be disclosed (use additional forms if necessary).',
-        },
+          label: 'Set forth below is a complete list of all accounts that must be disclosed (use additional forms if necessary).',
+        }
       ],
-      note:
-        'The CCO will be sending a letter requesting duplicate confirms and statements for each of the accounts disclosed below.',
+      note: 'The CCO will be sending a letter requesting duplicate confirms and statements for each of the accounts disclosed below.',
       account_headers: ['Name of Firm Where Account is Held', 'Name on Account', 'Account Number'],
-      policy:
-        'I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethics and Compliance Manual, and I agree to abide by such policies during the term of my employment.',
+      policy: 'I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethics and Compliance Manual, and I agree to abide by such policies during the term of my employment.',
     },
   },
   b: {
@@ -141,5 +138,6 @@ const messages = {
     },
   },
 }
+
 
 export default messages

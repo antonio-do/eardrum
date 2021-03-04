@@ -1,15 +1,18 @@
 /* eslint-disable no-shadow */
 import React, {useEffect, useState} from 'react'
 import {Popconfirm, Table, Space, Menu, Dropdown, Button, message, Tabs} from 'antd'
-import {DownOutlined} from '@ant-design/icons'
-import {Link, useParams, useHistory} from 'react-router-dom'
-import axios from 'axios'
-import Container from './components/Container'
+import { DownOutlined } from '@ant-design/icons'
+import {Link, useParams, useHistory } from 'react-router-dom'
+import axios from 'axios';
+import Container from './components/Container';
 
-import routes from './routes'
-import messages from './messages'
+
+import routes from './routes';
+import messages from './messages';
+
 
 const {TabPane} = Tabs
+
 
 const FormAList = ({onRowDelete, isLoading, data}) => {
   const columns = [
@@ -19,7 +22,7 @@ const FormAList = ({onRowDelete, isLoading, data}) => {
       key: 'id',
       render: (text, record) => {
         const form = messages[record.typ]
-        return <Link to={routes.formA.view.url(record.id)}>{form.name}</Link>
+        return <Link to={ routes.formA.view.url(record.id) }>{form.name}</Link>
       },
     },
     {
@@ -43,20 +46,19 @@ const FormAList = ({onRowDelete, isLoading, data}) => {
       render: (text, record) => {
         return (
           <Space size='middle'>
-            <Link to={routes.formA.edit.url(record.id)}>Edit</Link>
-            <Popconfirm onConfirm={onRowDelete(record.id)} title='Are you sure?'>
-              <Button type='link' danger>
-                Delete
-              </Button>
-            </Popconfirm>
+            <Link to={ routes.formA.edit.url(record.id) }>Edit</Link>
+              <Popconfirm onConfirm={ onRowDelete } title="Are you sure?">
+                <Button type='link' danger>Delete</Button>
+              </Popconfirm>
           </Space>
         )
       },
     },
   ]
 
-  return <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
+  return <Table loading={ isLoading } rowKey={(record) => record.id} columns={columns} dataSource={data} />
 }
+
 
 const FormBList = ({onRowDelete, isLoading, data}) => {
   const columns = [
@@ -156,10 +158,12 @@ const FormDList = ({onRowDelete, isLoading, data}) => {
   return <div>FormDList</div>
 }
 
+
 const ComplianceApp = () => {
   const [forms, setFormList] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const {typ} = useParams()
+  const { typ } = useParams()
+  console.log('FormType: ' + typ);
 
   const history = useHistory()
   const typeToFormComponent = {
@@ -187,7 +191,7 @@ const ComplianceApp = () => {
   }, [])
 
   function onTabKeyChange(key) {
-    history.push(`/compliance/${key}`)
+    history.push('/compliance/' + key)
   }
 
   const onDelete = (formId) => async () => {
@@ -215,6 +219,7 @@ const ComplianceApp = () => {
             </Menu.Item>
           )
         })}
+
     </Menu>
   )
 
@@ -228,13 +233,13 @@ const ComplianceApp = () => {
         </Dropdown>
       </Space>
 
-      <Tabs onChange={onTabKeyChange} type='card' activeKey={typ}>
+      <Tabs onChange={ onTabKeyChange } type='card' activeKey={ typ }>
         {Object.entries(messages).map(([typ, form]) => {
-          const specificFormList = forms.filter((form) => form.typ === typ)
-          const FormList = typeToFormComponent[typ]
+          const specificFormList = forms.filter((form) => form.typ === typ);
+          const FormList = typeToFormComponent[typ];
 
           return (
-            <TabPane tab={form.name} key={typ}>
+            <TabPane tab={form.name} key={ typ }>
               <FormList formName={form.name} onRowDelete={onDelete} data={specificFormList} isLoading={isLoading} />
             </TabPane>
           )
@@ -244,7 +249,8 @@ const ComplianceApp = () => {
   )
 }
 
-export default ComplianceApp
+export default ComplianceApp;
+
 
 // {/* <PrivateRoute path="/compliance/a/new" component={ FormAEdit } /> */}
 // <PrivateRoute path="/compliance/a/:pk/view" component={ FormAView } />
