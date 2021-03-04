@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-const Container = ({children}) => {
+const Container = ({ children }) => {
   return (
     <div
       style={{
@@ -10,7 +10,7 @@ const Container = ({children}) => {
       }}>
       {children}
     </div>
-  )
-}
+  );
+};
 
-export default Container
+export default Container;

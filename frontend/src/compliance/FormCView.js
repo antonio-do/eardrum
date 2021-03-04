@@ -49,9 +49,10 @@ const FormCView = () => {
         <Breadcrumb.Item>{formName}</Breadcrumb.Item>
       </Breadcrumb>
 
-      <div>{formText.title} </div>
+      <h1 style={{ textAlign: 'center' }}>{formName}</h1>
+      <p>{formText.title} </p>
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div>{formText.quarterYearSelectTitle} </div>
+        <p style={{ marginBottom: 0 }}>{formText.quarterYearSelectTitle} </p>
         <Select style={{ width: 120 }} value={data.quarter} disabled />,{' '}
         <Select style={{ width: 120 }} value={data.year} disabled />
       </div>

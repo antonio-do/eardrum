@@ -177,10 +177,11 @@ const EditEQTRForm = () => {
         </Breadcrumb.Item>
       </Breadcrumb>
 
+      <h1 style={{ textAlign: 'center' }}>{formName}</h1>
       <Form layout='vertical' form={form}>
-        <div>{formText.title} </div>
+        <p>{formText.title} </p>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div>{formText.quarterYearSelectTitle} </div>
+          <p style={{ marginBottom: 0 }}>{formText.quarterYearSelectTitle} </p>
           <Form.Item
             name='quarter'
             rules={[

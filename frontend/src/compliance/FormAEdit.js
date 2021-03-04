@@ -176,6 +176,9 @@ const FormAEdit = () => {
       </Breadcrumb>
 
 
+      <h1 style={{textAlign: 'center'}}>
+        {messages.a.name}
+      </h1>
       <p>{ formText.overview }</p>
       <p>{ formText.non_required_title }</p>
       <ol>

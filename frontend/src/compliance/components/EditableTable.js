@@ -1,11 +1,22 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react';
 import {Table, Input, InputNumber, Popconfirm, Form, DatePicker, Select} from 'antd'
-import {Button} from '@material-ui/core'
-import moment from 'moment'
+import { Button } from '@material-ui/core';
+import moment from 'moment';
+const originData = [];
 
 const dateFormat = 'DD/MM/YYYY'
 
-const EditableCell = ({editing, dataIndex, title, inputType, record, index, children, options, ...restProps}) => {
+const EditableCell = ({
+  editing,
+  dataIndex,
+  title,
+  inputType,
+  record,
+  index,
+  children,
+  options,
+  ...restProps
+}) => {
   const inputComponent = {
     number: <InputNumber />,
     text: <Input />,
@@ -24,7 +35,7 @@ const EditableCell = ({editing, dataIndex, title, inputType, record, index, chil
     ),
   }
 
-  const inputNode = inputComponent[inputType]
+  const inputNode = inputComponent[inputType];
 
   return (
     <td {...restProps}>
@@ -37,55 +48,56 @@ const EditableCell = ({editing, dataIndex, title, inputType, record, index, chil
           rules={[
             {
               required: true,
-              message: `Please input!`,
+              message: `Please input`,
             },
-          ]}>
+          ]}
+        >
           {inputNode}
         </Form.Item>
       ) : (
         children
       )}
     </td>
-  )
-}
+  );
+};
 
-const EditableTable = ({dataSource, setData, initColumns}) => {
-  const [form] = Form.useForm()
-  const [editingKey, setEditingKey] = useState('')
+const EditableTable = ({ dataSource, setData, initColumns }) => {
+  const [form] = Form.useForm();
+  const [editingKey, setEditingKey] = useState('');
 
-  const isEditing = (record) => record.key === editingKey
+  const isEditing = (record) => record.key === editingKey;
 
   const edit = (record) => {
     form.setFieldsValue({...record, ...(record.date && {date: moment(record.date, dateFormat)})})
-    setEditingKey(record.key)
-  }
+    setEditingKey(record.key);
+  };
 
   const cancel = () => {
-    setEditingKey('')
-  }
+    setEditingKey('');
+  };
 
   const save = async (key) => {
     try {
-      const row = await form.validateFields()
-      const newRow = {...row, ...(row.date && {date: moment(row.date).format(dateFormat)})}
-      const newData = [...dataSource]
-      const index = newData.findIndex((item) => key === item.key)
+      const row = await form.validateFields();
+      const newRow = {...row, ...(row.date && {date: moment(row.date).format(dateFormat)})};
+      const newData = [...dataSource];
+      const index = newData.findIndex((item) => key === item.key);
 
-      const item = newData[index]
-      newData.splice(index, 1, {...item, ...newRow})
-      console.log(newData)
-      setData(newData)
-      setEditingKey('')
+      const item = newData[index];
+      newData.splice(index, 1, { ...item, ...newRow });
+      console.log(newData);
+      setData(newData);
+      setEditingKey('');
     } catch (errInfo) {
-      console.log('Validate Failed:', errInfo)
+      console.log('Validate Failed:', errInfo);
     }
-  }
+  };
 
   const del = (key) => {
-    const newData = [...dataSource]
-    const index = newData.findIndex((item) => key === item.key)
-    newData.splice(index, 1)
-    setData(newData)
+    const newData = [...dataSource];
+    const index = newData.findIndex((item) => key === item.key);
+    newData.splice(index, 1);
+    setData(newData);
   }
 
   const columns = [
@@ -94,11 +106,11 @@ const EditableTable = ({dataSource, setData, initColumns}) => {
       title: <b>Actions</b>,
       dataIndex: 'key',
       render: (_, record) => {
-        const editable = isEditing(record)
+        const editable = isEditing(record);
         return editable ? (
           <span>
             <Button onClick={() => save(record.key)}>Save</Button>
-            <Popconfirm title='Sure to cancel?' onConfirm={cancel}>
+            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
               <Button>Cancel</Button>
             </Popconfirm>
           </span>
@@ -107,17 +119,18 @@ const EditableTable = ({dataSource, setData, initColumns}) => {
             <Button disabled={editingKey !== ''} onClick={() => edit(record)}>
               Edit
             </Button>
-            <Popconfirm title='Are you sure?' onConfirm={() => del(record.key)}>
-              <Button disabled={editingKey !== ''}>Delete</Button>
+            <Popconfirm title="Are you sure?" onConfirm={ () => del(record.key) }>
+              <Button disabled={ editingKey !== ''}>Delete</Button>
             </Popconfirm>
           </span>
-        )
+
+        );
       },
     },
-  ]
+  ];
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
-      return col
+      return col;
     }
 
     return {
@@ -130,8 +143,8 @@ const EditableTable = ({dataSource, setData, initColumns}) => {
         editing: isEditing(record),
         ...(col.inputType === 'select' && {options: col.options}),
       }),
-    }
-  })
+    };
+  });
 
   return (
     <Form form={form} component={false}>
@@ -142,15 +155,16 @@ const EditableTable = ({dataSource, setData, initColumns}) => {
           },
         }}
         bordered
-        dataSource={dataSource}
+        dataSource={ dataSource }
         columns={mergedColumns}
-        rowClassName='editable-row'
+        rowClassName="editable-row"
         pagination={{
           onChange: cancel,
         }}
       />
     </Form>
-  )
-}
+  );
+};
 
-export default EditableTable
+
+export default EditableTable;
