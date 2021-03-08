@@ -138,6 +138,41 @@ const messages = {
           'The securities are not being purchased in an initial public offering or private placement.',
         ],
       },
+      columns: [
+        {
+          title: 'Date',
+          dataIndex: 'date',
+          inputType: 'date',
+        },
+        {
+          title: 'NAME OF SECURITY',
+          dataIndex: 'securityName',
+        },
+        {
+          title: 'ACCOUNT',
+          dataIndex: 'account',
+        },
+        {
+          title: '# OF SHRS, PRINCIPAL AMOUNT, ETC .',
+          dataIndex: 'SHRSOrder',
+          inputType: 'number',
+        },
+        {
+          title: 'APPROX PRICE',
+          dataIndex: 'approxPrice',
+          inputType: 'number',
+        },
+        {
+          title: 'SYMBOL OR CUSIP #',
+          dataIndex: 'symbolOrCusipOrder',
+        },
+        {
+          title: 'PURCHASE(P) SALE(S)',
+          dataIndex: 'purchaseSale',
+          inputType: 'select',
+          options: ['PURCHASE', 'SALE'],
+        },
+      ],
       note:
         'If for any reason an employee cannot make the above required representations or has any questions in this area, the employee MUST contact the CCO before submitting any request for approval.',
     },

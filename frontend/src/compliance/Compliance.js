@@ -4,6 +4,7 @@ import {Popconfirm, Table, Space, Menu, Dropdown, Button, message, Tabs} from 'a
 import {Link, useParams, useHistory } from 'react-router-dom'
 import axios from 'axios';
 import Container from './components/Container';
+import {useCurrentUser, useDeleteOne} from './hooks';
 
 
 import routes from './routes';
@@ -154,7 +155,69 @@ const FormCList = ({onRowDelete, isLoading, data}) => {
 }
 
 const FormDList = ({onRowDelete, isLoading, data}) => {
-  return <div>FormDList</div>
+  const [loading, res, error] = useCurrentUser();
+  if (error) {
+    message.error('Errors occured while fetching user!.');
+    return null;
+  }
+
+  const approveForm = () => {};
+
+  const columns = [
+    {
+      title: 'Title',
+      dataIndex: 'id',
+      key: 'id',
+      render: (text, record) => {
+        const form = messages[record.typ]
+        return <Link to={ routes.formD.view.url(record.id) }>{form.name}</Link>
+      },
+    },
+    {
+      title: 'Period',
+      render: (text, record) => {
+        const data = record.json_data
+        return data.submissionDate
+      },
+    },
+    {
+      title: 'Submitted by',
+      dataIndex: 'submit_by',
+      key: 'submit_by',
+      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
+      filterMultiple: true,
+      onFilter: (value, record) => record.submit_by.indexOf(value) === 0,
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (text, record) => {
+        return (
+          <Space size='middle'>
+            {!loading && res.data.is_admin && (
+              <Popconfirm onConfirm={approveForm} title='Are you sure?'>
+                <Button type='link'>
+                  Approve
+                </Button>{' '}
+              </Popconfirm>
+            )}
+            <Link to={routes.formD.edit.url(record.id)}>Edit</Link>
+            <Popconfirm onConfirm={onRowDelete(record.id)} title='Are you sure?'>
+              <Button type='link' danger>
+                Delete
+              </Button>
+            </Popconfirm>
+          </Space>
+        )
+      },
+    },
+  ]
+
+  return <Table loading={ isLoading } rowKey={(record) => record.id} columns={columns} dataSource={data} />
 }
 
 
@@ -162,6 +225,7 @@ const ComplianceApp = () => {
   const [forms, setFormList] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const { typ } = useParams()
+  const [onDelete, _, deleteRes, deleteError] = useDeleteOne()
   console.log('FormType: ' + typ);
 
   const history = useHistory()
@@ -189,22 +253,23 @@ const ComplianceApp = () => {
       })
   }, [])
 
+
+  useEffect(() => {
+    if (deleteRes && deleteRes.status === 204) {
+      const formId = deleteRes.data.pk;
+      setFormList((forms) => forms.filter((form) => form.id !== formId));
+      message.success('Form has been deleted successfully!');
+      return;
+    }
+
+    if (deleteError) {
+      console.log(deleteError);
+      message.error('Errors occured while deleting form.');
+    }
+  }, [deleteRes, deleteError]);
+
   function onTabKeyChange(key) {
     history.push('/compliance/' + key)
-  }
-
-  const onDelete = (formId) => async () => {
-    try {
-      const res = await axios.delete(routes.api.detailsURL(formId))
-
-      if (res.status === 204) {
-        setFormList((forms) => forms.filter((form) => form.id !== formId))
-        message.success('Form has been deleted successfully!')
-      }
-    } catch (error) {
-      console.log(error)
-      message.error('Errors occured while deleting.')
-    }
   }
 
   return (
@@ -214,10 +279,6 @@ const ComplianceApp = () => {
           const specificFormList = forms.filter((form) => form.typ === typ);
           const FormList = typeToFormComponent[typ];
           const formRoute = Object.entries(routes).find(([key, route]) => route.type === typ);
-
-          if (!formRoute) {
-            return null;
-          }
 
           return (
             <TabPane tab={form.name} key={ typ }>

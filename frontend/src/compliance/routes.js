@@ -2,6 +2,7 @@ export default {
   api: {
     list: () => '/api/compliance/',
     detailsURL: (ID) => `/api/compliance/${ID}/`,
+    currentUser: () => '/api/account/current_user/',
   },
   formA: {
     label: 'Form A',
@@ -54,4 +55,21 @@ export default {
       url: () => `/compliance/c/new`,
     },
   },
-}
+  formD: {
+    label: 'Form D',
+    type: 'd',
+    url: () => '/compliance/d',
+    view: {
+      label: 'Form D - View',
+      url: (id) => `/compliance/d/${id}/view`,
+    },
+    edit: {
+      label: 'Form D - Edit',
+      url: (id) => `/compliance/d/${id}/edit`,
+    },
+    new: {
+      label: 'Form D - New',
+      url: () => `/compliance/d/new`,
+    },
+  },
+};

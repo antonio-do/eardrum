@@ -4,7 +4,9 @@ import axios from 'axios';
 
 import routes from './routes';
 import messages from './messages';
+import moment from 'moment';
 
+const dateFormat = 'DD/MM/YYYY';
 
 function FormA(optionValue, submissionDate, accounts) {
   this.optionValue = optionValue || null
@@ -45,6 +47,17 @@ function newFormC() {
   return new FormC(null, messages.c.text.quarters[0], new Date().getFullYear(), [])
 }
 
+function FormD(submissionDate, issuers) {
+  this.submissionDate = submissionDate || null
+  this.issuers = issuers || []
+
+  return this
+}
+
+function newFormD() {
+  return new FormD(moment(new Date()).format(dateFormat), [])
+}
+
 function dataFactory(data, formType) {
   switch(formType) {
     case 'a':
@@ -62,6 +75,8 @@ function dataFactory(data, formType) {
             data.json_data.year,
             data.json_data.tickers
           )
+    case 'd':
+        return data === null ? newFormD() : new FormD(data.json_data.submissionDate, data.json_data.issuers)
   }
 
   return null;
@@ -102,8 +117,9 @@ function useDeleteOne() {
     setLoading(true);
     try {
       const res = await axios.delete(routes.api.detailsURL(pk));
+      res.data = {};
+      res.data.pk = pk;
       setResponse(res);
-
     } catch (error) {
       console.log(error);
       setError(error);
@@ -115,8 +131,24 @@ function useDeleteOne() {
   return [func, loading, response, error];
 }
 
+function useCurrentUser() {
+  const [loading, setLoading] = useState(true);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get(routes.api.currentUser())
+      .then((response) => setResponse(response))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }, []);
+  return [loading, response, error];
+}
+
 
 export {
   useFetchOne,
-  useDeleteOne
+  useDeleteOne,
+  useCurrentUser,
 }
