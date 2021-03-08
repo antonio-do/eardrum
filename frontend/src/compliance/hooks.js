@@ -93,7 +93,30 @@ function useFetchOne(pk, formType) {
   return [data, error]
 }
 
+function useDeleteOne() {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
+
+  const func = (pk) => async () => {
+    setLoading(true);
+    try {
+      const res = await axios.delete(routes.api.detailsURL(pk));
+      setResponse(res);
+
+    } catch (error) {
+      console.log(error);
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return [func, loading, response, error];
+}
+
 
 export {
   useFetchOne,
+  useDeleteOne
 }
