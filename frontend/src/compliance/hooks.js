@@ -30,11 +30,13 @@ function newFormB() {
   return new FormB(null, new Date().getFullYear(), [])
 }
 
-function FormC(optionValue, quarter, year, dealingDetails) {
+function FormC(optionValue, quarter, year, tickers) {
   this.optionValue = optionValue || null
   this.quarter = quarter || null
   this.year = year || null
-  this.dealingDetails = dealingDetails || []
+
+  // tickers: short form for Stock tickers
+  this.tickers = tickers || []
 
   return this
 }
@@ -58,7 +60,7 @@ function dataFactory(data, formType) {
             data.json_data.optionValue,
             data.json_data.quarter,
             data.json_data.year,
-            data.json_data.dealingDetails
+            data.json_data.tickers
           )
   }
 

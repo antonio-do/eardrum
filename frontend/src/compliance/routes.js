@@ -5,6 +5,7 @@ export default {
   },
   formA: {
     label: 'Form A',
+    type: 'a',
     url: () => '/compliance/a',
     view: {
       label: 'Form A - View',
@@ -21,6 +22,7 @@ export default {
   },
   formB: {
     label: 'Form B',
+    type: 'b',
     url: () => '/compliance/b',
     view: {
       label: 'Form B - View',
@@ -37,6 +39,7 @@ export default {
   },
   formC: {
     label: 'Form C',
+    type: 'c',
     url: () => '/compliance/c',
     view: {
       label: 'Form C - View',

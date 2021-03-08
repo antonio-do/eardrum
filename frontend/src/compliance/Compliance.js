@@ -33,7 +33,7 @@ const FormAList = ({onRowDelete, isLoading, data}) => {
       },
     },
     {
-      title: 'Submit By',
+      title: 'Submitted by',
       dataIndex: 'submit_by',
       key: 'submit_by',
       filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
@@ -47,7 +47,7 @@ const FormAList = ({onRowDelete, isLoading, data}) => {
         return (
           <Space size='middle'>
             <Link to={ routes.formA.edit.url(record.id) }>Edit</Link>
-              <Popconfirm onConfirm={ onRowDelete } title="Are you sure?">
+              <Popconfirm onConfirm={ onRowDelete(record.id) } title="Are you sure?">
                 <Button type='link' danger>Delete</Button>
               </Popconfirm>
           </Space>
@@ -79,7 +79,7 @@ const FormBList = ({onRowDelete, isLoading, data}) => {
       },
     },
     {
-      title: 'Submit By',
+      title: 'Submitted by',
       dataIndex: 'submit_by',
       key: 'submit_by',
       filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
@@ -122,11 +122,11 @@ const FormCList = ({onRowDelete, isLoading, data}) => {
       title: 'Period',
       render: (text, record) => {
         const data = record.json_data
-        return data.quarter
+        return `${data.quarter}/${data.year}`
       },
     },
     {
-      title: 'Submit By',
+      title: 'Submitted by',
       dataIndex: 'submit_by',
       key: 'submit_by',
       filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
@@ -208,38 +208,27 @@ const ComplianceApp = () => {
     }
   }
 
-  const menu = (
-    <Menu>
-      {Object.entries(routes)
-        .filter(([key]) => key.includes('form'))
-        .map(([key, route]) => {
-          return (
-            <Menu.Item key={key}>
-              <Link to={route.new.url()}>{route.new.label}</Link>
-            </Menu.Item>
-          )
-        })}
-
-    </Menu>
-  )
-
   return (
     <Container>
-      <Space style={{width: '100%', marginBottom: '10px'}} align='end' direction='vertical'>
-        <Dropdown overlay={menu} trigger={['click']}>
-          <Button type='primary'>
-            New <DownOutlined />
-          </Button>
-        </Dropdown>
-      </Space>
-
       <Tabs onChange={ onTabKeyChange } type='card' activeKey={ typ }>
         {Object.entries(messages).map(([typ, form]) => {
           const specificFormList = forms.filter((form) => form.typ === typ);
           const FormList = typeToFormComponent[typ];
+          const formRoute = Object.entries(routes).find(([key, route]) => route.type === typ);
+
+          if (!formRoute) {
+            return null;
+          }
 
           return (
             <TabPane tab={form.name} key={ typ }>
+              <Space style={{width: '100%', marginBottom: '10px'}} align='end' direction='vertical'>
+                <Link to={formRoute[1].new.url()}>
+                  <Button type='primary'>
+                    New <DownOutlined />
+                  </Button>
+                </Link>
+              </Space>
               <FormList formName={form.name} onRowDelete={onDelete} data={specificFormList} isLoading={isLoading} />
             </TabPane>
           )

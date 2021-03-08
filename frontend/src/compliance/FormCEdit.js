@@ -26,7 +26,7 @@ const EditEQTRForm = () => {
   const [optionValue, setOptionValue] = useState();
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(true);
-  const [dealingDetails, setDealingDetails] = useState([]);
+  const [tickers, setTickers] = useState([]);
   const exceedingLimit = optionValue === formText.box1.radioGroupOptions[2].key;
   const [form] = Form.useForm();
 
@@ -44,12 +44,12 @@ const EditEQTRForm = () => {
 
       form.setFieldsValue({ year: data.year, quarter: data.quarter, radioGroup: data.optionValue });
 
-      if (Array.isArray(data.dealingDetails) && data.dealingDetails.length) {
-        const newDealingDetails = data.dealingDetails.map((row, idx) => {
+      if (Array.isArray(data.tickers) && data.tickers.length) {
+        const newTickers = data.tickers.map((row, idx) => {
           return { key: idx, ...row };
         });
 
-        setDealingDetails(newDealingDetails);
+        setTickers(newTickers);
       }
     }
   }, [isLoading, data]);
@@ -75,28 +75,28 @@ const EditEQTRForm = () => {
       number: 0,
       date: moment(new Date()).format(dateFormat),
     };
-    const newDealingDetails = _.cloneDeep(dealingDetails);
+    const newTickers = _.cloneDeep(tickers);
 
-    const newDealingDetail = {};
+    const ticker = {};
 
-    formText.box1.dealingDetailsColumns.forEach((col) => {
-      newDealingDetail[col.dataIndex] = col.inputType ? defaultValue[col.inputType] : defaultValue.text;
+    formText.box1.columns.forEach((col) => {
+      ticker[col.dataIndex] = col.inputType ? defaultValue[col.inputType] : defaultValue.text;
     });
 
-    let lastKey = dealingDetails.length === 0 ? 0 : dealingDetails[dealingDetails.length - 1].key;
+    let lastKey = tickers.length === 0 ? 0 : tickers[tickers.length - 1].key;
 
-    newDealingDetail.key = lastKey + 1;
+    ticker.key = lastKey + 1;
 
-    newDealingDetails.push(newDealingDetail);
-    setDealingDetails(newDealingDetails);
+    newTickers.push(ticker);
+    setTickers(newTickers);
   };
 
   const createForm = async () => {
     try {
       await form.validateFields();
 
-      const newDealingDetails = exceedingLimit
-        ? _.cloneDeep(dealingDetails).map((row) => {
+      const newTickers = exceedingLimit
+        ? _.cloneDeep(tickers).map((row) => {
             delete row.key;
             return row;
           })
@@ -106,7 +106,7 @@ const EditEQTRForm = () => {
       const { year, quarter, radioGroup: optionValue } = formValues;
       const { data } = await axios.post(routes.api.list(), {
         typ: 'c',
-        data: { optionValue, quarter, year, dealingDetails: newDealingDetails },
+        data: { optionValue, quarter, year, tickers: newTickers },
       });
 
       if (data.id) {
@@ -126,18 +126,18 @@ const EditEQTRForm = () => {
       await form.validateFields();
       const formValues = form.getFieldsValue();
       const { year, quarter, radioGroup: optionValue } = formValues;
-      const newDealingDetails = exceedingLimit
-        ? _.cloneDeep(dealingDetails).map((row) => {
+      const newTickers = exceedingLimit
+        ? _.cloneDeep(tickers).map((row) => {
             delete row.key;
             return row;
           })
         : [];
 
-      console.log(newDealingDetails);
+      console.log(newTickers);
 
       const { data } = await axios.patch(routes.api.detailsURL(pk), {
         typ: 'c',
-        data: { optionValue, quarter, year, dealingDetails: newDealingDetails },
+        data: { optionValue, quarter, year, tickers: newTickers },
       });
 
       if (data.id) {
@@ -154,7 +154,7 @@ const EditEQTRForm = () => {
 
   const columns = [{ title: '#', render: (text, record, index) => index + 1 }];
 
-  columns.push(...messages.c.text.box1.dealingDetailsColumns.map((col, idx) => ({ ...col, key: idx, editable: true })));
+  columns.push(...messages.c.text.box1.columns.map((col, idx) => ({ ...col, key: idx, editable: true })));
 
   return (
     <Container>
@@ -257,11 +257,7 @@ const EditEQTRForm = () => {
               New row
             </Button>
             <div className='hide-message'>
-              <EditableTable
-                initColumns={columns}
-                dataSource={exceedingLimit ? dealingDetails : []}
-                setData={setDealingDetails}
-              />
+              <EditableTable initColumns={columns} dataSource={exceedingLimit ? tickers : []} setData={setTickers} />
             </div>
           </div>
         </div>

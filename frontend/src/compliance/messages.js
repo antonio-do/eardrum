@@ -4,7 +4,8 @@ const messages = {
     path: 'brokerage-account-disclosure',
     shortName: 'BAD',
     text: {
-      overview: 'Every employee must disclose to the CCO any and all brokerage accounts in the name of the employee, over which the employee exercises discretion (expressor or in fact) or in which the employee has an interest.',
+      overview:
+        'Every employee must disclose to the CCO any and all brokerage accounts in the name of the employee, over which the employee exercises discretion (expressor or in fact) or in which the employee has an interest.',
       non_required_title: 'Disclosure is not required for any account:',
       non_required_items: [
         'over which the employee has no control or discretionary trading authority (including Managed Accounts), or',
@@ -15,16 +16,20 @@ const messages = {
       options: [
         {
           key: 'do_not_have',
-          label: 'I do not have any accounts that must be disclosed. I agree to notify the CCO prior to any such account being opened in the future.',
+          label:
+            'I do not have any accounts that must be disclosed. I agree to notify the CCO prior to any such account being opened in the future.',
         },
         {
           key: 'have',
-          label: 'Set forth below is a complete list of all accounts that must be disclosed (use additional forms if necessary).',
-        }
+          label:
+            'Set forth below is a complete list of all accounts that must be disclosed (use additional forms if necessary).',
+        },
       ],
-      note: 'The CCO will be sending a letter requesting duplicate confirms and statements for each of the accounts disclosed below.',
+      note:
+        'The CCO will be sending a letter requesting duplicate confirms and statements for each of the accounts disclosed below.',
       account_headers: ['Name of Firm Where Account is Held', 'Name on Account', 'Account Number'],
-      policy: 'I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethics and Compliance Manual, and I agree to abide by such policies during the term of my employment.',
+      policy:
+        'I have read and understand the Personal Securities Trading Policies referenced in the Code of Ethics and Compliance Manual, and I agree to abide by such policies during the term of my employment.',
     },
   },
   b: {
@@ -55,18 +60,18 @@ const messages = {
       box1: {
         title: 'I hereby declare that (tickbox):',
         radioGroupOptions: [
-          {key: 'do_not_engage', label: 'I have not engaged in personal account deadling'},
+          { key: 'do_not_engage', label: 'I have not engaged in personal account dealing' },
           {
             key: 'engage_not_exceed',
-            label: 'I have engaged in personal account deadling, not exceeding the limit of S$10,000 (ten thousand)',
+            label: 'I have engaged in personal account dealing, not exceeding the limit of S$10,000 (ten thousand)',
           },
           {
             key: 'engage_exceed',
             label:
-              'I have engaged in personal account deadling, and obtained prior approval to trade on a single stock on the same day (i.e 24 hours) for an amount exceeding S$10,000 (ten thousand)',
+              'I have engaged in personal account dealing, and obtained prior approval to trade on a single stock on the same day (i.e 24 hours) for an amount exceeding S$10,000 (ten thousand)',
           },
         ],
-        dealingDetailsColumns: [
+        columns: [
           {
             title: 'Stock Ticker',
             dataIndex: 'stockTicker',
@@ -84,7 +89,7 @@ const messages = {
             title: 'Long/Sell/Short',
             dataIndex: 'type',
             inputType: 'select',
-            options: ['Long', 'Sell', 'Sort'],
+            options: ['Long', 'Sell', 'Short'],
           },
           {
             title: 'Date of sale/accquisition or other(DD/MM/YYYY)',
@@ -93,15 +98,15 @@ const messages = {
           },
         ],
         lastRadioItemNote:
-          'Comple the details below in case of personal account deadling on a single stock on the same day and exceeding the amount of S$10,000 (ten thousand):',
+          'Complete the details below in case of personal account dealing on a single stock on the same day and exceeding the amount of S$10,000 (ten thousand):',
       },
       box2: {
         title: 'I hereby confirm that:',
         checkboxGroupTitles: [
           'My personal dealing activities and those of any Related Persons are in accordance with the Rules set out in this Manual',
           'To the best of my knowledge, my personal dealing activities will not raise any conflict of interest with the Company or any of its clients',
-          'I am not aware of any pending client order, current or upcoming client soliciation, in relation to my personal deadling activities',
-          'My personal deadling activities do not breach any relevant holding or blackout period by the Manual',
+          'I am not aware of any pending client order, current or upcoming client soliciation, in relation to my personal dealing activities',
+          'My personal dealing activities do not breach any relevant holding or blackout period by the Manual',
         ],
       },
       box3: {
@@ -137,7 +142,6 @@ const messages = {
         'If for any reason an employee cannot make the above required representations or has any questions in this area, the employee MUST contact the CCO before submitting any request for approval.',
     },
   },
-}
+};
 
-
-export default messages
+export default messages;

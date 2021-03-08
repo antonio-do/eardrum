@@ -34,9 +34,9 @@ const FormCView = () => {
   }
   const columns = [{ title: '#', render: (text, record, index) => index + 1 }];
 
-  columns.push(...messages.c.text.box1.dealingDetailsColumns);
+  columns.push(...messages.c.text.box1.columns);
 
-  const dataSource = data.dealingDetails.map((row, idx) => {
+  const dataSource = data.tickers.map((row, idx) => {
     return { key: idx, ...row };
   });
 
