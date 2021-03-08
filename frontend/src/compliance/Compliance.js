@@ -1,7 +1,6 @@
 /* eslint-disable no-shadow */
 import React, {useEffect, useState} from 'react'
 import {Popconfirm, Table, Space, Menu, Dropdown, Button, message, Tabs} from 'antd'
-import { DownOutlined } from '@ant-design/icons'
 import {Link, useParams, useHistory } from 'react-router-dom'
 import axios from 'axios';
 import Container from './components/Container';
@@ -225,7 +224,7 @@ const ComplianceApp = () => {
               <Space style={{width: '100%', marginBottom: '10px'}} align='end' direction='vertical'>
                 <Link to={formRoute[1].new.url()}>
                   <Button type='primary'>
-                    New <DownOutlined />
+                    New
                   </Button>
                 </Link>
               </Space>
