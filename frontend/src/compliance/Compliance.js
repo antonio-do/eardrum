@@ -163,6 +163,8 @@ const FormDList = ({onRowDelete, isLoading, data}) => {
 
   const approveForm = () => {};
 
+  const rejectForm = () => {};
+
   const columns = [
     {
       title: 'Title',
@@ -199,11 +201,18 @@ const FormDList = ({onRowDelete, isLoading, data}) => {
         return (
           <Space size='middle'>
             {!loading && res.data.is_admin && (
+              <>
               <Popconfirm onConfirm={approveForm} title='Are you sure?'>
                 <Button type='link'>
                   Approve
-                </Button>{' '}
+                </Button>
               </Popconfirm>
+              <Popconfirm onConfirm={rejectForm} title='Are you sure?'>
+                <Button type='link' danger>
+                  Reject
+                </Button>
+              </Popconfirm>
+              </>
             )}
             <Link to={routes.formD.edit.url(record.id)}>Edit</Link>
             <Popconfirm onConfirm={onRowDelete(record.id)} title='Are you sure?'>
