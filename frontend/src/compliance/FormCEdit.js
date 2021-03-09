@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react';
 import { Divider, Breadcrumb, Select, Button, message, Radio, Spin, Form } from 'antd';
 import { MenuOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Link, useHistory, useParams } from 'react-router-dom';
-import axios from 'axios';
 import _ from 'lodash';
 import moment from 'moment';
 import messages from './messages';
@@ -13,7 +12,7 @@ import routes from './routes';
 import Container from './components/Container';
 import CheckBoxGroup from './components/CheckBoxGroup';
 import EditableTable from './components/EditableTable';
-import { useFetchOne } from './hooks';
+import { useFetchOne, useUpdateOne } from './hooks';
 import './styles/formC.css';
 
 const formText = messages.c.text;
@@ -31,6 +30,7 @@ const EditEQTRForm = () => {
   const [form] = Form.useForm();
 
   const { pk } = useParams();
+  const [save, updateOneLoading, updateOneRes, updateOneErr] = useUpdateOne(pk);
   const [data, error] = useFetchOne(pk, 'c');
   const MODE = {
     edit: 'edit',
@@ -59,6 +59,18 @@ const EditEQTRForm = () => {
       setIsLoading(false);
     }
   }, [data, error]);
+
+  useEffect(() => {
+    if (updateOneRes !== null) {
+      message.success('Employee Quarterly Trade Report was submitted successfully!', 1);
+      history.push(routes.formC.url());
+    }
+
+    if (updateOneErr !== null) {
+      console.log(updateOneErr);
+      message.error('Unexpected error encountered, please try again!');
+    }
+  }, [updateOneRes, updateOneErr]);
 
   if (isLoading) {
     return <Spin size='large' />;
@@ -91,65 +103,21 @@ const EditEQTRForm = () => {
     setTickers(newTickers);
   };
 
-  const createForm = async () => {
-    try {
-      await form.validateFields();
+  const submitForm = async () => {
+    await form.validateFields();
+    const newTickers = exceedingLimit
+      ? _.cloneDeep(tickers).map((row) => {
+          delete row.key;
+          return row;
+        })
+      : [];
 
-      const newTickers = exceedingLimit
-        ? _.cloneDeep(tickers).map((row) => {
-            delete row.key;
-            return row;
-          })
-        : [];
-
-      const formValues = form.getFieldsValue();
-      const { year, quarter, radioGroup: optionValue } = formValues;
-      const { data } = await axios.post(routes.api.list(), {
-        typ: 'c',
-        data: { optionValue, quarter, year, tickers: newTickers },
-      });
-
-      if (data.id) {
-        message.success('Employee Quarterly Trade Report was submitted successfully!', 1);
-        history.push(routes.formC.url());
-      }
-    } catch (error) {
-      console.log(error);
-      if (error instanceof Error) {
-        message.error('Unexpected error encountered, please try again!');
-      }
-    }
-  };
-
-  const updateForm = async () => {
-    try {
-      await form.validateFields();
-      const formValues = form.getFieldsValue();
-      const { year, quarter, radioGroup: optionValue } = formValues;
-      const newTickers = exceedingLimit
-        ? _.cloneDeep(tickers).map((row) => {
-            delete row.key;
-            return row;
-          })
-        : [];
-
-      console.log(newTickers);
-
-      const { data } = await axios.patch(routes.api.detailsURL(pk), {
-        typ: 'c',
-        data: { optionValue, quarter, year, tickers: newTickers },
-      });
-
-      if (data.id) {
-        message.success('Employee Quarterly Trade Report was updated successfully!', 1);
-        history.push(routes.formC.url());
-      }
-    } catch (error) {
-      console.log(error);
-      if (error instanceof Error) {
-        message.error('Unexpected error encountered, please try again!');
-      }
-    }
+    const formValues = form.getFieldsValue();
+    const { year, quarter, radioGroup: optionValue } = formValues;
+    save({
+      typ: 'c',
+      data: { optionValue, quarter, year, tickers: newTickers },
+    });
   };
 
   const columns = [{ title: '#', render: (text, record, index) => index + 1 }];
@@ -297,13 +265,13 @@ const EditEQTRForm = () => {
         <strong>{formText.confirm}</strong>
       </div>
       {mode === MODE.edit && (
-        <Button type='primary' onClick={updateForm}>
+        <Button type='primary' onClick={submitForm}>
           Update
         </Button>
       )}
 
       {mode === MODE.new && (
-        <Button type='primary' onClick={createForm}>
+        <Button type='primary' onClick={submitForm}>
           Submit
         </Button>
       )}

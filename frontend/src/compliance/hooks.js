@@ -149,10 +149,12 @@ function useUpdateOne(pk) {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
+  const url = pk ? routes.api.detailsURL(pk) : routes.api.list();
+  const method = pk ? 'PATCH' : 'POST';
+
   const save = (data) => {
     setLoading(true);
-    axios
-      .patch(routes.api.detailsURL(pk), data)
+    axios({ url, data, method })
       .then((response) => setResponse(response))
       .catch((error) => setError(error))
       .finally(() => setLoading(false));

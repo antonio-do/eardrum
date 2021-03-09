@@ -13,7 +13,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import messages from './messages';
 import routes from './routes';
-import { useFetchOne } from './hooks';
+import { useFetchOne, useUpdateOne } from './hooks';
 import Container from './components/Container';
 import EditableTable from './components/EditableTable';
 import './styles/formD.css';
@@ -30,6 +30,7 @@ const FormDEdit = () => {
 
   const { pk } = useParams();
   const [data, error] = useFetchOne(pk, 'd');
+  const [save, updateOneLoading, updateOneRes, updateOneErr] = useUpdateOne(pk);
   const MODE = {
     edit: 'edit',
     new: 'new',
@@ -54,6 +55,18 @@ const FormDEdit = () => {
     }
   }, [data, error]);
 
+  useEffect(() => {
+    if (updateOneRes !== null) {
+      message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1);
+      history.push(routes.formD.url());
+    }
+
+    if (updateOneErr !== null) {
+      console.log(updateOneErr);
+      message.error('Unexpected error encountered, please try again!');
+    }
+  }, [updateOneRes, updateOneErr]);
+
   if (isLoading) {
     return <Spin size='large' />;
   }
@@ -62,48 +75,16 @@ const FormDEdit = () => {
     return <p>{error.toString()}</p>;
   }
 
-  const createForm = async () => {
-    try {
-      const newIssuers = _.cloneDeep(issuers).map((row) => {
-        delete row.key;
-        return row;
-      });
+  const submitForm = async () => {
+    const newIssuers = _.cloneDeep(issuers).map((row) => {
+      delete row.key;
+      return row;
+    });
 
-      const res = await axios.post(routes.api.list(), {
-        typ: 'd',
-        data: { submissionDate: data.submissionDate, issuers: newIssuers },
-      });
-
-      if (res.data.id) {
-        message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1);
-        history.push(routes.formD.url());
-      }
-    } catch (error) {
-      console.log(error);
-      message.error('Unexpected error encountered, please try again!');
-    }
-  };
-
-  const updateForm = async () => {
-    try {
-      const newIssuers = _.cloneDeep(issuers).map((row) => {
-        delete row.key;
-        return row;
-      });
-
-      const res = await axios.patch(routes.api.detailsURL(pk), {
-        typ: 'd',
-        data: { submissionDate: data.submissionDate, issuers: newIssuers },
-      });
-
-      if (res.data.id) {
-        message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1);
-        history.push(routes.formD.url());
-      }
-    } catch (error) {
-      console.log(error);
-      message.error('Unexpected error encountered, please try again!');
-    }
+    save({
+      typ: 'd',
+      data: { submissionDate: data.submissionDate, issuers: newIssuers },
+    });
   };
 
   const addNewRow = () => {
@@ -175,7 +156,7 @@ const FormDEdit = () => {
 
       {mode === MODE.edit && (
         <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-          <Button type='primary' onClick={updateForm}>
+          <Button type='primary' onClick={submitForm}>
             Update
           </Button>
         </Space>
@@ -183,7 +164,7 @@ const FormDEdit = () => {
 
       {mode === MODE.new && (
         <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-          <Button type='primary' onClick={createForm}>
+          <Button type='primary' onClick={submitForm}>
             Submit
           </Button>
         </Space>
