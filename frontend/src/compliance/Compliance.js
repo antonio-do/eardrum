@@ -15,66 +15,50 @@ import messages from './messages';
 const {TabPane} = Tabs
 
 
-const FormAList = ({onRowDelete, isLoading, removeForm, data}) => {
-  const columns = [
+const columns = {
+  a: [
     {
       title: 'Period',
       render: (text, record) => {
-        const data = record.json_data
-        return data.submissionDate
+        const data = record.json_data;
+        return data.submissionDate;
       },
     },
+  ],
+  b: [
+    {
+      title: 'Period',
+      render: (text, record) => {
+        const data = record.json_data;
+        return data.year;
+      },
+    },
+  ],
+  c: [
+    {
+      title: 'Period',
+      render: (text, record) => {
+        const data = record.json_data;
+        return `${data.quarter}/${data.year}`;
+      },
+    },
+  ],
+};
+
+const FormList = ({columns, formType, isLoading, removeForm, data}) => {
+  const [_, formRoute] = Object.entries(routes).find(([key, route]) => route.type === formType);
+
+  if (!formRoute) return null;
+
+  const initColumns = [
     {
       title: 'Submitted by',
       dataIndex: 'submit_by',
       key: 'submit_by',
-      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
-      filterMultiple: true,
-      onFilter: (value, record) => record.submit_by.indexOf(value) === 0,
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (text, record) => {
-        return (
-          <Space size='middle'>
-            <Link to={ routes.formA.view.url(record.id) }>View</Link>
-            <Link to={ routes.formA.edit.url(record.id) }>Edit</Link>
-            <DeleteButtonWithPopConfirm pk={record.id} removeForm={removeForm} />
-          </Space>
-        )
-      },
-    },
-  ]
-
-  return (
-    <>
-      <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-        <Link to={routes.formA.new.url()}>
-          <Button type='primary'>New</Button>
-        </Link>
-      </Space>
-
-      <h2 style={{ textAlign: 'center' }}>{messages.a.name}</h2>
-      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
-    </>
-  );
-}
-
-const FormBList = ({onRowDelete, isLoading, removeForm, data}) => {
-  const columns = [
-    {
-      title: 'Period',
-      render: (text, record) => {
-        const data = record.json_data
-        return data.year
-      },
-    },
-    {
-      title: 'Submitted by',
-      dataIndex: 'submit_by',
-      key: 'submit_by',
-      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
+      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({
+        text: submitBy,
+        value: submitBy,
+      })),
       filterMultiple: true,
       onFilter: (value, record) => record.submit_by.indexOf(value) === 0,
     },
@@ -84,74 +68,31 @@ const FormBList = ({onRowDelete, isLoading, removeForm, data}) => {
       render: (text, record) => {
         return (
           <Space size='middle'>
-            <Link to={ routes.formB.view.url(record.id) }>View</Link>
-            <Link to={routes.formB.edit.url(record.id)}>Edit</Link>
+            <Link to={formRoute.view.url(record.id)}>View</Link>
+            <Link to={formRoute.edit.url(record.id)}>Edit</Link>
             <DeleteButtonWithPopConfirm pk={record.id} removeForm={removeForm} />
           </Space>
-        )
+        );
       },
     },
-  ]
+  ];
+
+  const mergedColumns = [...columns, ...initColumns];
 
   return (
     <>
       <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-        <Link to={routes.formB.new.url()}>
+        <Link to={formRoute.new.url()}>
           <Button type='primary'>New</Button>
         </Link>
       </Space>
-      <h2 style={{ textAlign: 'center' }}>{messages.b.name}</h2>
-      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
+      <h2 style={{ textAlign: 'center' }}>{messages[formType].name}</h2>
+      <Table loading={isLoading} rowKey={(record) => record.id} columns={mergedColumns} dataSource={data} />
     </>
   );
 }
 
-const FormCList = ({onRowDelete, isLoading, removeForm, data}) => {
-  const columns = [
-    {
-      title: 'Period',
-      render: (text, record) => {
-        const data = record.json_data
-        return `${data.quarter}/${data.year}`
-      },
-    },
-    {
-      title: 'Submitted by',
-      dataIndex: 'submit_by',
-      key: 'submit_by',
-      filters: [...new Set(data.map((item) => item.submit_by))].map((submitBy) => ({text: submitBy, value: submitBy})),
-      filterMultiple: true,
-      onFilter: (value, record) => record.submit_by.indexOf(value) === 0,
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (text, record) => {
-        return (
-          <Space size='middle'>
-            <Link to={ routes.formC.view.url(record.id) }>View</Link>
-            <Link to={routes.formC.edit.url(record.id)}>Edit</Link>
-            <DeleteButtonWithPopConfirm pk={record.id} removeForm={removeForm} />
-          </Space>
-        )
-      },
-    },
-  ]
-
-  return (
-    <>
-      <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-        <Link to={routes.formC.new.url()}>
-          <Button type='primary'>New</Button>
-        </Link>
-      </Space>
-      <h2 style={{ textAlign: 'center' }}>{messages.c.name}</h2>
-      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
-    </>
-  );
-}
-
-const FormDList = ({onRowDelete, isLoading, removeForm, changeFormStatus, data}) => {
+const FormDList = ({isLoading, removeForm, changeFormStatus, data}) => {
   const [loading, res, error] = useCurrentUser();
   if (error) {
     message.error('Errors occured while fetching user!.');
@@ -278,13 +219,7 @@ const ComplianceApp = () => {
   const { typ } = useParams()
   console.log('FormType: ' + typ);
 
-  const history = useHistory()
-  const typeToFormComponent = {
-    a: FormAList,
-    b: FormBList,
-    c: FormCList,
-    d: FormDList,
-  }
+  const history = useHistory();
 
   useEffect(() => {
     setIsLoading(true)
@@ -324,17 +259,34 @@ const ComplianceApp = () => {
 
   return (
     <Container>
-      <Tabs onChange={ onTabKeyChange } type='card' activeKey={ typ }>
+     <Tabs onChange={onTabKeyChange} type='card' activeKey={typ}>
         {Object.entries(messages).map(([typ, form]) => {
           const specificFormList = forms.filter((form) => form.typ === typ);
-          const FormList = typeToFormComponent[typ];
-          const formRoute = Object.entries(routes).find(([key, route]) => route.type === typ);
+
+          if (['a', 'b', 'c'].includes(typ)) {
+            return (
+              <TabPane tab={form.name} key={typ}>
+                <FormList
+                  columns={columns[typ]}
+                  data={specificFormList}
+                  isLoading={isLoading}
+                  removeForm={removeForm}
+                  formType={typ}
+                />
+              </TabPane>
+            );
+          }
 
           return (
-            <TabPane tab={form.name} key={ typ }>
-              <FormList formName={form.name} changeFormStatus={changeFormStatus} removeForm={removeForm} data={specificFormList} isLoading={isLoading} />
+            <TabPane tab={form.name} key={typ}>
+              <FormDList
+                changeFormStatus={changeFormStatus}
+                removeForm={removeForm}
+                data={specificFormList}
+                isLoading={isLoading}
+              />
             </TabPane>
-          )
+          );
         })}
       </Tabs>
     </Container>
