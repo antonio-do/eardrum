@@ -61,7 +61,7 @@ function newFormD() {
 function dataFactory(data, formType) {
   switch(formType) {
     case 'a':
-      return data === null? newFormA(): new FormA(data.json_data.optionValue, data.json_data.accounts);
+      return data === null? newFormA(): new FormA(data.json_data.optionValue, data.json_data.submissionDate, data.json_data.accounts);
     case 'b':
       return data === null
         ? newFormB()

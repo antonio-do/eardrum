@@ -10,7 +10,6 @@ import { MenuOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import axios from 'axios';
 import _ from 'lodash';
-import moment from 'moment';
 import messages from './messages';
 import routes from './routes';
 import { useFetchOne, useUpdateOne } from './hooks';
@@ -20,8 +19,6 @@ import './styles/formD.css';
 
 const formText = messages.d.text;
 const formName = messages.d.name;
-
-const dateFormat = 'DD/MM/YYYY';
 
 const FormDEdit = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -87,29 +84,6 @@ const FormDEdit = () => {
     });
   };
 
-  const addNewRow = () => {
-    const defaultValue = {
-      text: '',
-      select: null,
-      number: 0,
-      date: moment(new Date()).format(dateFormat),
-    };
-    const newIssuers = _.cloneDeep(issuers);
-
-    const issuer = {};
-
-    formText.columns.forEach((col) => {
-      issuer[col.dataIndex] = col.inputType ? defaultValue[col.inputType] : defaultValue.text;
-    });
-
-    let lastKey = issuers.length === 0 ? 0 : issuers[issuers.length - 1].key;
-
-    issuer.key = lastKey + 1;
-
-    newIssuers.push(issuer);
-    setIssuers(newIssuers);
-  };
-
   const columns = [{ title: '#', render: (text, record, index) => index + 1 }];
 
   columns.push(...formText.columns.map((col, idx) => ({ ...col, key: idx, editable: true })));
@@ -138,7 +112,6 @@ const FormDEdit = () => {
       <h1 style={{ textAlign: 'center' }}>{formName}</h1>
 
       <div className='hide-message'>
-        <Button onClick={addNewRow}>New row</Button>
         <EditableTable initColumns={columns} dataSource={issuers} setData={setIssuers} />
       </div>
 

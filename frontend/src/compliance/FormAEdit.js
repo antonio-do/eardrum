@@ -74,18 +74,6 @@ const FormAEdit = () => {
     return (<p>{ error.toString() }</p>)
   }
 
-  function newAccount() {
-    var newAccounts = _.cloneDeep(accounts)
-
-    let newAccount = {};
-    formText.account_headers.forEach((_, idx) => { newAccount[idx] = null });
-    let lastKey = accounts.length === 0? 0: accounts[accounts.length-1].key;
-    newAccount.key = lastKey + 1;
-
-    newAccounts.push(newAccount)
-    setAccounts(newAccounts);
-  }
-
   function onOptionChange(e) {
     setOptionValue(e.target.value);
   }
@@ -192,8 +180,7 @@ const FormAEdit = () => {
           </Radio>))}
       </Radio.Group>
       <p>{ formText.note }</p>
-      <Button onClick={ newAccount } disabled={ !hasAccounts }>New Account</Button>
-      <EditableTable initColumns={ columns } dataSource={ hasAccounts? accounts: [] } setData={ setAccounts }/>
+      <EditableTable initColumns={ columns } dataSource={ hasAccounts? accounts: [] } setData={ setAccounts } disabled={ !hasAccounts }/>
       <p>{ formText.policy }</p>
 
       { mode === MODE.new && <Button onClick={ onSubmit }>Submit</Button>}

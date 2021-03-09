@@ -221,11 +221,8 @@ const EditEQTRForm = () => {
           </Form.Item>
           <p>{formText.box1.lastRadioItemNote}</p>
           <div>
-            <Button onClick={addNewRow} disabled={!exceedingLimit}>
-              New row
-            </Button>
             <div className='hide-message'>
-              <EditableTable initColumns={columns} dataSource={exceedingLimit ? tickers : []} setData={setTickers} />
+              <EditableTable initColumns={columns} dataSource={exceedingLimit ? tickers : []} setData={setTickers} disabled={!exceedingLimit}/>
             </div>
           </div>
         </div>

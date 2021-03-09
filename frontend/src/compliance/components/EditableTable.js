@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import {Table, Input, InputNumber, Popconfirm, Form, DatePicker, Select} from 'antd'
+import {Table, Input, InputNumber, Popconfirm, Form, DatePicker, Select, Button as AntButton} from 'antd'
 import { Button } from '@material-ui/core';
 import moment from 'moment';
+import _ from 'lodash';
 const originData = [];
 
 const dateFormat = 'DD/MM/YYYY'
@@ -61,7 +62,7 @@ const EditableCell = ({
   );
 };
 
-const EditableTable = ({ dataSource, setData, initColumns }) => {
+const EditableTable = ({ dataSource, setData, initColumns, disabled }) => {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
 
@@ -128,6 +129,30 @@ const EditableTable = ({ dataSource, setData, initColumns }) => {
       },
     },
   ];
+
+  const addNewRow = () => {
+    const defaultValue = {
+      text: '',
+      select: null,
+      number: 0,
+      date: moment(new Date()).format(dateFormat),
+    };
+    const newDataSource = _.cloneDeep(dataSource);
+
+    const data = {};
+    const newKey = new Date().getTime();
+    data.key = newKey;
+
+    initColumns.forEach((col) => {
+      if (col.title !== '#') {
+        data[col.dataIndex] = col.inputType ? defaultValue[col.inputType] : defaultValue.text;
+      }
+    });
+
+    newDataSource.push(data);
+    setData(newDataSource);
+  };
+
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
@@ -148,6 +173,7 @@ const EditableTable = ({ dataSource, setData, initColumns }) => {
 
   return (
     <Form form={form} component={false}>
+      <AntButton onClick={addNewRow} disabled={disabled}>New row</AntButton>
       <Table
         components={{
           body: {
