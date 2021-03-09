@@ -108,17 +108,15 @@ function useFetchOne(pk, formType) {
   return [data, error]
 }
 
-function useDeleteOne() {
+function useDeleteOne(pk) {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
-  const func = (pk) => async () => {
+  const func = async () => {
     setLoading(true);
     try {
       const res = await axios.delete(routes.api.detailsURL(pk));
-      res.data = {};
-      res.data.pk = pk;
       setResponse(res);
     } catch (error) {
       console.log(error);
@@ -146,9 +144,27 @@ function useCurrentUser() {
   return [loading, response, error];
 }
 
+function useUpdateOne(pk) {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
+
+  const save = (data) => {
+    setLoading(true);
+    axios
+      .patch(routes.api.detailsURL(pk), data)
+      .then((response) => setResponse(response))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  };
+
+  return [save, loading, response, error];
+}
+
 
 export {
   useFetchOne,
   useDeleteOne,
   useCurrentUser,
+  useUpdateOne,
 }

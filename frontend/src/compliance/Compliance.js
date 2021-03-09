@@ -4,7 +4,8 @@ import {Popconfirm, Table, Space, Menu, Dropdown, Button, message, Tabs} from 'a
 import {Link, useParams, useHistory } from 'react-router-dom'
 import axios from 'axios';
 import Container from './components/Container';
-import {useCurrentUser, useDeleteOne} from './hooks';
+import {useCurrentUser, useDeleteOne, useUpdateOne} from './hooks';
+import _ from 'lodash';
 
 
 import routes from './routes';
@@ -14,17 +15,8 @@ import messages from './messages';
 const {TabPane} = Tabs
 
 
-const FormAList = ({onRowDelete, isLoading, data}) => {
+const FormAList = ({onRowDelete, isLoading, removeForm, data}) => {
   const columns = [
-    {
-      title: 'Title',
-      dataIndex: 'id',
-      key: 'id',
-      render: (text, record) => {
-        const form = messages[record.typ]
-        return <Link to={ routes.formA.view.url(record.id) }>{form.name}</Link>
-      },
-    },
     {
       title: 'Period',
       render: (text, record) => {
@@ -46,31 +38,31 @@ const FormAList = ({onRowDelete, isLoading, data}) => {
       render: (text, record) => {
         return (
           <Space size='middle'>
+            <Link to={ routes.formA.view.url(record.id) }>View</Link>
             <Link to={ routes.formA.edit.url(record.id) }>Edit</Link>
-              <Popconfirm onConfirm={ onRowDelete(record.id) } title="Are you sure?">
-                <Button type='link' danger>Delete</Button>
-              </Popconfirm>
+            <DeleteButtonWithPopConfirm pk={record.id} removeForm={removeForm} />
           </Space>
         )
       },
     },
   ]
 
-  return <Table loading={ isLoading } rowKey={(record) => record.id} columns={columns} dataSource={data} />
+  return (
+    <>
+      <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
+        <Link to={routes.formA.new.url()}>
+          <Button type='primary'>New</Button>
+        </Link>
+      </Space>
+
+      <h2 style={{ textAlign: 'center' }}>{messages.a.name}</h2>
+      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
+    </>
+  );
 }
 
-
-const FormBList = ({onRowDelete, isLoading, data}) => {
+const FormBList = ({onRowDelete, isLoading, removeForm, data}) => {
   const columns = [
-    {
-      title: 'Form',
-      dataIndex: 'id',
-      key: 'id',
-      render: (text, record) => {
-        const form = messages[record.typ]
-        return <Link to={routes.formB.view.url(record.id)}>{form.name}</Link>
-      },
-    },
     {
       title: 'Period',
       render: (text, record) => {
@@ -92,32 +84,30 @@ const FormBList = ({onRowDelete, isLoading, data}) => {
       render: (text, record) => {
         return (
           <Space size='middle'>
+            <Link to={ routes.formB.view.url(record.id) }>View</Link>
             <Link to={routes.formB.edit.url(record.id)}>Edit</Link>
-            <Popconfirm onConfirm={onRowDelete(record.id)} title='Are you sure?'>
-              <Button type='link' danger>
-                Delete
-              </Button>
-            </Popconfirm>
+            <DeleteButtonWithPopConfirm pk={record.id} removeForm={removeForm} />
           </Space>
         )
       },
     },
   ]
 
-  return <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
+  return (
+    <>
+      <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
+        <Link to={routes.formB.new.url()}>
+          <Button type='primary'>New</Button>
+        </Link>
+      </Space>
+      <h2 style={{ textAlign: 'center' }}>{messages.b.name}</h2>
+      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
+    </>
+  );
 }
 
-const FormCList = ({onRowDelete, isLoading, data}) => {
+const FormCList = ({onRowDelete, isLoading, removeForm, data}) => {
   const columns = [
-    {
-      title: 'Form',
-      dataIndex: 'id',
-      key: 'id',
-      render: (text, record) => {
-        const form = messages[record.typ]
-        return <Link to={routes.formC.view.url(record.id)}>{form.name}</Link>
-      },
-    },
     {
       title: 'Period',
       render: (text, record) => {
@@ -139,42 +129,75 @@ const FormCList = ({onRowDelete, isLoading, data}) => {
       render: (text, record) => {
         return (
           <Space size='middle'>
+            <Link to={ routes.formC.view.url(record.id) }>View</Link>
             <Link to={routes.formC.edit.url(record.id)}>Edit</Link>
-            <Popconfirm onConfirm={onRowDelete(record.id)} title='Are you sure?'>
-              <Button type='link' danger>
-                Delete
-              </Button>
-            </Popconfirm>
+            <DeleteButtonWithPopConfirm pk={record.id} removeForm={removeForm} />
           </Space>
         )
       },
     },
   ]
 
-  return <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
+  return (
+    <>
+      <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
+        <Link to={routes.formC.new.url()}>
+          <Button type='primary'>New</Button>
+        </Link>
+      </Space>
+      <h2 style={{ textAlign: 'center' }}>{messages.c.name}</h2>
+      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
+    </>
+  );
 }
 
-const FormDList = ({onRowDelete, isLoading, data}) => {
+const FormDList = ({onRowDelete, isLoading, removeForm, changeFormStatus, data}) => {
   const [loading, res, error] = useCurrentUser();
   if (error) {
     message.error('Errors occured while fetching user!.');
     return null;
   }
 
-  const approveForm = () => {};
+  const AprroveRejectButton = ({ record }) => {
+    const pk = record.id;
+    const [save, loading, response, error] = useUpdateOne(pk);
 
-  const rejectForm = () => {};
+    useEffect(() => {
+      if (loading === false) {
+        if (response !== null) {
+          changeFormStatus(pk, response.data.status)
+          message.success('Form status was changed successfully!');
+        }
+
+        if (error !== null) {
+          console.log(error)
+          message.error('Errors occured while changing form status.');
+        }
+      }
+    }, [loading, response, error])
+
+    const changeStatus = (status) => () => {
+      save({ status, data: record.json_data });
+    };
+
+    const approveForm = changeStatus('approved');
+    const rejectForm = changeStatus('rejected');
+
+    return (
+      <div style={{ display: 'flex' }}>
+        <Popconfirm onConfirm={approveForm} title='Are you sure?'>
+          <Button type='link'>Approve</Button>
+        </Popconfirm>
+        <Popconfirm onConfirm={rejectForm} title='Are you sure?'>
+          <Button type='link' danger>
+            Reject
+          </Button>
+        </Popconfirm>
+      </div>
+    );
+  };
 
   const columns = [
-    {
-      title: 'Title',
-      dataIndex: 'id',
-      key: 'id',
-      render: (text, record) => {
-        const form = messages[record.typ]
-        return <Link to={ routes.formD.view.url(record.id) }>{form.name}</Link>
-      },
-    },
     {
       title: 'Period',
       render: (text, record) => {
@@ -200,41 +223,59 @@ const FormDList = ({onRowDelete, isLoading, data}) => {
       render: (text, record) => {
         return (
           <Space size='middle'>
-            {!loading && res.data.is_admin && (
-              <>
-              <Popconfirm onConfirm={approveForm} title='Are you sure?'>
-                <Button type='link'>
-                  Approve
-                </Button>
-              </Popconfirm>
-              <Popconfirm onConfirm={rejectForm} title='Are you sure?'>
-                <Button type='link' danger>
-                  Reject
-                </Button>
-              </Popconfirm>
-              </>
-            )}
+            <Link to={ routes.formD.view.url(record.id) }>View</Link>
+            {!loading && res.data.is_admin && <AprroveRejectButton record={record} />}
             <Link to={routes.formD.edit.url(record.id)}>Edit</Link>
-            <Popconfirm onConfirm={onRowDelete(record.id)} title='Are you sure?'>
-              <Button type='link' danger>
-                Delete
-              </Button>
-            </Popconfirm>
+            <DeleteButtonWithPopConfirm pk={record.id} removeForm={removeForm} />
           </Space>
-        )
+        );
       },
     },
   ]
 
-  return <Table loading={ isLoading } rowKey={(record) => record.id} columns={columns} dataSource={data} />
+  return (
+    <>
+      <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
+        <Link to={routes.formD.new.url()}>
+          <Button type='primary'>New</Button>
+        </Link>
+      </Space>
+      <h2 style={{ textAlign: 'center' }}>{messages.d.name}</h2>
+      <Table loading={isLoading} rowKey={(record) => record.id} columns={columns} dataSource={data} />
+    </>
+  );
 }
+
+const DeleteButtonWithPopConfirm = ({ pk, removeForm }) => {
+  const [deleteForm, loading, response, error] = useDeleteOne(pk);
+
+  useEffect(() => {
+    if (loading === false) {
+      if (response !== null) {
+        removeForm(pk);
+        message.success('Form has been deleted successfully!');
+      }
+
+      if (error !== null) {
+        message.error('Errors occured while deleting form.');
+      }
+    }
+  }, [loading, response, error, removeForm]);
+
+  return (
+    <Popconfirm onConfirm={deleteForm} title='Are you sure?'>
+      <Button type='link' danger>
+        Delete
+      </Button>
+    </Popconfirm>
+  );
+};
 
 
 const ComplianceApp = () => {
   const [forms, setFormList] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const { typ } = useParams()
-  const [onDelete, _, deleteRes, deleteError] = useDeleteOne()
   console.log('FormType: ' + typ);
 
   const history = useHistory()
@@ -262,20 +303,20 @@ const ComplianceApp = () => {
       })
   }, [])
 
+  const removeForm = (pk) => {
+    setFormList((forms) => forms.filter((form) => form.id !== pk));
+  };
 
-  useEffect(() => {
-    if (deleteRes && deleteRes.status === 204) {
-      const formId = deleteRes.data.pk;
-      setFormList((forms) => forms.filter((form) => form.id !== formId));
-      message.success('Form has been deleted successfully!');
-      return;
-    }
+  const changeFormStatus = (pk, status) => {
+    const index = forms.findIndex((f) => f.id === pk);
+    if (!index) return;
 
-    if (deleteError) {
-      console.log(deleteError);
-      message.error('Errors occured while deleting form.');
-    }
-  }, [deleteRes, deleteError]);
+    const newForms = _.cloneDeep(forms);
+    const newItem = { ...newForms[index], status };
+    newForms.splice(index, 1, newItem);
+
+    setFormList(newForms);
+  };
 
   function onTabKeyChange(key) {
     history.push('/compliance/' + key)
@@ -291,14 +332,7 @@ const ComplianceApp = () => {
 
           return (
             <TabPane tab={form.name} key={ typ }>
-              <Space style={{width: '100%', marginBottom: '10px'}} align='end' direction='vertical'>
-                <Link to={formRoute[1].new.url()}>
-                  <Button type='primary'>
-                    New
-                  </Button>
-                </Link>
-              </Space>
-              <FormList formName={form.name} onRowDelete={onDelete} data={specificFormList} isLoading={isLoading} />
+              <FormList formName={form.name} changeFormStatus={changeFormStatus} removeForm={removeForm} data={specificFormList} isLoading={isLoading} />
             </TabPane>
           )
         })}

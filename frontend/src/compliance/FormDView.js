@@ -1,5 +1,10 @@
 import React, { useEffect } from 'react';
-import { Breadcrumb, Spin, message, Table } from 'antd';
+import {
+  Breadcrumb,
+  Spin,
+  message,
+  Table
+  } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { Link, useParams } from 'react-router-dom';
 import messages from './messages';

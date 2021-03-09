@@ -1,7 +1,11 @@
-/* eslint-disable no-nested-ternary */
-/* eslint-disable no-shadow */
 import React, { useState, useEffect } from 'react';
-import { Breadcrumb, Button, Space, Spin, message } from 'antd';
+import {
+  Breadcrumb,
+  Button,
+  Space,
+  Spin,
+  message,
+  } from 'antd';
 import { MenuOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import axios from 'axios';
