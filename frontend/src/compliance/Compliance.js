@@ -120,6 +120,13 @@ const FormDList = ({isLoading, removeForm, changeFormStatus, data}) => {
   const Actions = (record) => {
     const pk = record.id;
     const [save, updateOneLoading, updateOneRes, updateOneError] = useUpdateOne(pk);
+    const status = {
+      approved: 'approved',
+      pending: 'pending',
+      rejected: 'rejected',
+    };
+
+    const isButtonDisabled = [status.approved, status.rejected].includes(record.status);
 
     useEffect(() => {
       if (updateOneLoading === false) {
@@ -136,11 +143,11 @@ const FormDList = ({isLoading, removeForm, changeFormStatus, data}) => {
     }, [updateOneLoading, updateOneRes, updateOneError])
 
     const changeStatus = (status) => () => {
-      save({ status, data: record.json_data });
+      save({ status });
     };
 
-    const approveForm = changeStatus('approved');
-    const rejectForm = changeStatus('rejected');
+    const approveForm = changeStatus(status.approved);
+    const rejectForm = changeStatus(status.rejected);
 
     return (
       <Space size='middle'>
@@ -148,11 +155,11 @@ const FormDList = ({isLoading, removeForm, changeFormStatus, data}) => {
         {!loading && res.data.is_admin && (
           <>
             {' '}
-            <Popconfirm onConfirm={approveForm} title='Are you sure?'>
-              <Button type='link'>Approve</Button>
+            <Popconfirm onConfirm={approveForm} title='Are you sure?' disabled={isButtonDisabled}>
+              <Button type='link' disabled={isButtonDisabled}>Approve</Button>
             </Popconfirm>
-            <Popconfirm onConfirm={rejectForm} title='Are you sure?'>
-              <Button type='link' danger>
+            <Popconfirm onConfirm={rejectForm} title='Are you sure?' disabled={isButtonDisabled}>
+              <Button type='link' danger disabled={isButtonDisabled}>
                 Reject
               </Button>
             </Popconfirm>

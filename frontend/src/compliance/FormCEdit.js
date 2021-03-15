@@ -207,11 +207,11 @@ const EditEQTRForm = () => {
             <Radio.Group onChange={(event) => setOptionValue(event.target.value)} value={optionValue}>
               {formText.box1.radioGroupOptions.map((option, index) => {
                 return (
-                  <p key={index}>
+                  <div key={index}>
                     <Radio value={option.key}>
-                      {option.label}
+                      <span style={{ whiteSpace: 'normal' }}>{option.label}</span>
                     </Radio>
-                  </p>
+                  </div>
                 );
               })}
             </Radio.Group>

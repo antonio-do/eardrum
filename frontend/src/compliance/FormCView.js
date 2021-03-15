@@ -70,9 +70,11 @@ const FormCView = () => {
         <Radio.Group value={data.optionValue} disabled>
           {formText.box1.radioGroupOptions.map((option, index) => {
             return (
-              <Radio key={index} value={option.key} style={{ whiteSpace: 'break-spaces' }}>
-                {option.label}
-              </Radio>
+              <div key={index}>
+                <Radio value={option.key}>
+                  <span style={{ whiteSpace: 'normal' }}>{option.label}</span>
+                </Radio>
+              </div>
             );
           })}
         </Radio.Group>
