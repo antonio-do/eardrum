@@ -115,7 +115,7 @@ const FormCView = () => {
         <CheckBoxGroup titles={formText.box3.checkboxGroupTitles} />
       </div>
 
-      <Button icon={<ArrowLeftOutlined />} onClick={() => history.push(routes.formC.url())} style={{marginTop: '10px' }}>
+      <Button icon={<ArrowLeftOutlined />} onClick={() => history.goBack()} style={{ marginTop: '10px' }}>
         Go back
       </Button>
     </Container>

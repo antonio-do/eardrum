@@ -63,7 +63,7 @@ const FormDView = () => {
           <i>{formText.note}</i>
         </div>
       </div>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => history.push(routes.formD.url())} style={{marginTop: '10px' }}>
+      <Button icon={<ArrowLeftOutlined />} onClick={() => history.goBack()} style={{ marginTop: '10px' }}>
         Go back
       </Button>
     </Container>

@@ -106,7 +106,7 @@ const FormBView = () => {
         </div>
       </div>
 
-      <Button icon={<ArrowLeftOutlined />} onClick={() => history.push(routes.formB.url())} style={{marginTop: '10px' }}>
+      <Button icon={<ArrowLeftOutlined />} onClick={() => history.goBack()} style={{ marginTop: '10px' }}>
         Go back
       </Button>
     </Container>

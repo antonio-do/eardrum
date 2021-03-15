@@ -88,7 +88,7 @@ const FormAView = function() {
       <Table bordered columns={ columns } dataSource={ dataSource} />
       <p>{ formText.policy }</p>
 
-       <Button icon={<ArrowLeftOutlined />} onClick={() => history.push(routes.formA.url())}>
+       <Button icon={<ArrowLeftOutlined />} onClick={() => history.goBack()}>
           Go back
         </Button>
     </Container>

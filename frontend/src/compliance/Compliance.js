@@ -13,6 +13,7 @@ import messages from './messages';
 
 const {TabPane} = Tabs
 
+const dateFormat = 'DD/MM/YYYY';
 
 const getPeriodFilterProps = (data, field) => {
   return {
@@ -28,7 +29,7 @@ const getPeriodFilterProps = (data, field) => {
 const columns = {
   a: (data) => [
     {
-      title: 'Period',
+      title: `Period (${dateFormat})`,
       render: (text, record) => {
         const data = record.json_data
         return data.submissionDate
@@ -173,7 +174,7 @@ const FormDList = ({isLoading, removeForm, changeFormStatus, data}) => {
 
   const columns = [
     {
-      title: 'Period',
+      title: `Period (${dateFormat})`,
       render: (text, record) => {
         const data = record.json_data
         return data.submissionDate
