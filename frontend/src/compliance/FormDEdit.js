@@ -5,6 +5,7 @@ import {
   Space,
   Spin,
   message,
+  Popconfirm,
   } from 'antd';
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Link, useHistory, useParams } from 'react-router-dom';
@@ -12,7 +13,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import messages from './messages';
 import routes from './routes';
-import { useFetchOne, useUpdateOne } from './hooks';
+import { useFetchOne, useUpdateOne, useCurrentUser } from './hooks';
 import Container from './components/Container';
 import EditableTable from './components/EditableTable';
 import './styles/formD.css';
@@ -33,6 +34,7 @@ const FormDEdit = () => {
     new: 'new',
   };
   const mode = pk === undefined ? MODE.new : MODE.edit;
+  const [currentUserLoading, currentUserRes, currentUserErr] = useCurrentUser();
 
   useEffect(() => {
     if (!isLoading && data !== null) {
@@ -53,6 +55,13 @@ const FormDEdit = () => {
   }, [data, error]);
 
   useEffect(() => {
+    if (!currentUserLoading && currentUserErr !== null) {
+      console.log(currentUserErr);
+      message.error('Errors occured while fetching user!.');
+    }
+  }, [currentUserLoading, currentUserErr]);
+
+  useEffect(() => {
     if (updateOneRes !== null) {
       message.success('Request for Pre-Clearance of Securities Trade was submitted successfully!', 1);
       history.push(routes.formD.url());
@@ -64,7 +73,7 @@ const FormDEdit = () => {
     }
   }, [updateOneRes, updateOneErr]);
 
-  if (isLoading) {
+  if (isLoading || currentUserLoading ) {
     return <Spin size='large' />;
   }
 
@@ -127,20 +136,36 @@ const FormDEdit = () => {
         </div>
       </div>
 
-      {mode === MODE.new && (
-        <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-          <Button type='primary' onClick={submitForm} loading={updateOneLoading}>
-            Create
-          </Button>
+     <Space style={{ width: '100%' }} align='end' direction='vertical'>
+        {!currentUserLoading && currentUserRes !== null && (
+          <div>
+            <div>Submitted by: {currentUserRes.data.username}</div>
+            <div>Date: {data.submissionDate}</div>
+          </div>
+        )}
+
+        {mode === MODE.new && (
+          <div>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+              Create
+            </Button>
+            <Popconfirm onConfirm={() => history.push(routes.formD.url())} title='Are you sure?'>
+              <Button>Cancel</Button>
+            </Popconfirm>
+          </div>
+        )}
+
+        {mode === MODE.edit && (
+          <div>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+              Update
+            </Button>
+            <Popconfirm onConfirm={() => history.push(routes.formD.url())} title='Are you sure?'>
+              <Button>Cancel</Button>
+            </Popconfirm>
+          </div>
+        )}
       </Space>
-      )}
-      {mode === MODE.edit && (
-        <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-          <Button type='primary' onClick={submitForm} loading={updateOneLoading}>
-            Update
-          </Button>
-        </Space>
-      )}
     </Container>
   );
 };

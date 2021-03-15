@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Breadcrumb, Spin, Select, Button, Form, message, Upload, Radio, Space } from 'antd';
+import { Breadcrumb, Spin, Select, Button, Form, message, Upload, Radio, Space, Popconfirm } from 'antd';
 import { UploadOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Link, useHistory, useParams } from 'react-router-dom';
-import axios from 'axios';
 import messages from './messages';
 import routes from './routes';
 import Container from './components/Container';
-import { useFetchOne } from './hooks';
+import { useFetchOne, useCurrentUser, useUpdateOne } from './hooks';
 
 const formText = messages.b.text;
 const formName = messages.b.name;
@@ -20,7 +19,6 @@ const FormBEdit = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [form] = Form.useForm();
   const [data, error] = useFetchOne(pk, 'b');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [optionValue, setOptionValue] = useState(false);
   const MODE = {
     edit: 'edit',
@@ -28,6 +26,8 @@ const FormBEdit = () => {
   };
   const mode = pk === undefined ? MODE.new : MODE.edit;
   const isUploadDisabled = optionValue !== formText.options[1].key;
+  const [save, updateOneLoading, updateOneRes, updateOneErr] = useUpdateOne(pk);
+  const [currentUserLoading, currentUserRes, currentUserErr] = useCurrentUser();
 
   const dataUrlToFile = async (dataUrl, fileName, type) => {
     try {
@@ -80,7 +80,26 @@ const FormBEdit = () => {
     }
   }, [data, error]);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!currentUserLoading && currentUserErr !== null) {
+      console.log(currentUserErr);
+      message.error('Errors occured while fetching user!.');
+    }
+  }, [currentUserLoading, currentUserErr]);
+
+  useEffect(() => {
+    if (updateOneRes !== null) {
+      message.success('Employee Quarterly Trade Report was submitted successfully!', 1);
+      history.push(routes.formB.url());
+    }
+
+    if (updateOneErr !== null) {
+      console.log(updateOneErr);
+      message.error('Unexpected error encountered, please try again!');
+    }
+  }, [updateOneRes, updateOneErr]);
+
+  if (isLoading || currentUserLoading) {
     return <Spin size='large' />;
   }
 
@@ -127,58 +146,16 @@ const FormBEdit = () => {
     return files;
   };
 
-  const createForm = async () => {
-    try {
-      await form.validateFields();
-      setIsSubmitting(true);
+  const submitForm = async () => {
+    await form.validateFields();
 
-      const year = form.getFieldValue('year');
-      const optionValue = form.getFieldValue('radioGroup');
-      const fileList = await getFiles();
-      const { data } = await axios.post(routes.api.list(), {
-        typ: 'b',
-        data: { optionValue, year, fileList },
-      });
-
-      if (data.id) {
-        setIsSubmitting(false);
-        message.success('Employee Securities Holdings Report was created successfully!', 1);
-        history.push(routes.formB.url());
-      }
-    } catch (error) {
-      setIsSubmitting(false);
-      console.log(error);
-      if (error instanceof Error) {
-        message.error('Unexpected error encountered, please try again!');
-      }
-    }
-  };
-
-  const updateForm = async () => {
-    try {
-      await form.validateFields();
-      setIsSubmitting(true);
-
-      const year = form.getFieldValue('year');
-      const optionValue = form.getFieldValue('radioGroup');
-      const fileList = await getFiles();
-      const { data } = await axios.patch(routes.api.detailsURL(pk), {
-        typ: 'b',
-        data: { optionValue, year, fileList },
-      });
-
-      if (data.id) {
-        setIsSubmitting(false);
-        message.success('Employee Securities Holdings Report was updated successfully!', 1);
-        history.push(routes.formB.url());
-      }
-    } catch (error) {
-      setIsSubmitting(false);
-      console.log(error);
-      if (error instanceof Error) {
-        message.error('Unexpected error encountered, please try again!');
-      }
-    }
+    const year = form.getFieldValue('year');
+    const optionValue = form.getFieldValue('radioGroup');
+    const fileList = await getFiles();
+    save({
+      typ: 'b',
+      data: { optionValue, year, fileList },
+    });
   };
 
   return (
@@ -255,20 +232,35 @@ const FormBEdit = () => {
         </div>
       </div>
 
-      {mode === MODE.new && (
-        <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-          <Button type='primary' onClick={createForm} loading={isSubmitting}>
-            Create
-          </Button>
-        </Space>
-      )}
-      {mode === MODE.edit && (
-        <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-          <Button type='primary' onClick={updateForm} loading={isSubmitting}>
-            Update
-          </Button>
-        </Space>
-      )}
+      <Space style={{ width: '100%' }} align='end' direction='vertical'>
+        {!currentUserLoading && currentUserRes !== null && (
+          <div>
+            <div>Submitted by: {currentUserRes.data.username}</div>
+          </div>
+        )}
+
+        {mode === MODE.new && (
+          <div>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+              Create
+            </Button>
+            <Popconfirm onConfirm={() => history.push(routes.formB.url())} title='Are you sure?'>
+              <Button>Cancel</Button>
+            </Popconfirm>
+          </div>
+        )}
+
+        {mode === MODE.edit && (
+          <div>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+              Update
+            </Button>
+            <Popconfirm onConfirm={() => history.push(routes.formB.url())} title='Are you sure?'>
+              <Button>Cancel</Button>
+            </Popconfirm>
+          </div>
+        )}
+      </Space>
     </Container>
   );
 };

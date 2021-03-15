@@ -6,6 +6,7 @@ import {
   message,
   Breadcrumb,
   Space,
+  Popconfirm,
 } from 'antd';
 import {
   useHistory,
@@ -19,7 +20,7 @@ import moment from 'moment';
 import Container from './components/Container';
 import EditableTable from './components/EditableTable';
 
-import { useFetchOne } from './hooks';
+import { useFetchOne, useCurrentUser } from './hooks';
 import messages from './messages';
 import routes from './routes';
 
@@ -34,6 +35,7 @@ const FormAEdit = () => {
   const [optionValue, setOptionValue] = useState();
   const [accounts, setAccounts] = useState([]);
   const history = useHistory();
+  const [currentUserLoading, currentUserRes, currentUserErr] = useCurrentUser();
 
   useEffect(() => {
     if (!loading && data !== null) {
@@ -56,8 +58,11 @@ const FormAEdit = () => {
   }, [data, error]);
 
   useEffect(() => {
-
-  })
+    if (!currentUserLoading && currentUserErr !== null) {
+      console.log(currentUserErr)
+      message.error('Errors occured while fetching user!.');
+    }
+  }, [currentUserLoading, currentUserErr]);
 
   const MODE = {
     'edit': 'edit',
@@ -67,7 +72,7 @@ const FormAEdit = () => {
   console.log("view mode", mode);
 
 
-  if (loading) {
+  if (loading || currentUserLoading) {
     return <Spin size="large" />
   }
 
@@ -184,16 +189,36 @@ const FormAEdit = () => {
       <EditableTable initColumns={ columns } dataSource={ hasAccounts? accounts: [] } setData={ setAccounts } disabled={ !hasAccounts }/>
       <p>{ formText.policy }</p>
 
-     {mode === MODE.new && (
-        <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-          <Button type='primary' onClick={onSubmit}>Create</Button>
-        </Space>
-      )}
-      {mode === MODE.edit && (
-        <Space style={{ width: '100%', marginBottom: '10px' }} align='end' direction='vertical'>
-          <Button type='primary' onClick={onSave}>Update</Button>
-        </Space>
-      )}
+      <Space style={{ width: '100%' }} align='end' direction='vertical'>
+        {!currentUserLoading && currentUserRes !== null && (
+          <div>
+            <div>Submitted by: {currentUserRes.data.username}</div>
+            <div>Date: {data.submissionDate}</div>
+          </div>
+        )}
+
+        {mode === MODE.new && (
+          <div>
+            <Button type='primary' onClick={onSubmit} style={{ marginRight: '6px' }}>
+              Create
+            </Button>
+            <Popconfirm onConfirm={() => history.push(routes.formA.url())} title='Are you sure?'>
+              <Button>Cancel</Button>
+            </Popconfirm>
+          </div>
+        )}
+
+        {mode === MODE.edit && (
+          <div>
+            <Button type='primary' onClick={onSave} style={{ marginRight: '6px' }}>
+              Update
+            </Button>
+            <Popconfirm onConfirm={() => history.push(routes.formA.url())} title='Are you sure?'>
+              <Button>Cancel</Button>
+            </Popconfirm>
+          </div>
+        )}
+      </Space>
     </Container>
   )
 }
