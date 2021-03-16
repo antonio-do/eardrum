@@ -108,7 +108,9 @@ const FormAEdit = () => {
         arrAccount.push(account[i]);
       }
       return arrAccount;
-    })
+    });
+
+    arrAccounts = arrAccounts.filter((arr) => arr.some((val) => val));
     return arrAccounts;
   }
 

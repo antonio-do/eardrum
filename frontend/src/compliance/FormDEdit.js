@@ -35,6 +35,7 @@ const FormDEdit = () => {
   };
   const mode = pk === undefined ? MODE.new : MODE.edit;
   const [currentUserLoading, currentUserRes, currentUserErr] = useCurrentUser();
+  const isSubmitButtonDisabled = issuers.length === 0;
 
   useEffect(() => {
     if (!isLoading && data !== null) {
@@ -81,11 +82,19 @@ const FormDEdit = () => {
     return <p>{error.toString()}</p>;
   }
 
+  const isObjEmpty = (obj) => !Object.values(obj).some((val) => val);
+
   const submitForm = async () => {
-    const newIssuers = _.cloneDeep(issuers).map((row) => {
-      delete row.key;
-      return row;
-    });
+    const newIssuers = _.cloneDeep(issuers)
+      .map((row) => {
+        delete row.key;
+        return row;
+      })
+      .filter((obj) => {
+        const cloneObj = { ...obj };
+        delete cloneObj.date;
+        return !isObjEmpty(cloneObj);
+      });
 
     save({
       typ: 'd',
@@ -146,7 +155,7 @@ const FormDEdit = () => {
 
         {mode === MODE.new && (
           <div>
-            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} disabled={isSubmitButtonDisabled} style={{ marginRight: '6px' }}>
               Create
             </Button>
             <Popconfirm onConfirm={() => history.push(routes.formD.url())} title='Are you sure?'>
@@ -157,7 +166,7 @@ const FormDEdit = () => {
 
         {mode === MODE.edit && (
           <div>
-            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} disabled={isSubmitButtonDisabled} style={{ marginRight: '6px' }}>
               Update
             </Button>
             <Popconfirm onConfirm={() => history.push(routes.formD.url())} title='Are you sure?'>

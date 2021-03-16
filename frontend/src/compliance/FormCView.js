@@ -78,7 +78,6 @@ const FormCView = () => {
             );
           })}
         </Radio.Group>
-        <p>{formText.box1.lastRadioItemNote}</p>
         <div>
           <Table columns={columns} dataSource={dataSource} />
         </div>

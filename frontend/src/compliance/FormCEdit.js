@@ -3,7 +3,6 @@ import { Divider, Breadcrumb, Select, Button, message, Radio, Spin, Form, Space,
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import _ from 'lodash';
-import moment from 'moment';
 import messages from './messages';
 import routes from './routes';
 import Container from './components/Container';
@@ -16,7 +15,6 @@ const formText = messages.c.text;
 const formName = messages.c.name;
 
 const { Option } = Select;
-const dateFormat = 'DD/MM/YYYY';
 
 const EditEQTRForm = () => {
   const [optionValue, setOptionValue] = useState();
@@ -35,6 +33,7 @@ const EditEQTRForm = () => {
   };
   const mode = pk === undefined ? MODE.new : MODE.edit;
   const [currentUserLoading, currentUserRes, currentUserErr] = useCurrentUser();
+  const isSubmitButtonDisabled = exceedingLimit && tickers.length === 0;
 
   useEffect(() => {
     if (!isLoading && data !== null) {
@@ -85,14 +84,25 @@ const EditEQTRForm = () => {
     return <p>{error.toString()}</p>;
   }
 
+  const isObjEmpty = (obj) => !Object.values(obj).some((val) => val);
+
+  const getTickers = () => {
+    return _.cloneDeep(tickers)
+      .map((row) => {
+        delete row.key;
+        return row;
+      })
+      .filter((obj) => {
+        const cloneObj = { ...obj };
+        delete cloneObj.date;
+        return !isObjEmpty(cloneObj);
+      });
+  };
+
   const submitForm = async () => {
     await form.validateFields();
-    const newTickers = exceedingLimit
-      ? _.cloneDeep(tickers).map((row) => {
-          delete row.key;
-          return row;
-        })
-      : [];
+
+    const newTickers = exceedingLimit ? getTickers() : [];
 
     const formValues = form.getFieldsValue();
     const { year, quarter, radioGroup: optionValue } = formValues;
@@ -201,7 +211,6 @@ const EditEQTRForm = () => {
               })}
             </Radio.Group>
           </Form.Item>
-          <p>{formText.box1.lastRadioItemNote}</p>
           <div>
             <div className='hide-message'>
               <EditableTable initColumns={columns} dataSource={exceedingLimit ? tickers : []} setData={setTickers} disabled={!exceedingLimit}/>
@@ -253,7 +262,7 @@ const EditEQTRForm = () => {
 
         {mode === MODE.new && (
           <div>
-            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} disabled={isSubmitButtonDisabled} style={{ marginRight: '6px' }}>
               Create
             </Button>
             <Popconfirm onConfirm={() => history.push(routes.formC.url())} title='Are you sure?'>
@@ -264,7 +273,7 @@ const EditEQTRForm = () => {
 
         {mode === MODE.edit && (
           <div>
-            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} disabled={isSubmitButtonDisabled} style={{ marginRight: '6px' }}>
               Update
             </Button>
             <Popconfirm onConfirm={() => history.push(routes.formC.url())} title='Are you sure?'>

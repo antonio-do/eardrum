@@ -28,6 +28,7 @@ const FormBEdit = () => {
   const isUploadDisabled = optionValue !== formText.options[1].key;
   const [save, updateOneLoading, updateOneRes, updateOneErr] = useUpdateOne(pk);
   const [currentUserLoading, currentUserRes, currentUserErr] = useCurrentUser();
+  const isSubmitButtonDisabled = !isUploadDisabled && fileList.length === 0;
 
   const dataUrlToFile = async (dataUrl, fileName, type) => {
     try {
@@ -241,7 +242,7 @@ const FormBEdit = () => {
 
         {mode === MODE.new && (
           <div>
-            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} disabled={isSubmitButtonDisabled} style={{ marginRight: '6px' }}>
               Create
             </Button>
             <Popconfirm onConfirm={() => history.push(routes.formB.url())} title='Are you sure?'>
@@ -252,7 +253,7 @@ const FormBEdit = () => {
 
         {mode === MODE.edit && (
           <div>
-            <Button type='primary' onClick={submitForm} loading={updateOneLoading} style={{ marginRight: '6px' }}>
+            <Button type='primary' onClick={submitForm} loading={updateOneLoading} disabled={isSubmitButtonDisabled} style={{ marginRight: '6px' }}>
               Update
             </Button>
             <Popconfirm onConfirm={() => history.push(routes.formB.url())} title='Are you sure?'>

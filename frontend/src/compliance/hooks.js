@@ -17,7 +17,7 @@ function FormA(optionValue, submissionDate, accounts) {
 }
 
 function newFormA() {
-  return new FormA(null, null, [])
+  return new FormA(null, moment(new Date()).format(dateFormat), [])
 }
 
 function FormB(optionValue, year, fileList) {
