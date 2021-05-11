@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import axios from 'axios';
 import { message, Spin } from 'antd';
 import ReactMarkdown from 'react-markdown';
+import routes from './routes'
 
 const styles = (theme) => ({
   '@global': {
@@ -40,7 +41,7 @@ const FAQ = ({ classes }) => {
 
   useEffect(() => {
     axios
-      .get('/api/guideline/user_guideline/')
+      .get(routes.api.userGuideline())
       .then((res) => {
         setContent(res.data.content);
       })
