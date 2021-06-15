@@ -12,7 +12,7 @@ const columns = [
     { field: 'type5', headerName: 'Type 5', type: 'number', flex: 1, },
 ]
 
-const LeaveCalendar = ({year, setYear}) => {
+const LeaveCalendar = ({year}) => {
     const [stat, setStat] = useState([]);
 
     useEffect(() => {

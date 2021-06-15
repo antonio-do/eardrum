@@ -1,4 +1,4 @@
-import { Button, Grid, makeStyles, Paper } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Paper } from '@material-ui/core';
 import React, { useState } from 'react';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
@@ -13,6 +13,7 @@ import LeaveDetail from './LeaveDetail';
 import LeaveCalendar from './LeaveCalendar';
 import LeaveList from './LeaveList';
 import LeaveStat from './LeaveStat';
+import { DatePicker } from "@material-ui/pickers";
 
 // Note: makeStyles must be imported from @material-ui/core to use theme.spacing or theme.breakpoints
 const useStyles = makeStyles(theme => ({
@@ -35,6 +36,7 @@ const useStyles = makeStyles(theme => ({
 
 const LeaveApp = () => {
   const [year, setYear] = useState(new Date().getFullYear());
+  const [date, setDate] = useState(new Date());
 
   let { path } = useRouteMatch();
 
@@ -49,8 +51,19 @@ const LeaveApp = () => {
         <LeaveCalendar/>
       </Grid>
       <Grid item style={{flexGrow: 1}}>
-        <LeaveList year={year} setYear={setYear}/>
-        <LeaveStat year={year} setYear={setYear}/>
+        <Box>
+          <DatePicker
+            views={["year"]}
+            label="View data in: "
+            value={date}
+            onChange={setDate}
+            style={{width: '100%'}}
+            onYearChange={(date) => setYear(date.getFullYear())}
+            autoOk
+          />
+        </Box>
+        <LeaveStat year={year}/>
+        <LeaveList year={year}/>
       </Grid>
     </Grid>
   )

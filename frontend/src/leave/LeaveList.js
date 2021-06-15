@@ -3,8 +3,6 @@ import { DataGrid } from '@material-ui/data-grid';
 import { Box, Button, Divider, Paper, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
-import { DatePicker } from "@material-ui/pickers";
-import { useCurrentYear } from './hooks';
 
 const columns = [
   { field: 'user', headerName: 'User', type: 'string', flex: 1, },
@@ -35,7 +33,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const LeaveList = ({year, setYear}) => {
+const LeaveList = ({year}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [date, setDate] = useState(new Date(year, 0, 1));
@@ -43,12 +41,7 @@ const LeaveList = ({year, setYear}) => {
 
   useEffect(() => {
     getRequests(year);  
-  }, [])
-
-  const handleYearChange = (date) => {
-    getRequests(date.getFullYear());
-    setYear(date.getFullYear());
-  }
+  }, [year])
 
   const getRequests = (year) => {
     //TODO: replace mock data
@@ -97,17 +90,6 @@ const LeaveList = ({year, setYear}) => {
 
   return (
     <Fragment>
-      <Box>
-        <DatePicker
-          views={["year"]}
-          label="View data in: "
-          value={date}
-          onChange={setDate}
-          style={{width: '100%'}}
-          onYearChange={handleYearChange}
-          autoOk
-        />
-      </Box>
       <Box mt={5}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
         <DataGrid

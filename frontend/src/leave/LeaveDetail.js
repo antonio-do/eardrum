@@ -1,4 +1,4 @@
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, FormControlLabel, Grid, InputLabel, Paper, TextField } from '@material-ui/core'
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Paper, TextField } from '@material-ui/core'
 import React, { useEffect, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
@@ -21,9 +21,11 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const LeaveDetail = (props) => {
+const LeaveDetail = () => {
     const [name, setName] = useState(""); 
+    const [names, setNames] = useState([]);
     const [type, setType] = useState("");
+    const [types, setTypes] = useState([]);
     const [note, setNote] = useState("");
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
@@ -37,11 +39,13 @@ const LeaveDetail = (props) => {
     const classes = useStyles();
 
     useEffect(() => {
-        getDetails(leaveId);
-        setIsAdmin(true);
+        getInitialDetails(leaveId);
+        getNames();
+        getTypes();
+        setIsAdmin(false);
     }, []);
 
-    const getDetails = (id) => {
+    const getInitialDetails = (id) => {
         //TODO: replace mock data
         setName("phong");
         setType("sick");
@@ -50,6 +54,16 @@ const LeaveDetail = (props) => {
         setEndDate(new Date());
         setIsStartHalf(true);
         setIsEndHalf(true);
+    }
+
+    const getNames = () => {
+        //TODO: replace mock data
+        setNames(["Alice", "Bob", "Mallory"]);
+    }
+
+    const getTypes = () => {
+        //TODO: replace mock data
+        setTypes(["type 1", "type 2", "type 3"]);
     }
 
     const onEdit = () => {
@@ -81,7 +95,14 @@ const LeaveDetail = (props) => {
                         InputProps={{
                             readOnly: isAdmin,
                         }}
-                    />
+                        select
+                    >
+                        {names.map((name) => (
+                            <MenuItem key={name} value={name}>
+                                {name}
+                            </MenuItem>
+                        ))}
+                    </TextField>
                 </FormControl>
             </Grid>
             <Grid item container spacing={3} xs={12}>
@@ -155,7 +176,14 @@ const LeaveDetail = (props) => {
                         InputProps={{
                             readOnly: isAdmin,
                         }}
-                    />
+                        select
+                    >
+                        {types.map((type) => (
+                            <MenuItem key={type} value={type}>
+                                {type}
+                            </MenuItem>
+                        ))}
+                    </TextField>
                 </FormControl>
                 </Grid>
             <Grid item>
@@ -165,6 +193,9 @@ const LeaveDetail = (props) => {
                         onChange={ (event) => {setNote(event.target.value);} }
                         variant='outlined'
                         margin="normal"
+                        multiline
+                        rows={15}
+                        rowsMax={15}
                         value={ note }
                         InputProps={{
                             readOnly: isAdmin,
