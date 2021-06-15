@@ -35,10 +35,9 @@ def get_config_of(name, default):
 SECRET_KEY = get_config_of('SECRET_KEY', '1grzia7rma(*+q5e2zyc-sq92amjf8e&l6cy1pjpv$ze2+7i%s')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = get_config_of('DEBUG', False)
+DEBUG = get_config_of('DEBUG', True)
 
 ALLOWED_HOSTS = get_config_of('ALLOWED_HOSTS', [])
-
 
 # Application definition
 
@@ -129,7 +128,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'account.ldap_backend.LDAPBackend',
+    #'account.ldap_backend.LDAPBackend',
 ]
 
 
@@ -183,7 +182,7 @@ MEDIA_ROOT = '/usr/src/uploads'
 STATICFILES_DIRS_DEFAULT = (
     # We do this so that django's collectstatic copies or our bundles to the
     # STATIC_ROOT or syncs them to whatever storage we use.
-    os.path.join(BASE_DIR, 'frontend', 'build', 'static'),
+    os.path.join(BASE_DIR, 'frontend', 'dist', 'static'),
 )
 
 STATICFILES_DIRS = get_config_of('STATICFILES_DIRS', STATICFILES_DIRS_DEFAULT)
@@ -191,9 +190,9 @@ STATICFILES_DIRS = get_config_of('STATICFILES_DIRS', STATICFILES_DIRS_DEFAULT)
 WEBPACK_LOADER_DEFAULT = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': '',
-        'STATS_FILE': os.path.join(BASE_DIR, 'frontend', 'webpack-stats-prod.json'),
+        'STATS_FILE': os.path.join(BASE_DIR, 'frontend', 'webpack-stats-prod.json', 'webpack-stats.json'),
     }
 }
 
 WEBPACK_LOADER = get_config_of('WEBPACK_LOADER', WEBPACK_LOADER_DEFAULT)
-LDAP_SERVER = getattr(localconfigs, 'LDAP_SERVER')
+#LDAP_SERVER = getattr(localconfigs, 'LDAP_SERVER')
