@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'okr_app',
     'compliance',
     'main',
+    'leave',
 ]
 
 MIDDLEWARE = [
