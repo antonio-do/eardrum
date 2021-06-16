@@ -16,6 +16,7 @@ import LeaveStat from './LeaveStat';
 import { DatePicker } from "@material-ui/pickers";
 
 // Note: makeStyles must be imported from @material-ui/core to use theme.spacing or theme.breakpoints
+// TODO: refactor layout in src/App.js
 const useStyles = makeStyles(theme => ({
   root: {
     width: 'auto',

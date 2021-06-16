@@ -125,15 +125,6 @@ const StaticDatePicker = () => {
                 ))}
             </List>
         </Paper>
-        <Dialog open={openDialog} onClose={setOpenDialog}>
-            <Fragment>
-                {/* <div className={classes.chips}>{group}</div>
-                {item.users.map(user => 
-                    (<Chip label={user} className={classes.chips}/>)
-                )}
-                <Chip onClick={() => handleClickChip(item.group)} label="More..." variant="outlined" color="primary" className={classes.chips}/> */}
-            </Fragment>
-        </Dialog>
         {/* The list of holidays */}
         <ListSubheader className={classes.list}>Holidays</ListSubheader>
         <div className={classes.yearInput}>

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
 import { Link, useParams } from 'react-router-dom';
+import { useCurrentUser } from './hooks';
+import { message, Spin } from 'antd';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -32,17 +34,27 @@ const LeaveDetail = () => {
     const [isStartHalf, setIsStartHalf] = useState(false);
     const [isEndHalf, setIsEndHalf] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, userData, error] = useCurrentUser();
+    const [readOnly, setReadOnly] = useState(false);
+    const { id } = useParams();
 
     const { leaveId } = useParams();
 
     const classes = useStyles();
 
     useEffect(() => {
+        if (!userData && error) {
+            console.log(error);
+            message.error("Error fetching user information.");
+        }
+    }, [userData, error])
+
+    useEffect(() => {
         getInitialDetails(leaveId);
         getNames();
         getTypes();
-        setIsAdmin(false);
+        console.log(id);
+        setReadOnly(false);
     }, []);
 
     const getInitialDetails = (id) => {
@@ -82,6 +94,10 @@ const LeaveDetail = () => {
         //TODO: reject the application
     }
 
+    if (loading) {
+        return <Spin size="large"/>
+    }
+
     return <Paper className={classes.root}>
         <Grid container direction="column" spacing={3}>
             <Grid item xs={12}>
@@ -93,7 +109,7 @@ const LeaveDetail = () => {
                         margin="normal"
                         value={name}
                         InputProps={{
-                            readOnly: isAdmin,
+                            readOnly: readOnly,
                         }}
                         select
                     >
@@ -113,8 +129,8 @@ const LeaveDetail = () => {
                         inputVariant="outlined"
                         label="Start date"
                         format="dd/MM/yyyy"
-                        readOnly={ isAdmin }
-                        InputProps={{ readOnly: isAdmin }}
+                        readOnly={ readOnly }
+                        InputProps={{ readOnly: readOnly }}
                         value={startDate}
                         onChange={setStartDate}
                         className={classes.dateField}
@@ -127,8 +143,8 @@ const LeaveDetail = () => {
                         inputVariant="outlined"
                         label="End date"
                         format="dd/MM/yyyy"
-                        readOnly={ isAdmin }
-                        InputProps={{ readOnly: isAdmin }}
+                        readOnly={ readOnly }
+                        InputProps={{ readOnly: readOnly }}
                         value={endDate}
                         onChange={setEndDate}
                         className={classes.dateField}
@@ -144,7 +160,7 @@ const LeaveDetail = () => {
                                 onChange={event => setIsStartHalf(event.target.checked)}
                                 name="isStartHalf"
                                 color="primary"
-                                disabled={ isAdmin }
+                                disabled={ readOnly }
                             />
                         }
                         label="Take a half day off at the beginning of leave"
@@ -158,7 +174,7 @@ const LeaveDetail = () => {
                                 onChange={event => setIsEndHalf(event.target.checked)}
                                 name="isEndHalf"
                                 color="primary"
-                                disabled={ isAdmin }
+                                disabled={ readOnly }
                             />
                         }
                         label="Take a half day off at the end of leave"
@@ -174,7 +190,7 @@ const LeaveDetail = () => {
                         margin="normal"
                         value={ type }
                         InputProps={{
-                            readOnly: isAdmin,
+                            readOnly: readOnly,
                         }}
                         select
                     >
@@ -198,14 +214,15 @@ const LeaveDetail = () => {
                         rowsMax={15}
                         value={ note }
                         InputProps={{
-                            readOnly: isAdmin,
+                            readOnly: readOnly,
                         }}
                     />
                 </FormControl>
             </Grid>
         </Grid>
 
-        {!isAdmin && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+        {userData.data.is_admin 
+            ? <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
           <Button onClick={ onEdit } color='primary' variant='contained' className={ classes.button }>
               Save
           </Button>
@@ -213,9 +230,8 @@ const LeaveDetail = () => {
               Cancel Request
           </Button>
           <Button to='/leave' component={ Link } color='primary' variant='outlined' className={ classes.button }>Back</Button>
-        </div>}
-
-        {isAdmin && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+        </div>
+            : <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
           <Button onClick={ onApprove } color='primary' variant='contained' className={ classes.button }>
               Approve
           </Button>

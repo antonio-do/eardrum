@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Paper, Typography } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
-import { useCurrentYear } from './hooks';
+import { useCurrentYear, useAllUsers } from './hooks';
+import { message, Spin } from 'antd';
 
 const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
@@ -14,21 +15,32 @@ const columns = [
 
 const LeaveCalendar = ({year}) => {
     const [stat, setStat] = useState([]);
+    const [loading, res, error] = useAllUsers();
 
     useEffect(() => {
-        getStat(year);
-    }, [])
+        if (!res && error) {
+            console.log(error);
+            message.error('Errors occured while fetching users!');
+        }
+    }, [res, error])
 
-    const getStat = (year) => {
+    useEffect(() => {
+        if (!loading) {
+            getStat();
+        }
+    }, [loading])
+
+    //useEffect(() => {}, [loading])
+    const getStat = () => {
         //TODO: replace mock data
         const gen = () => Math.random() * 15;
-        let names = ["Alice", "Bob", "Eve", "Mallory"]
+        let names = res.data.users;
 
         let randomData = [];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < names.length; i++) {
             randomData.push({
                 id: i,
-                user: names[i],
+                user: names[i].username,
                 type1: gen(),
                 type2: gen(),
                 type3: gen(),
@@ -39,9 +51,10 @@ const LeaveCalendar = ({year}) => {
         setStat(randomData);
     }
 
+    
     return <Box mt={5}>
         <Typography variant="h5" gutterBottom>Statistic</Typography>
-        <DataGrid
+         {loading ? <Spin size="small"/> : <DataGrid
             autoHeight
             rows={stat}
             columns={columns}
@@ -49,7 +62,7 @@ const LeaveCalendar = ({year}) => {
             pageSize={10}
             disableColumnMenu
             disableSelectionOnClick
-        />
+        />}
     </Box>
 }
 
