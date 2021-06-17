@@ -36,7 +36,6 @@ const LeaveDetail = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, userData, error] = useCurrentUser();
     const [readOnly, setReadOnly] = useState(false);
-    const { id } = useParams();
 
     const { leaveId } = useParams();
 
@@ -53,8 +52,7 @@ const LeaveDetail = () => {
         getInitialDetails(leaveId);
         getNames();
         getTypes();
-        console.log(id);
-        setReadOnly(false);
+        setReadOnly(leaveId !== "new");
     }, []);
 
     const getInitialDetails = (id) => {

@@ -3,6 +3,9 @@ import { DataGrid } from '@material-ui/data-grid';
 import { Box, Button, Divider, Paper, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
+import { useGetLeaveAll  } from './hooks';
+import { message, Spin } from 'antd';
+import moment from 'moment';
 
 const columns = [
   { field: 'user', headerName: 'User', type: 'string', flex: 1, },
@@ -38,80 +41,60 @@ const LeaveList = ({year}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [date, setDate] = useState(new Date(year, 0, 1));
   const classes = useStyles();
+  const [loading, leaveData, error] = useGetLeaveAll();
 
   useEffect(() => {
-    getRequests(year);  
-  }, [year])
+    if (!leaveData && error) {
+      console.log(error);
+      message.error("Error fetching leave applications.");
+    }
+  }, [leaveData, error])
+
+  useEffect(() => {
+    if (!loading) {
+      getRequests(year);  
+    }
+  }, [year, loading])
 
   const getRequests = (year) => {
-    //TODO: replace mock data
-    let random_date = () => {
-      let start = (new Date(year, 0, 1)).getTime();
-      let end = (new Date(year + 1, 0, 1)).getTime();
-      return (new Date(start + Math.random() * (end - start)));
-    }
-    let random_bool = () => (Math.random() < 0.5);
-    let random_item = (items) => items[Math.floor(Math.random()*items.length)];
-
-    let names = ["Alice", "Bob", "Eve", "Mallory",]
-    let types = ["sick", "rest"];
-    let statuses = ["rejected", "approved"];
-
-    let randomData = [];
-    for (let i = 0; i < 30; i++) { 
-      randomData.push({
-        id: i + 1, 
-        user: random_item(names), 
-        start_date: random_date(), 
-        end_date: random_date(),
-        type: random_item(types),
-        is_half_beginning: random_bool(),
-        is_half_end: random_bool(),
-        status: "pending",
-      })
-    }
-    setPendingApplications(randomData);
-
-    let randomData2 = [];
-    for (let i = 0; i < 20; i++) { 
-      randomData2.push({
-        id: i, 
-        user: random_item(names), 
-        start_date: random_date(), 
-        end_date: random_date(),
-        type: random_item(types),
-        is_half_beginning: random_bool(),
-        is_half_end: random_bool(),
-        status: random_item(statuses),
-      })
-    }
-    setResolvedRequests(randomData2);
+    const data = leaveData.data.map(item => ({
+      id: item.id,
+      user: item.user,
+      start_date: moment(item.startdate, "DD/MM/YYYY").toDate(),
+      end_date: moment(item.enddate, "DD/MM/YYYY").toDate(),
+      type: item.typ,
+      is_half_beginning: item.half === "true",
+      is_half_end: item.half === "true",
+      status: item.status,
+    }))
+    setPendingApplications(data.filter(item => item.status === "pending"));
+    setResolvedRequests(data.filter(item => item.status !== "pending" && item.start_date.getFullYear() === year));
   }
-
+  
   return (
     <Fragment>
       <Box mt={5}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
-        <DataGrid
+        {loading ? <Spin size="small"/> : <DataGrid
           autoHeight 
           rows={pendingRequests} 
           columns={columns}
           pagination
           pageSize={10}
           disableSelectionOnClick 
-        />
+        />}
       </Box>
         <Divider/>
       <Box mt={5}>
         <Typography variant="h5" gutterBottom>Resolved requests</Typography>
-        <DataGrid
+        {loading ? <Spin size="small"/> : <DataGrid
           autoHeight 
           rows={resolvedRequests} 
           columns={columns}
           pagination
           pageSize={10}
           disableSelectionOnClick 
-        />
+        />}
       </Box>
    </Fragment>
   );
