@@ -2,8 +2,7 @@ import React, { Fragment, useEffect, useState } from "react";
 import { DatePicker } from "@material-ui/pickers";
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { Card, CardActions, CardContent, CardHeader, Chip, Dialog, DialogTitle, Divider, IconButton, List, ListItem, ListItemText, ListSubheader, makeStyles, Paper, TextField } from "@material-ui/core";
-import MoreHoriz from '@material-ui/icons/MoreHoriz';
+import { Card, CardContent, Chip, Divider, List, ListItem, ListItemText, ListSubheader, makeStyles, Paper, TextField } from "@material-ui/core";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -82,10 +81,6 @@ const StaticDatePicker = () => {
     return dayComponent;
   };
 
-  const handleClickChip = (group) => {
-      
-  }
-
   return (
     <Paper className={classes.root}>
         {/* The calendar */}
@@ -116,7 +111,6 @@ const StaticDatePicker = () => {
                                     {item.users.map(user => 
                                         (<Chip label={user} className={classes.chips}/>)
                                     )}
-                                    <Chip onClick={() => handleClickChip(item.group)} label="More..." variant="outlined" color="primary" className={classes.chips}/>
                                 </Fragment>
                             </CardContent>
                         </Card>
