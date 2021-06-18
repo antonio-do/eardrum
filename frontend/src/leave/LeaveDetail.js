@@ -3,7 +3,7 @@ import React, { Fragment, useEffect, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
 import { Link, useParams } from 'react-router-dom';
-import { useCurrentUser, useDeleteLeave, useGetLeave, useNewLeave, useUpdateLeave } from './hooks';
+import { useAllUsers, useCurrentUser, useDeleteLeave, useGetLeave, useNewLeave, useUpdateLeave } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 
@@ -48,7 +48,8 @@ const LeaveDetail = () => {
     const { leaveId } = useParams();
     const isNew = leaveId === 'new';
     const [getLeaveLoading, getLeaveResponse, getLeaveError] = isNew ? [] : useGetLeave(leaveId);
-    const [names, setNames] = useState([]);
+    const isPending = !isNew && !getLeaveLoading && getLeaveResponse  && getLeaveResponse.data.status == "pending";
+    const [getUsersLoading, getUsersResponse, getUsersError] = useAllUsers();
     const [types, setTypes] = useState([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
@@ -68,7 +69,7 @@ const LeaveDetail = () => {
             ? useNewLeave() 
             : useUpdateLeave(leaveId);
     const [deleteLeave, deleteLeaveLoading, deleteLeaveResponse, deleteLeaveError] = isNew ? [] : useDeleteLeave(leaveId);
-
+    
     const classes = useStyles();
 
     useEffect(() => {
@@ -78,38 +79,29 @@ const LeaveDetail = () => {
         }
     }, [getUserResponse, getUserError]);
 
+    useEffect(() => {
+        if (!getUsersResponse && getUsersError) {
+            console.log(getUsersError);
+            message.error("Error fetching all users");
+        }
+    }, [getUsersResponse, getUsersError]);
+
     if (!isNew) { 
         useEffect(() => {
             if (!getLeaveResponse && getLeaveError) {
                 console.log(getLeaveError);
                 message.error("Error fetching leave application.");
             } else if (!getLeaveLoading) {
-                getInitialDetails();
+                setApplication(decodeLeave(getLeaveResponse.data));
             }
         }, [getLeaveLoading, getLeaveResponse, getLeaveError]);
     }
 
 
     useEffect(() => {
-        getNames();
-        getTypes();
+        setTypes(["type 1", "type 2", "type 3", ""]);
         setReadOnly(!isNew);
     }, []);
-
-    const getInitialDetails = () => {
-        //TODO: replace mock data
-        setApplication(decodeLeave(getLeaveResponse.data))
-    }
-
-    const getNames = () => {
-        //TODO: replace mock data
-        setNames(["alice", "bob", "Mallory", ""]);
-    }
-
-    const getTypes = () => {
-        //TODO: replace mock data
-        setTypes(["type 1", "type 2", "type 3", ""]);
-    }
 
     const onSubmit = async () => {
         //TODO: fix warning "Can't perform a React state update on unmounted component..."
@@ -130,7 +122,7 @@ const LeaveDetail = () => {
         await updateLeave(encodeLeave({...application, status: "rejected"}));
     }
 
-    if (getUserLoading) {
+    if (getUserLoading || getLeaveLoading || getUsersLoading) {
         return <Spin size="large"/>
     }
 
@@ -149,9 +141,9 @@ const LeaveDetail = () => {
                         }}
                         select
                     >
-                        {names.map((name) => (
-                            <MenuItem key={name} value={name}>
-                                {name}
+                        {getUsersResponse.data.users.map((item) => (
+                            <MenuItem key={item.username} value={item.username}>
+                                {item.username}
                             </MenuItem>
                         ))}
                     </TextField>
@@ -267,7 +259,7 @@ const LeaveDetail = () => {
                         <Button onClick= { () => setDialogOpen(true) } color='primary' variant='contained' className={ classes.button }>
                             Delete
                         </Button>
-                        {getUserResponse.data.is_admin && (
+                        {getUserResponse.data.is_admin && isPending && (
                             <Fragment>
                                 <Button to='/leave' component={ Link } onClick={ onApprove } color='primary' variant='contained' className={ classes.button }>
                                     Approve
