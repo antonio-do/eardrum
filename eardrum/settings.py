@@ -35,9 +35,10 @@ def get_config_of(name, default):
 SECRET_KEY = get_config_of('SECRET_KEY', '1grzia7rma(*+q5e2zyc-sq92amjf8e&l6cy1pjpv$ze2+7i%s')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = get_config_of('DEBUG', True)
+DEBUG = get_config_of('DEBUG', False)
 
 ALLOWED_HOSTS = get_config_of('ALLOWED_HOSTS', [])
+
 
 # Application definition
 
