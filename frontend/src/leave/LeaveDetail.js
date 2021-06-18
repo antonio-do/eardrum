@@ -2,7 +2,7 @@ import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentTe
 import React, { Fragment, useEffect, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import { useAllUsers, useCurrentUser, useDeleteLeave, useGetLeave, useNewLeave, useUpdateLeave } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
@@ -11,7 +11,7 @@ import { LEAVE_TYPES } from './constants';
 const decodeLeave = (data) => ({
     name: data.user,
     type: data.typ,
-    note: "None",
+    note: data.note,
     start_date: moment(data.startdate, "DD/MM/YYYY").toDate(),
     end_date: moment(data.enddate, "DD/MM/YYYY").toDate(),
     is_start_half: data.half === "true",
@@ -26,6 +26,7 @@ const encodeLeave = (data) => ({
     enddate: moment(data.end_date).format("DD/MM/YYYY"),
     half: data.is_start_half ? "true" : "false",
     status: data.status,
+    note: data.note,
 })
 
 const useStyles = makeStyles((theme) => ({
@@ -71,15 +72,13 @@ const LeaveDetail = () => {
             : useUpdateLeave(leaveId);
     const [deleteLeave, deleteLeaveLoading, deleteLeaveResponse, deleteLeaveError] = isNew ? [] : useDeleteLeave(leaveId);
     
+    let history = useHistory();
     const classes = useStyles();
 
     useEffect(() => {
         if (!getUserResponse && getUserError) {
             console.log(getUserError);
             message.error("Error fetching user information.");
-        } else if (!getUserLoading) {
-            setApplication({...application, name: getUserResponse.data.username});
-            console.log("ran")
         }
     }, [getUserResponse, getUserLoading, getUserError]);
 
@@ -110,20 +109,23 @@ const LeaveDetail = () => {
     const onSubmit = async () => {
         //TODO: fix warning "Can't perform a React state update on unmounted component..."
         await updateLeave(encodeLeave({...application, status: "pending"}));
+        history.push("/leave");
     }
 
     const onDelete = async () => {
         //TODO: cancel the application
         await deleteLeave();
+        history.push("/leave");
     }
 
     const onApprove = async () => {
-        //TODO: delay for several seconds before go back to main page so it can be updated
         await updateLeave(encodeLeave({...application, status: "approved"}));
+        history.push("/leave");
     }
 
     const onReject = async () => {
         await updateLeave(encodeLeave({...application, status: "rejected"}));
+        history.push("/leave");
     }
 
     if (getUserLoading || getLeaveLoading || getUsersLoading) {
@@ -256,7 +258,7 @@ const LeaveDetail = () => {
         </Grid>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
             {isNew 
-                ?   <Button to='/leave' component={ Link } onClick={ onSubmit } color='primary' variant='contained' className={ classes.button }>
+                ?   <Button onClick={ onSubmit } color='primary' variant='contained' className={ classes.button }>
                         Submit
                     </Button>
                 :   <Fragment>
@@ -265,10 +267,10 @@ const LeaveDetail = () => {
                         </Button>
                         {getUserResponse.data.is_admin && isPending && (
                             <Fragment>
-                                <Button to='/leave' component={ Link } onClick={ onApprove } color='primary' variant='contained' className={ classes.button }>
+                                <Button onClick={ onApprove } color='primary' variant='contained' className={ classes.button }>
                                     Approve
                                 </Button>
-                                <Button to='/leave' component={ Link } onClick={ onReject } color='primary' variant='contained' className={ classes.button }>
+                                <Button onClick={ onReject } color='primary' variant='contained' className={ classes.button }>
                                     Reject
                                 </Button>
                             </Fragment>
@@ -288,7 +290,7 @@ const LeaveDetail = () => {
             </DialogContentText>
             </DialogContent>
             <DialogActions>
-            <Button to='/leave' component={ Link } onClick={ () => {onDelete(); setDialogOpen(false); }} color="primary" autoFocus>
+            <Button onClick={ () => {onDelete(); setDialogOpen(false); }} color="primary" autoFocus>
                 Yes
             </Button>
             <Button onClick={() => setDialogOpen(false)} color="primary">
