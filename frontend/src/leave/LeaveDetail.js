@@ -3,7 +3,7 @@ import React, { Fragment, useEffect, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
 import { Link, useParams } from 'react-router-dom';
-import { useCurrentUser, useGetLeave, useNewLeave, useUpdateLeave } from './hooks';
+import { useCurrentUser, useDeleteLeave, useGetLeave, useNewLeave, useUpdateLeave } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 
@@ -67,6 +67,7 @@ const LeaveDetail = () => {
     const [updateLeave, updateLeaveLoading, updateLeaveResponse, updateLeaveError] = isNew 
             ? useNewLeave() 
             : useUpdateLeave(leaveId);
+    const [deleteLeave, deleteLeaveLoading, deleteLeaveResponse, deleteLeaveError] = isNew ? [] : useDeleteLeave(leaveId);
 
     const classes = useStyles();
 
@@ -115,11 +116,13 @@ const LeaveDetail = () => {
         await updateLeave(encodeLeave({...application, status: "pending"}));
     }
 
-    const onDelete = () => {
+    const onDelete = async () => {
         //TODO: cancel the application
+        await deleteLeave();
     }
 
     const onApprove = async () => {
+        //TODO: delay for several seconds before go back to main page so it can be updated
         await updateLeave(encodeLeave({...application, status: "approved"}));
     }
 
@@ -289,11 +292,11 @@ const LeaveDetail = () => {
             </DialogContentText>
             </DialogContent>
             <DialogActions>
+            <Button to='/leave' component={ Link } onClick={ () => {onDelete(); setDialogOpen(false); }} color="primary" autoFocus>
+                Yes
+            </Button>
             <Button onClick={() => setDialogOpen(false)} color="primary">
                 No
-            </Button>
-            <Button onClick={ () => {onDelete(); setDialogOpen(false); }} color="primary" autoFocus>
-                Yes
             </Button>
             </DialogActions>
         </Dialog>

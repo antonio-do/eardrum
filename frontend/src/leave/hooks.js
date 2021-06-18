@@ -114,4 +114,23 @@ function useUpdateLeave(id) {
   return [save, loading, response, error];
 }
 
-export { useCurrentYear, useAllUsers, useCurrentUser, useGetLeaveAll, useGetLeave, useNewLeave, useUpdateLeave }
+function useDeleteLeave(id) {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError]= useState(null);
+
+  const save = (data) => {
+    setLoading(true);
+    axios({
+      method: 'delete', 
+      url: routes.api.leaveDetail(id),
+    })
+      .then((response) => setResponse(response))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }
+
+  return [save, loading, response, error];
+}
+
+export { useCurrentYear, useAllUsers, useCurrentUser, useGetLeaveAll, useGetLeave, useNewLeave, useUpdateLeave, useDeleteLeave }
