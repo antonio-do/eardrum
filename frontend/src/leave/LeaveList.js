@@ -7,10 +7,12 @@ import { useGetLeaveAll  } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 
+const DATE_FORMAT = "DD/MM/YYYY";
+
 const columns = [
   { field: 'user', headerName: 'User', type: 'string', flex: 1, },
-  { field: 'start_date', headerName: 'Start date', type: 'date', flex: 1, },
-  { field: 'end_date', headerName: 'End date', type: 'date', flex: 1, },
+  { field: 'start_date', headerName: 'Start date', type: 'string', flex: 1, },
+  { field: 'end_date', headerName: 'End date', type: 'string', flex: 1, },
   { field: 'type', headerName: 'Type', type: 'string', flex: 1, },
   { field: 'is_half_beginning', headerName: 'Half-day start', type: 'boolean', flex: 1, 
   description: "Take a half day at the beginning of leave", },
@@ -60,17 +62,17 @@ const LeaveList = ({year}) => {
     const data = leaveData.data.map(item => ({
       id: item.id,
       user: item.user,
-      start_date: moment(item.startdate, "DD/MM/YYYY").toDate(),
-      end_date: moment(item.enddate, "DD/MM/YYYY").toDate(),
+      start_date: item.startdate,
+      end_date: item.enddate,
       type: item.typ,
       is_half_beginning: item.half === "true",
       is_half_end: item.half === "true",
       status: item.status,
     }))
     setPendingApplications(data.filter(item => item.status === "pending"));
-    setResolvedRequests(data.filter(item => item.status !== "pending" && item.start_date.getFullYear() === year));
+    setResolvedRequests(data.filter(item => item.status !== "pending" && moment(item.start_date, DATE_FORMAT).year() === year));
   }
-  
+
   return (
     <Fragment>
       <Box mt={5}>
