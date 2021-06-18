@@ -114,6 +114,26 @@ function useUpdateLeave(id) {
   return [save, loading, response, error];
 }
 
+function useUpdateLeave2() {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError]= useState(null);
+
+  const save = (id, data) => {
+    setLoading(true);
+    axios({
+      method: 'patch', 
+      url: routes.api.leaveDetail(id),
+      data: data,
+    })
+      .then((response) => setResponse(response))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }
+
+  return [save, loading, response, error];
+}
+
 function useDeleteLeave(id) {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
@@ -133,4 +153,35 @@ function useDeleteLeave(id) {
   return [save, loading, response, error];
 }
 
-export { useCurrentYear, useAllUsers, useCurrentUser, useGetLeaveAll, useGetLeave, useNewLeave, useUpdateLeave, useDeleteLeave }
+
+function useDeleteLeave2() {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError]= useState(null);
+
+  const save = (id) => {
+    setLoading(true);
+    axios({
+      method: 'delete', 
+      url: routes.api.leaveDetail(id),
+    })
+      .then((response) => setResponse(response))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }
+
+  return [save, loading, response, error];
+}
+
+export { 
+  useCurrentYear, 
+  useAllUsers, 
+  useCurrentUser, 
+  useGetLeaveAll, 
+  useGetLeave, 
+  useNewLeave, 
+  useUpdateLeave,
+  useUpdateLeave2, 
+  useDeleteLeave,
+  useDeleteLeave2,
+}
