@@ -5,8 +5,9 @@ import {
 } from "react-router-dom";
 
 import LeaveCalendar from './LeaveCalendar';
-import LeaveList from './LeaveList';
 import LeaveStat from './LeaveStat';
+import LeavePending from './LeavePending';
+import LeaveResolved from './LeaveResolved';
 import { DatePicker } from "@material-ui/pickers";
 
 // Note: makeStyles must be imported from @material-ui/core to use theme.spacing or theme.breakpoints
@@ -57,7 +58,8 @@ const LeaveMainPage = () => {
                 />
                 </Box>
                 <LeaveStat year={year}/>
-                <LeaveList year={year}/>
+                <LeavePending/>
+                <LeaveResolved year={year}/>
             </Grid>
         </Grid>
     </div>

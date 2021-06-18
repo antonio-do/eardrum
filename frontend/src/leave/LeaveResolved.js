@@ -1,7 +1,6 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
-import { Box, Button, Divider, Paper, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { Box, Button, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useGetLeaveAll  } from './hooks';
 import { message, Spin } from 'antd';
@@ -32,17 +31,8 @@ const columns = [
   )},
 ];
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    padding: 10,
-  }
-}));
-
 const LeaveList = ({year}) => {
-  const [pendingRequests, setPendingApplications] = useState([]);
   const [resolvedRequests, setResolvedRequests] = useState([]);
-  const [date, setDate] = useState(new Date(year, 0, 1));
-  const classes = useStyles();
   const [loading, leaveData, error] = useGetLeaveAll();
 
   useEffect(() => {
@@ -69,36 +59,21 @@ const LeaveList = ({year}) => {
       is_half_end: item.half === "true",
       status: item.status,
     }))
-    setPendingApplications(data.filter(item => item.status === "pending"));
     setResolvedRequests(data.filter(item => item.status !== "pending" && moment(item.start_date, DATE_FORMAT).year() === year));
   }
 
   return (
-    <Fragment>
-      <Box mt={5}>
-        <Typography variant="h5" gutterBottom>Pending requests</Typography>
-        {loading ? <Spin size="small"/> : <DataGrid
-          autoHeight 
-          rows={pendingRequests} 
-          columns={columns}
-          pagination
-          pageSize={10}
-          disableSelectionOnClick 
-        />}
-      </Box>
-        <Divider/>
-      <Box mt={5}>
+    <Box mt={5}>
         <Typography variant="h5" gutterBottom>Resolved requests</Typography>
         {loading ? <Spin size="small"/> : <DataGrid
-          autoHeight 
-          rows={resolvedRequests} 
-          columns={columns}
-          pagination
-          pageSize={10}
-          disableSelectionOnClick 
+            autoHeight 
+            rows={resolvedRequests} 
+            columns={columns}
+            pagination
+            pageSize={10}
+            disableSelectionOnClick 
         />}
-      </Box>
-   </Fragment>
+    </Box>
   );
 }
 
