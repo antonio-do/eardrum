@@ -3,15 +3,15 @@ import { Box, Paper, Typography } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
 import { useCurrentYear, useAllUsers } from './hooks';
 import { message, Spin } from 'antd';
+import { LEAVE_TYPES } from './constants';
 
-const columns = [
-    { field: 'user', headerName: 'User', type: 'string', flex: 1, },
-    { field: 'type1', headerName: 'Type 1', type: 'number', flex: 1, },
-    { field: 'type2', headerName: 'Type 2', type: 'number', flex: 1, },
-    { field: 'type3', headerName: 'Type 3', type: 'number', flex: 1, },
-    { field: 'type4', headerName: 'Type 4', type: 'number', flex: 1, },
-    { field: 'type5', headerName: 'Type 5', type: 'number', flex: 1, },
-]
+
+const columns = [{ field: 'user', headerName: 'User', type: 'string', flex: 1, }].concat(LEAVE_TYPES.map((item) => ({ 
+    field: item.field, 
+    headerName: item.label, 
+    type: 'number', 
+    flex: 1, 
+})))
 
 const LeaveCalendar = ({year}) => {
     const [stat, setStat] = useState([]);

@@ -6,6 +6,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useAllUsers, useCurrentUser, useDeleteLeave, useGetLeave, useNewLeave, useUpdateLeave } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
+import { LEAVE_TYPES } from './constants';
 
 const decodeLeave = (data) => ({
     name: data.user,
@@ -57,7 +58,7 @@ const LeaveDetail = () => {
     // The field name and type would not render properly if use useState(null) or useState({})
     const [application, setApplication] = useState({
         name: "",
-        type: "",
+        type: LEAVE_TYPES[0].label,
         note: "",
         start_date: new Date(),
         end_date: new Date(),
@@ -76,8 +77,11 @@ const LeaveDetail = () => {
         if (!getUserResponse && getUserError) {
             console.log(getUserError);
             message.error("Error fetching user information.");
+        } else if (!getUserLoading) {
+            setApplication({...application, name: getUserResponse.data.username});
+            console.log("ran")
         }
-    }, [getUserResponse, getUserError]);
+    }, [getUserResponse, getUserLoading, getUserError]);
 
     useEffect(() => {
         if (!getUsersResponse && getUsersError) {
@@ -99,7 +103,7 @@ const LeaveDetail = () => {
 
 
     useEffect(() => {
-        setTypes(["type 1", "type 2", "type 3", ""]);
+        setTypes(LEAVE_TYPES.map(item => item.label));
         setReadOnly(!isNew);
     }, []);
 
