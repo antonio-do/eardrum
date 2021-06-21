@@ -47,15 +47,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const LeaveDetail = () => {
-    const { leaveId } = useParams();
-    const isNew = leaveId === 'new';
-    const [getLeaveLoading, getLeaveResponse, getLeaveError] = isNew ? [] : useGetLeave(leaveId);
-    const isPending = !isNew && !getLeaveLoading && getLeaveResponse  && getLeaveResponse.data.status == "pending";
     const [getUsersLoading, getUsersResponse, getUsersError] = useAllUsers();
     const [types, setTypes] = useState([]);
-    const [dialogOpen, setDialogOpen] = useState(false);
     const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
-    const [readOnly, setReadOnly] = useState(false);
     // The field name and type would not render properly if use useState(null) or useState({})
     const [application, setApplication] = useState({
         name: "",
@@ -67,10 +61,7 @@ const LeaveDetail = () => {
         is_end_half: false,
         status: "",
     });
-    const [updateLeave, updateLeaveLoading, updateLeaveResponse, updateLeaveError] = isNew 
-            ? useNewLeave() 
-            : useUpdateLeave(leaveId);
-    const [deleteLeave, deleteLeaveLoading, deleteLeaveResponse, deleteLeaveError] = isNew ? [] : useDeleteLeave(leaveId);
+    const [updateLeave, updateLeaveLoading, updateLeaveResponse, updateLeaveError] = useNewLeave() 
     
     let history = useHistory();
     const classes = useStyles();
@@ -79,6 +70,8 @@ const LeaveDetail = () => {
         if (!getUserResponse && getUserError) {
             console.log(getUserError);
             message.error("Error fetching user information.");
+        } else if (!getUserLoading) {
+            setApplication({...application, name: getUserResponse.data.username});
         }
     }, [getUserResponse, getUserLoading, getUserError]);
 
@@ -89,21 +82,8 @@ const LeaveDetail = () => {
         }
     }, [getUsersResponse, getUsersError]);
 
-    if (!isNew) { 
-        useEffect(() => {
-            if (!getLeaveResponse && getLeaveError) {
-                console.log(getLeaveError);
-                message.error("Error fetching leave application.");
-            } else if (!getLeaveLoading) {
-                setApplication(decodeLeave(getLeaveResponse.data));
-            }
-        }, [getLeaveLoading, getLeaveResponse, getLeaveError]);
-    }
-
-
     useEffect(() => {
         setTypes(LEAVE_TYPES.map(item => item.label));
-        setReadOnly(!isNew);
     }, []);
 
     const onSubmit = async () => {
@@ -112,23 +92,7 @@ const LeaveDetail = () => {
         history.push("/leave");
     }
 
-    const onDelete = async () => {
-        //TODO: cancel the application
-        await deleteLeave();
-        history.push("/leave");
-    }
-
-    const onApprove = async () => {
-        await updateLeave(encodeLeave({...application, status: "approved"}));
-        history.push("/leave");
-    }
-
-    const onReject = async () => {
-        await updateLeave(encodeLeave({...application, status: "rejected"}));
-        history.push("/leave");
-    }
-
-    if (getUserLoading || getLeaveLoading || getUsersLoading) {
+    if (getUserLoading || getUsersLoading) {
         return <Spin size="large"/>
     }
 
@@ -142,9 +106,6 @@ const LeaveDetail = () => {
                         variant='outlined'
                         margin="normal"
                         value={application.name}
-                        InputProps={{
-                            readOnly: readOnly,
-                        }}
                         select
                     >
                         {getUsersResponse.data.users.map((item) => (
@@ -163,8 +124,6 @@ const LeaveDetail = () => {
                         inputVariant="outlined"
                         label="Start date"
                         format="dd/MM/yyyy"
-                        readOnly={ readOnly }
-                        InputProps={{ readOnly: readOnly }}
                         value={application.start_date}
                         
                         onChange={(date) => setApplication({...application, start_date: date})}
@@ -178,8 +137,6 @@ const LeaveDetail = () => {
                         inputVariant="outlined"
                         label="End date"
                         format="dd/MM/yyyy"
-                        readOnly={ readOnly }
-                        InputProps={{ readOnly: readOnly }}
                         value={application.end_date}
                         onChange={(date) => setApplication({...application, end_date: date})}
                         className={classes.dateField}
@@ -195,7 +152,6 @@ const LeaveDetail = () => {
                                 onChange={event => setApplication({...application, is_start_half: event.target.checked})}
                                 name="isStartHalf"
                                 color="primary"
-                                disabled={ readOnly }
                             />
                         }
                         label="Take a half day off at the beginning of leave"
@@ -209,7 +165,6 @@ const LeaveDetail = () => {
                                 onChange={event => setApplication({...application, is_end_half: event.target.checked})}
                                 name="isEndHalf"
                                 color="primary"
-                                disabled={ readOnly }
                             />
                         }
                         label="Take a half day off at the end of leave"
@@ -224,9 +179,6 @@ const LeaveDetail = () => {
                         variant='outlined'
                         margin="normal"
                         value={ application.type }
-                        InputProps={{
-                            readOnly: readOnly,
-                        }}
                         select
                     >
                         {types.map((type) => (
@@ -249,55 +201,16 @@ const LeaveDetail = () => {
                         rows={15}
                         rowsMax={15}
                         value={ application.note || " " }
-                        InputProps={{
-                            readOnly: readOnly,
-                        }}
                     />
                 </FormControl>
             </Grid>
         </Grid>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-            {isNew 
-                ?   <Button onClick={ onSubmit } color='primary' variant='contained' className={ classes.button }>
-                        Submit
-                    </Button>
-                :   <Fragment>
-                        <Button onClick= { () => setDialogOpen(true) } color='primary' variant='contained' className={ classes.button }>
-                            Delete
-                        </Button>
-                        {getUserResponse.data.is_admin && isPending && (
-                            <Fragment>
-                                <Button onClick={ onApprove } color='primary' variant='contained' className={ classes.button }>
-                                    Approve
-                                </Button>
-                                <Button onClick={ onReject } color='primary' variant='contained' className={ classes.button }>
-                                    Reject
-                                </Button>
-                            </Fragment>
-                        )}
-                    </Fragment>
-            }
+            <Button onClick={ onSubmit } color='primary' variant='contained' className={ classes.button }>
+                Submit
+            </Button>
             <Button to='/leave' component={ Link } color='primary' variant='outlined' className={ classes.button }>Back</Button>
         </div>
-        <Dialog
-            open={dialogOpen}
-            onClose={() => setDialogOpen(false)}
-            aria-describedby="alert-dialog-description"
-        >
-            <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-                Are you sure you want to cancel this application?
-            </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-            <Button onClick={ () => {onDelete(); setDialogOpen(false); }} color="primary" autoFocus>
-                Yes
-            </Button>
-            <Button onClick={() => setDialogOpen(false)} color="primary">
-                No
-            </Button>
-            </DialogActions>
-        </Dialog>
     </Paper>
 }
 
