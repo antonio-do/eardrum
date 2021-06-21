@@ -41,8 +41,8 @@ const LeavePending = ({reload}) => {
       start_date: item.startdate,
       end_date: item.enddate,
       type: item.typ,
-      is_half_beginning: item.half === "true",
-      is_half_end: item.half === "true",
+      is_half_beginning: (item.half & "10") === 10,
+      is_half_end: (item.half & "01") === 1,
       status: item.status,
       note: item.note,
     }))

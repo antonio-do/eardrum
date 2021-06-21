@@ -8,26 +8,19 @@ import { message, Spin } from 'antd';
 import moment from 'moment';
 import { LEAVE_TYPES } from './constants';
 
-const decodeLeave = (data) => ({
-    name: data.user,
-    type: data.typ,
-    note: data.note,
-    start_date: moment(data.startdate, "DD/MM/YYYY").toDate(),
-    end_date: moment(data.enddate, "DD/MM/YYYY").toDate(),
-    is_start_half: data.half === "true",
-    is_end_half: data.half === "true",
-    status: data.status,
-})
-
-const encodeLeave = (data) => ({
-    user: data.name,
-    typ: data.type,
-    startdate: moment(data.start_date).format("DD/MM/YYYY"),
-    enddate: moment(data.end_date).format("DD/MM/YYYY"),
-    half: data.is_start_half ? "true" : "false",
-    status: data.status,
-    note: data.note,
-})
+const encodeLeave = (data) => {
+    const start = data.is_start_half ? "10" : "00";
+    const end = data.is_end_half ? "01" : "00";
+    return {
+        user: data.name,
+        typ: data.type,
+        startdate: moment(data.start_date).format("DD/MM/YYYY"),
+        enddate: moment(data.end_date).format("DD/MM/YYYY"),
+        half: start | end,
+        status: data.status,
+        note: data.note,
+    }
+}
 
 const useStyles = makeStyles((theme) => ({
     root: {
