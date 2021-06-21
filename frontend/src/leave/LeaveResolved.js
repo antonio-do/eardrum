@@ -69,8 +69,8 @@ const LeaveList = ({year, toggle}) => {
     description: "Take a half day at the end of leave ", },
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
     renderCell: (params) => (
-      params.row.note === "" ? "-" : 
-      <CustomPopover label="More" text={params.row.note}/>
+      params.row.note === "" ? <div style={{padding:10}}>-</div> : 
+      <CustomPopover label="View" text={params.row.note}/>
     ) },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
     { field: 'details', headerName: ' ', disableColumnMenu: true, sortable: false, 
