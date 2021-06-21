@@ -4,6 +4,7 @@ import { Box, Typography } from '@material-ui/core';
 import { useDeleteLeave2, useGetLeaveAll2, useUpdateLeave2, useCurrentUser  } from './hooks';
 import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu';
+import CustomPopover from './components/CustomPopover.js';
 
 const LeavePending = ({reload}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
@@ -43,8 +44,8 @@ const LeavePending = ({reload}) => {
       is_half_beginning: item.half === "true",
       is_half_end: item.half === "true",
       status: item.status,
+      note: item.note,
     }))
-    console.log(data);
     setPendingApplications(data.filter(item => item.status === "pending"));
   }
 
@@ -80,6 +81,11 @@ const LeavePending = ({reload}) => {
     description: "Take a half day at the beginning of leave", },
     { field: 'is_half_end', headerName: 'Half-day end', type: 'boolean', flex: 1, 
     description: "Take a half day at the end of leave ", },
+    { field: 'note', headerName: 'Note', type: 'string', flex: 1,
+    renderCell: (params) => (
+      params.row.note === "" ? "-" : 
+      <CustomPopover label="More" text={params.row.note}/>
+    ) },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
     { field: 'details', headerName: ' ', disableColumnMenu: true, sortable: false, 
     renderCell: (params) => (
@@ -91,14 +97,10 @@ const LeavePending = ({reload}) => {
     ), flex: 0.5},
   ];
 
-  if (getUserLoading || getAllLoading) {
-    return <Spin size="small" />
-  }
-
   return (
     <Box mt={5}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
-        {getAllLoading ? <Spin size="small"/> : <DataGrid
+        {(getUserLoading || getAllLoading) ? <Spin size="small"/> : <DataGrid
             autoHeight 
             rows={pendingRequests} 
             columns={columns}

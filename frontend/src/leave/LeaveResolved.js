@@ -6,6 +6,7 @@ import { useCurrentUser, useDeleteLeave2, useGetLeaveAll2  } from './hooks';
 import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu'
 import moment from 'moment';
+import CustomPopover from './components/CustomPopover.js';
 
 const DATE_FORMAT = "DD/MM/YYYY";
 
@@ -46,6 +47,7 @@ const LeaveList = ({year, toggle}) => {
       is_half_beginning: item.half === "true",
       is_half_end: item.half === "true",
       status: item.status,
+      note: item.note,
     }))
     setResolvedRequests(data.filter(item => item.status !== "pending" && moment(item.start_date, DATE_FORMAT).year() === year));
   }
@@ -65,6 +67,11 @@ const LeaveList = ({year, toggle}) => {
     description: "Take a half day at the beginning of leave", },
     { field: 'is_half_end', headerName: 'Half-day end', type: 'boolean', flex: 1, 
     description: "Take a half day at the end of leave ", },
+    { field: 'note', headerName: 'Note', type: 'string', flex: 1,
+    renderCell: (params) => (
+      params.row.note === "" ? "-" : 
+      <CustomPopover label="More" text={params.row.note}/>
+    ) },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
     { field: 'details', headerName: ' ', disableColumnMenu: true, sortable: false, 
     renderCell: (params) => (
@@ -74,14 +81,10 @@ const LeaveList = ({year, toggle}) => {
     ), flex: 0.5},
   ];
 
-  if (getUserLoading || getAllLoading) {
-    return <Spin size="small" />
-  }
-
   return (
     <Box mt={5}>
         <Typography variant="h5" gutterBottom>Resolved requests</Typography>
-        {getAllLoading ? <Spin size="small"/> : <DataGrid
+        {(getAllLoading || getUserLoading) ? <Spin size="small"/> : <DataGrid
             autoHeight 
             rows={resolvedRequests} 
             columns={columns}
