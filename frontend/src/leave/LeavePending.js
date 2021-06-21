@@ -1,31 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
 import { Box, Typography } from '@material-ui/core';
-import { useDeleteLeave2, useGetLeaveAll, useUpdateLeave2  } from './hooks';
+import { useDeleteLeave2, useGetLeaveAll2, useUpdateLeave2, useCurrentUser  } from './hooks';
 import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu';
 
 const LeavePending = () => {
   const [pendingRequests, setPendingApplications] = useState([]);
-  const [loading, leaveData, error] = useGetLeaveAll();
+  const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll2();
   const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave2();
   const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave2();
+  const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
 
   useEffect(() => {
-    if (!leaveData && error) {
-      console.log(error);
+    if (!getUserResponse && getUserError) {
+        console.log(getUserError);
+        message.error("Error fetching user information.");
+    }
+  }, [getUserResponse, getUserLoading, getUserError]);
+
+  useEffect(() => {
+    getAll();
+  }, [])
+
+  useEffect(() => {
+    if (!getAllResponse && getAllError) {
+      console.log(getAllError);
       message.error("Error fetching leave applications.");
     }
-  }, [leaveData, error])
-
-  useEffect(() => {
-    if (!loading) {
-      getRequests();  
+    if (getAllResponse && !getAllLoading && !getAllError) {
+      getRequests();
     }
-  }, [loading])
+  }, [getAllResponse, getAllError, getAllLoading])
 
   const getRequests = () => {
-    const data = leaveData.data.map(item => ({
+    const data = getAllResponse.data.map(item => ({
       id: item.id,
       user: item.user,
       start_date: item.startdate,
@@ -35,6 +44,7 @@ const LeavePending = () => {
       is_half_end: item.half === "true",
       status: item.status,
     }))
+    console.log(data);
     setPendingApplications(data.filter(item => item.status === "pending"));
   }
 
@@ -42,14 +52,20 @@ const LeavePending = () => {
 
   const onApprove =  async (id) => {
       await update(id, {status: "approve"});
+      await getAll();
+      getRequests();
   }
 
   const onReject = async (id) => {
       await update(id, {status: "reject"});
+      await getAll();
+      getRequests();
   }
 
   const onDelete = async (id) => {
       await deleteLeave(id);
+      await getAll();
+      getRequests();
   }
 
   const columns = [
@@ -65,17 +81,21 @@ const LeavePending = () => {
     { field: 'details', headerName: ' ', disableColumnMenu: true, sortable: false, 
     renderCell: (params) => (
       <SimpleMenu items={[
-          {label: "Approve", onClick: (() => onApprove(params.id))},
-          {label: "Reject", onClick: (() => onReject(params.id))},
-          {label: "Delete", onClick: (() => onDelete(params.id))},
+          {label: "Approve", onClick: (() => onApprove(params.id)), visible: getUserResponse.data.is_admin},
+          {label: "Reject", onClick: (() => onReject(params.id)), visible: getUserResponse.data.is_admin},
+          {label: "Delete", onClick: (() => onDelete(params.id)), visible: true},
       ]}/>
     ), flex: 0.5},
   ];
 
+  if (getUserLoading || getAllLoading) {
+    return <Spin size="small" />
+  }
+
   return (
     <Box mt={5}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
-        {loading ? <Spin size="small"/> : <DataGrid
+        {getAllLoading ? <Spin size="small"/> : <DataGrid
             autoHeight 
             rows={pendingRequests} 
             columns={columns}

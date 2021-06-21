@@ -31,7 +31,7 @@ export default function SimpleMenu({items}) {
         onClose={handleClose}
       >
           {items.map(item => (
-              item && <MenuItem onClick={() => {item.onClick(); handleClose()}}>{item.label}</MenuItem>
+              (item.visible !== false) && <MenuItem onClick={() => {item.onClick(); handleClose()}}>{item.label}</MenuItem>
           ))}
       </Menu>
     </div>

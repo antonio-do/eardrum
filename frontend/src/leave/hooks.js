@@ -58,6 +58,22 @@ function useGetLeaveAll() {
   return [loading, response, error];
 }
 
+function useGetLeaveAll2() {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
+
+  const get = () => {
+    axios
+      .get(routes.api.leaveAll())
+      .then((response) => setResponse(response))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  };
+
+  return [get,loading, response, error];
+}
+
 function useGetLeave(id) {
   const [loading, setLoading] = useState(true);
   const [response, setResponse] = useState(null);
@@ -177,11 +193,12 @@ export {
   useCurrentYear, 
   useAllUsers, 
   useCurrentUser, 
-  useGetLeaveAll, 
+  useGetLeaveAll,
+  useGetLeaveAll2, 
   useGetLeave, 
   useNewLeave, 
   useUpdateLeave,
   useUpdateLeave2, 
   useDeleteLeave,
-  useDeleteLeave2,
+  useDeleteLeave2
 }
