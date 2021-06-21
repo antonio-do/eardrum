@@ -5,7 +5,7 @@ import { useDeleteLeave2, useGetLeaveAll2, useUpdateLeave2, useCurrentUser  } fr
 import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu';
 
-const LeavePending = () => {
+const LeavePending = ({reload}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll2();
   const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave2();
@@ -53,19 +53,22 @@ const LeavePending = () => {
   const onApprove =  async (id) => {
       await update(id, {status: "approve"});
       await getAll();
-      getRequests();
+      getRequests()
+      reload();
   }
 
   const onReject = async (id) => {
       await update(id, {status: "reject"});
       await getAll();
-      getRequests();
+      getRequests()
+      reload();
   }
 
   const onDelete = async (id) => {
       await deleteLeave(id);
       await getAll();
-      getRequests();
+      getRequests()
+      reload();
   }
 
   const columns = [
@@ -108,3 +111,25 @@ const LeavePending = () => {
 }
 
 export default LeavePending;
+
+
+
+{/* <Dialog
+open={dialogOpen}
+onClose={() => setDialogOpen(false)}
+aria-describedby="alert-dialog-description"
+>
+<DialogContent>
+<DialogContentText id="alert-dialog-description">
+    Are you sure you want to cancel this application?
+</DialogContentText>
+</DialogContent>
+<DialogActions>
+<Button onClick={ () => {onDelete(); setDialogOpen(false); }} color="primary" autoFocus>
+    Yes
+</Button>
+<Button onClick={() => setDialogOpen(false)} color="primary">
+    No
+</Button>
+</DialogActions>
+</Dialog> */}

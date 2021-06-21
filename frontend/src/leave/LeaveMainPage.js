@@ -33,6 +33,7 @@ const useStyles = makeStyles(theme => ({
 const LeaveMainPage = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [date, setDate] = useState(new Date());
+  const [toggle, setToggle] = useState(true);
 
   const classes = useStyles();
 
@@ -58,8 +59,8 @@ const LeaveMainPage = () => {
                 />
                 </Box>
                 <LeaveStat year={year}/>
-                <LeavePending/>
-                <LeaveResolved year={year}/>
+                <LeavePending reload={() => setToggle(toggle => !toggle)}/>
+                <LeaveResolved year={year} toggle={toggle}/>
             </Grid>
         </Grid>
     </div>

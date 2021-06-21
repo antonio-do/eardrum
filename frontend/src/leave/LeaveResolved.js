@@ -9,7 +9,7 @@ import moment from 'moment';
 
 const DATE_FORMAT = "DD/MM/YYYY";
 
-const LeaveList = ({year}) => {
+const LeaveList = ({year, toggle}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll2();
   const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave2();
@@ -24,7 +24,7 @@ const LeaveList = ({year}) => {
 
   useEffect(() => {
     getAll();
-  }, [])
+  }, [year, toggle])
 
   useEffect(() => {
     if (!getAllResponse && getAllError) {
