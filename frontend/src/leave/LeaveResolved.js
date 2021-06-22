@@ -7,6 +7,7 @@ import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu'
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
+import DeleteDialog from './components/DeleteDialog';
 
 const DATE_FORMAT = "DD/MM/YYYY";
 
@@ -15,6 +16,8 @@ const LeaveList = ({year, toggle}) => {
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll2();
   const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave2();
   const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [leaveId, setLeaveId] = useState(0);
 
   useEffect(() => {
     if (!getUserResponse && getUserError) {
@@ -25,7 +28,7 @@ const LeaveList = ({year, toggle}) => {
 
   useEffect(() => {
     getAll();
-  }, [year, toggle])
+  }, [toggle])
 
   useEffect(() => {
     if (!getAllResponse && getAllError) {
@@ -35,7 +38,7 @@ const LeaveList = ({year, toggle}) => {
     if (getAllResponse && !getAllLoading && !getAllError) {
       getRequests();
     }
-  }, [getAllResponse, getAllError, getAllLoading])
+  }, [year, getAllResponse, getAllError, getAllLoading])
 
   const getRequests = () => {
     const data = getAllResponse.data.map(item => ({
@@ -52,7 +55,12 @@ const LeaveList = ({year, toggle}) => {
     setResolvedRequests(data.filter(item => item.status !== "pending" && moment(item.start_date, DATE_FORMAT).year() === year));
   }
 
-  const onDelete = async (id) => {
+  const onDelete = (id) => {
+    setLeaveId(id);
+    setOpenDialog(true);
+  }
+
+  const onDeleteConfirm = async (id) => {
     await deleteLeave(id);
     await getAll();
     getRequests();
@@ -74,7 +82,7 @@ const LeaveList = ({year, toggle}) => {
     ) },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
     { field: 'details', headerName: ' ', disableColumnMenu: true, sortable: false, 
-    renderCell: (params) => (
+    renderCell: (params) => getUserResponse.data.is_admin && (
       <SimpleMenu items={[
           {label: "Delete", onClick: (() => onDelete(params.id)), visible: getUserResponse.data.is_admin},
       ]}/>
@@ -92,6 +100,7 @@ const LeaveList = ({year, toggle}) => {
             pageSize={10}
             disableSelectionOnClick 
         />}
+        <DeleteDialog onDelete={() => onDeleteConfirm(leaveId)} open={openDialog} setOpen={setOpenDialog}/> 
     </Box>
   );
 }

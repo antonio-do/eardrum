@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
 import { useDeleteLeave2, useGetLeaveAll2, useUpdateLeave2, useCurrentUser  } from './hooks';
 import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu';
 import CustomPopover from './components/CustomPopover.js';
+import DeleteDialog from './components/DeleteDialog';
 
 const LeavePending = ({reload}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
@@ -12,6 +13,8 @@ const LeavePending = ({reload}) => {
   const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave2();
   const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave2();
   const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [leaveId, setLeaveId] = useState(0);
 
   useEffect(() => {
     if (!getUserResponse && getUserError) {
@@ -65,7 +68,12 @@ const LeavePending = ({reload}) => {
       reload();
   }
 
-  const onDelete = async (id) => {
+  const onDelete = (id) => {
+    setLeaveId(id);
+    setOpenDialog(true);
+  }
+
+  const onDeleteConfirm = async (id) => {
       await deleteLeave(id);
       await getAll();
       getRequests()
@@ -108,30 +116,9 @@ const LeavePending = ({reload}) => {
             pageSize={10}
             disableSelectionOnClick 
         />}
+        <DeleteDialog onDelete={() => onDeleteConfirm(leaveId)} open={openDialog} setOpen={setOpenDialog}/> 
     </Box>
   );
 }
 
 export default LeavePending;
-
-
-
-{/* <Dialog
-open={dialogOpen}
-onClose={() => setDialogOpen(false)}
-aria-describedby="alert-dialog-description"
->
-<DialogContent>
-<DialogContentText id="alert-dialog-description">
-    Are you sure you want to cancel this application?
-</DialogContentText>
-</DialogContent>
-<DialogActions>
-<Button onClick={ () => {onDelete(); setDialogOpen(false); }} color="primary" autoFocus>
-    Yes
-</Button>
-<Button onClick={() => setDialogOpen(false)} color="primary">
-    No
-</Button>
-</DialogActions>
-</Dialog> */}
