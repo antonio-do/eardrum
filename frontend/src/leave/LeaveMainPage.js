@@ -15,8 +15,12 @@ import { DatePicker } from "@material-ui/pickers";
 const useStyles = makeStyles(theme => ({
   root: {
     width: 'auto',
+    [theme.breakpoints.up(1750)]: {
+      width: "175%",
+      transform: 'translate(-21.42857%, 0)',
+    },
     // (150% - 100%)/(2 * 150%) = 16.66667%
-    [theme.breakpoints.up(1500)]: {
+    [theme.breakpoints.between(1500, 1750)]: {
       width: "150%",
       transform: 'translate(-16.66667%, 0)',
     },

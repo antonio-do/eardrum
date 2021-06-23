@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
-import { Box, Typography, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
+import { Box, Button, Typography, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
 import { useDeleteLeave2, useGetLeaveAll2, useUpdateLeave2, useCurrentUser  } from './hooks';
 import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu';
@@ -95,14 +95,20 @@ const LeavePending = ({reload}) => {
       <CustomPopover label="View" text={params.row.note}/>
     ) },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
-    { field: 'details', headerName: ' ', disableColumnMenu: true, sortable: false, 
+    { field: 'details', headerName: 'Action', disableColumnMenu: true, sortable: false, 
     renderCell: (params) => (
-      <SimpleMenu items={[
-          {label: "Approve", onClick: (() => onApprove(params.id)), visible: getUserResponse.data.is_admin},
-          {label: "Reject", onClick: (() => onReject(params.id)), visible: getUserResponse.data.is_admin},
-          {label: "Delete", onClick: (() => onDelete(params.id)), visible: true},
-      ]}/>
-    ), flex: 0.5},
+      <Fragment>
+        {getUserResponse && getUserResponse.data.is_admin && <Button color='primary' style={{margin: 5}} onClick={() => onApprove(params.id)}>
+            Approve
+        </Button>}
+        {getUserResponse && getUserResponse.data.is_admin && <Button color='primary' style={{margin: 5}} onClick={() => onReject(params.id)}>
+            Reject
+        </Button>}
+        <Button color='primary' style={{margin: 5}} onClick={() => (onDelete(params.id))}>
+            Delete
+        </Button>
+      </Fragment>
+    ), width: (getUserResponse && getUserResponse.data.is_admin) * 200 + 100},
   ];
 
   return (

@@ -81,12 +81,12 @@ const LeaveList = ({year, toggle}) => {
       <CustomPopover label="View" text={params.row.note}/>
     ) },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
-    { field: 'details', headerName: ' ', disableColumnMenu: true, sortable: false, 
+    { field: 'details', headerName: 'Action', disableColumnMenu: true, sortable: false, 
     renderCell: (params) => getUserResponse.data.is_admin && (
-      <SimpleMenu items={[
-          {label: "Delete", onClick: (() => onDelete(params.id)), visible: getUserResponse.data.is_admin},
-      ]}/>
-    ), flex: 0.5},
+      <Button color='primary' style={{margin: 5}} onClick={() => onDelete(params.id)}>
+        Delete
+      </Button>
+    ), width: 100, hidden: getUserResponse && !getUserResponse.data.is_admin},
   ];
 
   return (
