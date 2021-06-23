@@ -52,7 +52,7 @@ const LeaveCalendar = ({year}) => {
     }
 
     
-    return <Box mt={5}>
+    return <Box m={2}>
         <Typography variant="h5" gutterBottom>Statistic</Typography>
          {loading ? <Spin size="small"/> : <DataGrid
             autoHeight

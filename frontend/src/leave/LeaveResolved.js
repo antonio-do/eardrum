@@ -90,7 +90,7 @@ const LeaveList = ({year, toggle}) => {
   ];
 
   return (
-    <Box mt={5}>
+    <Box m={2}>
         <Typography variant="h5" gutterBottom>Resolved requests</Typography>
         {(getAllLoading || getUserLoading) ? <Spin size="small"/> : <DataGrid
             autoHeight 

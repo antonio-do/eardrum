@@ -6,4 +6,10 @@ const LEAVE_TYPES = [
     { label: "sick", field: "whatever" },
 ]
 
-export { LEAVE_TYPES }
+const STATUS_TYPES = {
+    REJECTED: "rejected",
+    APPROVED: "approved",
+    PENDING: "pending",
+}
+
+export { LEAVE_TYPES, STATUS_TYPES }

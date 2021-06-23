@@ -1,4 +1,4 @@
-import { Box, Button, Grid, makeStyles } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Divider } from '@material-ui/core';
 import React, { useState } from 'react';
 import {
   Link,
@@ -51,20 +51,21 @@ const LeaveMainPage = () => {
                 <LeaveCalendar/>
             </Grid>
             <Grid item style={{flexGrow: 1}}>
-                <Box>
-                <DatePicker
-                    views={["year"]}
-                    label="View data in: "
-                    value={date}
-                    onChange={setDate}
-                    style={{width: '100%'}}
-                    onYearChange={(date) => setYear(date.getFullYear())}
-                    autoOk
-                />
-                </Box>
                 <LeaveStat year={year}/>
+                <Box mt={10}>
+                  <DatePicker
+                      views={["year"]}
+                      label="View data in: "
+                      value={date}
+                      onChange={setDate}
+                      style={{width: '100%'}}
+                      onYearChange={(date) => setYear(date.getFullYear())}
+                      autoOk
+                  />
                 <LeavePending reload={() => setToggle(toggle => !toggle)}/>
                 <LeaveResolved year={year} toggle={toggle}/>
+
+                </Box>
             </Grid>
         </Grid>
     </div>

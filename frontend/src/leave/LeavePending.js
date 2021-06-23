@@ -6,6 +6,7 @@ import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu';
 import CustomPopover from './components/CustomPopover.js';
 import DeleteDialog from './components/DeleteDialog';
+import { STATUS_TYPES } from './constants';
 
 const LeavePending = ({reload}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
@@ -55,14 +56,14 @@ const LeavePending = ({reload}) => {
   //TODO: force reload after performing actions
 
   const onApprove =  async (id) => {
-      await update(id, {status: "approve"});
+      await update(id, {status: STATUS_TYPES.APPROVED});
       await getAll();
       getRequests()
       reload();
   }
 
   const onReject = async (id) => {
-      await update(id, {status: "reject"});
+      await update(id, {status: STATUS_TYPES.REJECTED});
       await getAll();
       getRequests()
       reload();
@@ -112,7 +113,7 @@ const LeavePending = ({reload}) => {
   ];
 
   return (
-    <Box mt={5}>
+    <Box m={2}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
         {(getUserLoading || getAllLoading) ? <Spin size="small"/> : <DataGrid
             autoHeight 

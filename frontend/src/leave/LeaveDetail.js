@@ -6,7 +6,7 @@ import { Link, useHistory, useParams } from 'react-router-dom';
 import { useAllUsers, useCurrentUser, useDeleteLeave, useGetLeave, useNewLeave, useUpdateLeave } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
-import { LEAVE_TYPES } from './constants';
+import { LEAVE_TYPES, STATUS_TYPES } from './constants';
 
 const encodeLeave = (data) => {
     const start = data.is_start_half ? "10" : "00";
@@ -82,7 +82,7 @@ const LeaveDetail = () => {
 
     const onSubmit = async () => {
         //TODO: fix warning "Can't perform a React state update on unmounted component..."
-        await updateLeave(encodeLeave({...application, status: "pending"}));
+        await updateLeave(encodeLeave({...application, status: STATUS_TYPES.PENDING}));
         history.push("/leave");
     }
 
