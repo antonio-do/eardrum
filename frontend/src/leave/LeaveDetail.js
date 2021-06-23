@@ -55,6 +55,7 @@ const LeaveDetail = () => {
         status: "",
     });
     const [updateLeave, updateLeaveLoading, updateLeaveResponse, updateLeaveError] = useNewLeave() 
+    const [errorDate, setErrorDate] = useState(false);
     
     let history = useHistory();
     const classes = useStyles();
@@ -85,6 +86,8 @@ const LeaveDetail = () => {
         history.push("/leave");
     }
 
+    const checkDate = (start, end) => moment(end).isSameOrAfter(start) && (moment(end).year() === moment(start).year());
+
     if (getUserLoading || getUsersLoading) {
         return <Spin size="large"/>
     }
@@ -112,26 +115,35 @@ const LeaveDetail = () => {
             <Grid item container spacing={3} xs={12}>
                 <Grid item xs={6}>
                     <KeyboardDatePicker
+                        error={errorDate}
+                        helperText={errorDate && "End date must be in the same year and no sooner than start date."}
                         autoOk
                         variant="inline"
                         inputVariant="outlined"
                         label="Start date"
                         format="dd/MM/yyyy"
                         value={application.start_date}
-                        
-                        onChange={(date) => setApplication({...application, start_date: date})}
+                        onChange={(date) => {
+                            setApplication({...application, start_date: date}); 
+                            setErrorDate(!checkDate(date, application.end_date));
+                        }}
                         className={classes.dateField}
                     />
                 </Grid>
                 <Grid item xs={6}>
                     <KeyboardDatePicker
+                        error={errorDate}
+                        helperText={errorDate && "End date must be in the same year and no sooner than start date."}
                         autoOk
                         variant="inline"
                         inputVariant="outlined"
                         label="End date"
                         format="dd/MM/yyyy"
                         value={application.end_date}
-                        onChange={(date) => setApplication({...application, end_date: date})}
+                        onChange={(date) => {
+                            setApplication({...application, end_date: date}); 
+                            setErrorDate(!checkDate(application.start_date, date));
+                        }}
                         className={classes.dateField}
                     />
                 </Grid>
@@ -199,7 +211,7 @@ const LeaveDetail = () => {
             </Grid>
         </Grid>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-            <Button onClick={ onSubmit } color='primary' variant='contained' className={ classes.button }>
+            <Button onClick={ onSubmit } color='primary' variant='contained' className={ classes.button } disabled={errorDate}>
                 Submit
             </Button>
             <Button to='/leave' component={ Link } color='primary' variant='outlined' className={ classes.button }>Back</Button>
