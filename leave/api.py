@@ -85,8 +85,6 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         queries = {queried_field: queried_value for queried_field, queried_value in queries}
 
-        print(self.queryset.filter(active=True))
-
         if self.is_admin_user():
             return self.queryset.filter(active=True, **queries)
         else:
@@ -104,6 +102,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        allowed_data = {}
         for field in self.get_updated_fields():
             if request.data.get(field) is not None:
                 allowed_data[field] = request.data.get(field)
