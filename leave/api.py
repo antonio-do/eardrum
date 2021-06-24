@@ -1,5 +1,6 @@
 import json
 import random
+import copy
 
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
@@ -84,6 +85,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         queries = {queried_field: queried_value for queried_field, queried_value in queries}
 
+        print(self.queryset.filter(active=True))
+
         if self.is_admin_user():
             return self.queryset.filter(active=True, **queries)
         else:
@@ -101,7 +104,10 @@ class LeaveViewSet(mixins.CreateModelMixin,
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        allowed_data = {field: request.data.get(field) for field in self.get_updated_fields}
+        for field in self.get_updated_fields():
+            if request.data.get(field) is not None:
+                allowed_data[field] = request.data.get(field)
+
         serializer = self.get_serializer(instance, data=allowed_data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
