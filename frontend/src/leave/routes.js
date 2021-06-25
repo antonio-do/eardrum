@@ -5,5 +5,6 @@ export default {
         leaveAll: () => '/api/leave/',
         leaveDetail: (id) => `/api/leave/${id}/`,
         statistics: (year) => `/api/leave/statistics/?year=${year}`,
+        holidays: (year) => `/api/leave/holidays/?year=${year}`,
     }
 }

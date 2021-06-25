@@ -155,11 +155,30 @@ function useStat() {
   const [response, setResponse] = useState(null);
   const [error, setError]= useState(null);
 
-  const get = (id) => {
+  const get = (year) => {
     setLoading(true);
     axios({
       method: 'get', 
-      url: routes.api.statistics(id),
+      url: routes.api.statistics(year),
+    })
+      .then((response) => setResponse(response))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }
+
+  return { get, loading, response, error};
+}
+
+function useHolidays() {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError]= useState(null);
+
+  const get = (year) => {
+    setLoading(true);
+    axios({
+      method: 'get', 
+      url: routes.api.holidays(year),
     })
       .then((response) => setResponse(response))
       .catch((error) => setError(error))
@@ -180,4 +199,5 @@ export {
   useUpdateLeave, 
   useDeleteLeave,
   useStat,
+  useHolidays,
 }
