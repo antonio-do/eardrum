@@ -1,4 +1,4 @@
-import { Box, Button, Grid, makeStyles, Divider } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles } from '@material-ui/core';
 import React, { useState } from 'react';
 import {
   Link,
@@ -38,12 +38,12 @@ const LeaveMainPage = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [date, setDate] = useState(new Date());
   const [toggle, setToggle] = useState(true);
-
   const classes = useStyles();
+
 
   return (
     <div className={classes.root}>
-        <Grid container spacing={5}>
+        {<Grid container spacing={5}>
             <Grid item xs={12} style={{ textAlign: 'end'}}>
                 <Button to='/leave/new' color="primary" variant="contained" component={ Link }>New</Button>
             </Grid>
@@ -66,7 +66,7 @@ const LeaveMainPage = () => {
                   <LeaveResolved year={year} toggle={toggle}/>
                 </Box>
             </Grid>
-        </Grid>
+        </Grid>}
     </div>
   )
 }

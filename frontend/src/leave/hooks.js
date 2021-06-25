@@ -1,17 +1,39 @@
-import React, { useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState } from 'react'
 
 import axios from 'axios';
 
 import routes from './routes';
 
-const useAllUsers = () => {
+const LeaveContext = createContext({
+  currentUser: null,
+  leaveTypes: null, 
+  allUsers: null,
+})
+
+const useLeaveTypes = () => {
   const [loading, setLoading] = useState(true);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
       axios
-          .get(routes.api.allUsers())
+          .get(routes.api.leaveTypes())
+          .then(res => setResponse(res))
+          .catch((error) => setError(error))
+          .finally(() => setLoading(false));
+  }, []);
+
+  return [loading, response, error];
+}
+
+const useLeaveContext = () => {
+  const [loading, setLoading] = useState(true);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+      axios
+          .get(routes.api.context())
           .then(res => setResponse(res))
           .catch((error) => setError(error))
           .finally(() => setLoading(false));
@@ -129,7 +151,9 @@ function useDeleteLeave() {
 }
 
 export {
-  useAllUsers, 
+  LeaveContext,
+  useLeaveTypes,
+  useLeaveContext, 
   useCurrentUser,
   useGetLeaveAll, 
   useGetLeave, 

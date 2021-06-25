@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
 import { Box, Button, Typography } from '@material-ui/core';
-import { useCurrentUser, useDeleteLeave, useGetLeaveAll  } from './hooks';
+import { LeaveContext, useDeleteLeave, useGetLeaveAll  } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
@@ -13,16 +13,9 @@ const LeaveList = ({year, toggle}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
   const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
-  const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
   const [openDialog, setOpenDialog] = useState(false);
   const [leaveId, setLeaveId] = useState(0);
-
-  useEffect(() => {
-    if (!getUserResponse && getUserError) {
-        console.log(getUserError);
-        message.error("Error fetching user information.");
-    }
-  }, [getUserResponse, getUserLoading, getUserError]);
+  const leaveContext = useContext(LeaveContext);
 
   useEffect(() => {
     getAll();
@@ -80,17 +73,17 @@ const LeaveList = ({year, toggle}) => {
     ) },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
     { field: 'details', headerName: 'Action', disableColumnMenu: true, sortable: false, 
-    renderCell: (params) => getUserResponse.data.is_admin && (
+    renderCell: (params) => leaveContext.currentUser.is_admin && (
       <Button color='primary' style={{margin: 5}} onClick={() => onDelete(params.id)}>
         Delete
       </Button>
-    ), width: 100, hidden: getUserResponse && !getUserResponse.data.is_admin},
+    ), width: 100, hidden: leaveContext.currentUser.is_admin},
   ];
 
   return (
     <Box m={2}>
         <Typography variant="h5" gutterBottom>Resolved requests</Typography>
-        {(getAllLoading || getUserLoading) ? <Spin size="small"/> : <DataGrid
+        {(getAllLoading) ? <Spin size="small"/> : <DataGrid
             autoHeight 
             rows={resolvedRequests} 
             columns={columns}

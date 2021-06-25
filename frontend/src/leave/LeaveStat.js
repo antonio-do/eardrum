@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Box, Typography } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
-import { useAllUsers } from './hooks';
-import { message, Spin } from 'antd';
+import { LeaveContext } from './hooks';
 import { LEAVE_TYPES } from './constants';
 
 
@@ -15,27 +14,18 @@ const columns = [{ field: 'user', headerName: 'User', type: 'string', flex: 1, }
 
 const LeaveCalendar = ({year}) => {
     const [stat, setStat] = useState([]);
-    const [loading, res, error] = useAllUsers();
+    const leaveContext = useContext(LeaveContext);
 
     useEffect(() => {
-        if (!res && error) {
-            console.log(error);
-            message.error('Errors occured while fetching users!');
-        }
-    }, [res, error])
-
-    useEffect(() => {
-        if (!loading) {
-            getStat();
-        }
-    }, [loading])
+        getStat();
+    }, [year])
 
     //useEffect(() => {}, [loading])
     const getStat = () => {
         //TODO: replace mock data
         const gen = () => Math.random() * 15;
-        let names = res.data.users;
-
+        let names = leaveContext.allUsers;
+        console.log(names);
         let randomData = [];
         for (let i = 0; i < names.length; i++) {
             randomData.push({
@@ -54,7 +44,7 @@ const LeaveCalendar = ({year}) => {
     
     return <Box m={2}>
         <Typography variant="h5" gutterBottom>Statistic</Typography>
-         {loading ? <Spin size="small"/> : <DataGrid
+         {<DataGrid
             autoHeight
             rows={stat}
             columns={columns}

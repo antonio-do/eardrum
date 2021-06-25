@@ -1,12 +1,11 @@
 import { Button, Checkbox, FormControl, FormControlLabel, Grid, MenuItem, Paper, TextField } from '@material-ui/core'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
 import { Link, useHistory } from 'react-router-dom';
-import { useAllUsers, useCurrentUser, useNewLeave } from './hooks';
-import { message, Spin } from 'antd';
+import { LeaveContext, useNewLeave } from './hooks';
 import moment from 'moment';
-import { LEAVE_TYPES, STATUS_TYPES } from './constants';
+import { STATUS_TYPES } from './constants';
 
 const encodeLeave = (data) => {
     const start = data.is_start_half ? "1" : "0";
@@ -40,13 +39,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const LeaveDetail = () => {
-    const [getUsersLoading, getUsersResponse, getUsersError] = useAllUsers();
-    const [types, setTypes] = useState([]);
-    const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
+    const leaveContext = useContext(LeaveContext);
+    
     // The field name and type would not render properly if use useState(null) or useState({})
     const [application, setApplication] = useState({
-        name: "",
-        type: LEAVE_TYPES[0].label,
+        name: leaveContext.currentUser.username,
+        type: leaveContext.leaveTypes[0].name,
         note: "",
         start_date: new Date(),
         end_date: new Date(),
@@ -60,26 +58,6 @@ const LeaveDetail = () => {
     let history = useHistory();
     const classes = useStyles();
 
-    useEffect(() => {
-        if (!getUserResponse && getUserError) {
-            console.log(getUserError);
-            message.error("Error fetching user information.");
-        } else if (!getUserLoading) {
-            setApplication({...application, name: getUserResponse.data.username});
-        }
-    }, [getUserResponse, getUserLoading, getUserError]);
-
-    useEffect(() => {
-        if (!getUsersResponse && getUsersError) {
-            console.log(getUsersError);
-            message.error("Error fetching all users");
-        }
-    }, [getUsersResponse, getUsersError]);
-
-    useEffect(() => {
-        setTypes(LEAVE_TYPES.map(item => item.label));
-    }, []);
-
     const onSubmit = async () => {
         //TODO: fix warning "Can't perform a React state update on unmounted component..."
         await updateLeave(encodeLeave({...application, status: STATUS_TYPES.PENDING}));
@@ -87,10 +65,6 @@ const LeaveDetail = () => {
     }
 
     const checkDate = (start, end) => moment(end).isSameOrAfter(start) && (moment(end).year() === moment(start).year());
-
-    if (getUserLoading || getUsersLoading) {
-        return <Spin size="large"/>
-    }
 
     return <Paper className={classes.root}>
         <Grid container direction="column" spacing={3}>
@@ -104,7 +78,7 @@ const LeaveDetail = () => {
                         value={application.name}
                         select
                     >
-                        {getUsersResponse.data.users.map((item) => (
+                        {leaveContext.allUsers.map((item) => (
                             <MenuItem key={item.username} value={item.username}>
                                 {item.username}
                             </MenuItem>
@@ -186,9 +160,9 @@ const LeaveDetail = () => {
                         value={ application.type }
                         select
                     >
-                        {types.map((type) => (
-                            <MenuItem key={type} value={type}>
-                                {type}
+                        {leaveContext.leaveTypes.map((type) => (
+                            <MenuItem key={type.name} value={type.name}>
+                                {type.label}
                             </MenuItem>
                         ))}
                     </TextField>

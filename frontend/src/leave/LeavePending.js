@@ -1,7 +1,7 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import React, { useEffect, useState, Fragment, useContext } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
 import { Box, Button, Typography } from '@material-ui/core';
-import { useDeleteLeave, useGetLeaveAll, useUpdateLeave, useCurrentUser  } from './hooks';
+import { useDeleteLeave, useGetLeaveAll, useUpdateLeave, LeaveContext  } from './hooks';
 import { message, Spin } from 'antd';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
@@ -12,22 +12,17 @@ const LeavePending = ({reload}) => {
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
   const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave();
   const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
-  const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
   const [leaveId, setLeaveId] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const leaveContext = useContext(LeaveContext);
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openApproveDialog, setOpenApproveDialog] = useState(false);
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
 
   useEffect(() => {
-    if (!getUserResponse && getUserError) {
-        console.log(getUserError);
-        message.error("Error fetching user information.");
-    }
-  }, [getUserResponse, getUserLoading, getUserError]);
-
-  useEffect(() => {
     getAll();
+    setIsAdmin(leaveContext.currentUser.is_admin);
   }, [])
 
   useEffect(() => {
@@ -111,23 +106,23 @@ const LeavePending = ({reload}) => {
     { field: 'details', headerName: 'Action', disableColumnMenu: true, sortable: false, 
     renderCell: (params) => (
       <Fragment>
-        {getUserResponse && getUserResponse.data.is_admin && <Button color='primary' style={{margin: 5}} onClick={() => onApprove(params.id)}>
+        {isAdmin && <Button color='primary' style={{margin: 5}} onClick={() => onApprove(params.id)}>
             Approve
         </Button>}
-        {getUserResponse && getUserResponse.data.is_admin && <Button color='primary' style={{margin: 5}} onClick={() => onReject(params.id)}>
+        {isAdmin && <Button color='primary' style={{margin: 5}} onClick={() => onReject(params.id)}>
             Reject
         </Button>}
         <Button color='primary' style={{margin: 5}} onClick={() => (onDelete(params.id))}>
             Delete
         </Button>
       </Fragment>
-    ), width: (getUserResponse && getUserResponse.data.is_admin) * 200 + 100},
+    ), width: (isAdmin) * 200 + 100},
   ];
 
   return (
     <Box m={2}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
-        {(getUserLoading || getAllLoading) ? <Spin size="small"/> : <DataGrid
+        {(getAllLoading) ? <Spin size="small"/> : <DataGrid
             autoHeight 
             rows={pendingRequests} 
             columns={columns}
