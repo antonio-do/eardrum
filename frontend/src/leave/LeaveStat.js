@@ -1,50 +1,47 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Box, Typography } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
-import { LeaveContext } from './hooks';
+import { LeaveContext, useStat } from './hooks';
 import { LEAVE_TYPES } from './constants';
-
-
-const columns = [{ field: 'user', headerName: 'User', type: 'string', flex: 1, }].concat(LEAVE_TYPES.map((item) => ({ 
-    field: item.field, 
-    headerName: item.label, 
-    type: 'number', 
-    flex: 1, 
-})))
+import { message, Spin } from 'antd';
 
 const LeaveCalendar = ({year}) => {
     const [stat, setStat] = useState([]);
     const leaveContext = useContext(LeaveContext);
-
+    const statProducer = useStat();
+    
     useEffect(() => {
-        getStat();
+        statProducer.get(year);
     }, [year])
 
-    //useEffect(() => {}, [loading])
-    const getStat = () => {
-        //TODO: replace mock data
-        const gen = () => Math.random() * 15;
-        let names = leaveContext.allUsers;
-        console.log(names);
-        let randomData = [];
-        for (let i = 0; i < names.length; i++) {
-            randomData.push({
-                id: i,
-                user: names[i].username,
-                type1: gen(),
-                type2: gen(),
-                type3: gen(),
-                type4: gen(),
-                type5: gen(),
-            })
+    useEffect(() => {
+        if (!statProducer.loading) return;
+        if (statProducer.error) {
+            console.log(statProducer.error);
+            message.error("Error fetching statistic.");
+        } else if (statProducer.response) {
+            setStat(statProducer.response.data.stats.map((item) => ({
+                ...item,
+                id: item.user,
+            })))            
         }
-        setStat(randomData);
-    }
+    }, [statProducer.loading, statProducer.response, statProducer.error])
 
+    const columns = [{ 
+        field: 'user', 
+        headerName: 'User', 
+        type: 'string', 
+        flex: 1, 
+    }].concat(leaveContext.leaveTypes.map((item) => ({ 
+        field: item.name, 
+        headerName: item.label, 
+        type: 'number', 
+        flex: 1, 
+    })))
     
     return <Box m={2}>
         <Typography variant="h5" gutterBottom>Statistic</Typography>
-         {<DataGrid
+         {statProducer.loading ? <Spin size="small"/> : <DataGrid
             autoHeight
             rows={stat}
             columns={columns}

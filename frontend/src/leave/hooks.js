@@ -150,6 +150,25 @@ function useDeleteLeave() {
   return [save, loading, response, error];
 }
 
+function useStat() {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError]= useState(null);
+
+  const get = (id) => {
+    setLoading(true);
+    axios({
+      method: 'get', 
+      url: routes.api.statistics(id),
+    })
+      .then((response) => setResponse(response))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }
+
+  return { get, loading, response, error};
+}
+
 export {
   LeaveContext,
   useLeaveTypes,
@@ -160,4 +179,5 @@ export {
   useNewLeave, 
   useUpdateLeave, 
   useDeleteLeave,
+  useStat,
 }
