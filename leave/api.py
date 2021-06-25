@@ -1,5 +1,6 @@
 import json
 import random
+import datetime
 import copy
 
 from django.contrib.auth.models import User
@@ -31,9 +32,6 @@ class LeaveViewSet(mixins.CreateModelMixin,
                    viewsets.GenericViewSet):
     queryset = Leave.objects.all()
     serializer_class = LeaveSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    ADMIN_UPDATED_FIELDS = ['status', 'active']
-    UPDATED_FIELDS = ['active']
 
     def is_admin_user(self):
         return permissions.IsAdminUser.has_permission(None, self.request, self)
@@ -63,7 +61,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 leave_statuses = list(map(lambda x: x['name'], leave_context['leave_statuses']))
 
             return value if value in leave_statuses else None
-            
+
         validation_funcs = {
             'year': validate_year,
             'status': validate_status,
@@ -71,8 +69,18 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         return (fieldname, value) if validation_funcs.get(fieldname) is not None else (fieldname, None)
 
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action in ['update', 'partial_update']:
+            permission_classes = [permissions.IsAdminUser]
+        else:
+            permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
     def get_queryset(self):
-        request = self.request 
+        request = self.request
         queries = []
         for queried_field in ['year', 'status']:
             queried_value = request.query_params.get(queried_field)
@@ -99,24 +107,19 @@ class LeaveViewSet(mixins.CreateModelMixin,
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+    def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        allowed_data = {}
-        for field in self.get_updated_fields():
-            if request.data.get(field) is not None:
-                allowed_data[field] = request.data.get(field)
-
-        serializer = self.get_serializer(instance, data=allowed_data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
+        if instance.status == 'pending':
+            instance.active = False
+            instance.save(update_fields=['status'])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            errors = {
+                'errors': {
+                    'status': ['is not pending'],
+                }
+            }
+            return Response(errors, status=status.HTTP_403_FORBIDDEN)
 
     @decorators.action(methods=['GET'], detail=False)
     def context(self, *args, **kwargs):
@@ -125,7 +128,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         users = User.objects.all()
         if not self.is_admin_user():
             users = users.filter(username=self.request.user.username)
-        
+
         res = {
             **leave_context,
             "users": list(map(lambda x: model_to_dict(x, fields=['id', 'username']), users)),
@@ -179,4 +182,3 @@ class LeaveViewSet(mixins.CreateModelMixin,
             return Response(ret)
         else:
             return Response(None, status=status.HTTP_404_NOT_FOUND)
-
