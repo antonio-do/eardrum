@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Paper, Typography } from '@material-ui/core'
+import { Box, Typography } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
-import { useCurrentYear, useAllUsers } from './hooks';
+import { useAllUsers } from './hooks';
 import { message, Spin } from 'antd';
 import { LEAVE_TYPES } from './constants';
 

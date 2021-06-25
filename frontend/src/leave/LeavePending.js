@@ -1,18 +1,17 @@
 import React, { useEffect, useState, Fragment } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
-import { Box, Button, Typography, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
-import { useDeleteLeave2, useGetLeaveAll2, useUpdateLeave2, useCurrentUser  } from './hooks';
+import { Box, Button, Typography } from '@material-ui/core';
+import { useDeleteLeave, useGetLeaveAll, useUpdateLeave, useCurrentUser  } from './hooks';
 import { message, Spin } from 'antd';
-import SimpleMenu from './components/Menu';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
 import { STATUS_TYPES } from './constants';
 
 const LeavePending = ({reload}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
-  const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll2();
-  const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave2();
-  const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave2();
+  const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
+  const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave();
+  const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
   const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
   const [leaveId, setLeaveId] = useState(0);
 

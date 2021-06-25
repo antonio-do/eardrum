@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
 import { Box, Button, Typography } from '@material-ui/core';
-import { Link } from 'react-router-dom';
-import { useCurrentUser, useDeleteLeave2, useGetLeaveAll2  } from './hooks';
+import { useCurrentUser, useDeleteLeave, useGetLeaveAll  } from './hooks';
 import { message, Spin } from 'antd';
-import SimpleMenu from './components/Menu'
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
@@ -13,8 +11,8 @@ const DATE_FORMAT = "DD/MM/YYYY";
 
 const LeaveList = ({year, toggle}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
-  const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll2();
-  const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave2();
+  const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
+  const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
   const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
   const [openDialog, setOpenDialog] = useState(false);
   const [leaveId, setLeaveId] = useState(0);
