@@ -5,7 +5,7 @@ import { useDeleteLeave2, useGetLeaveAll2, useUpdateLeave2, useCurrentUser  } fr
 import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu';
 import CustomPopover from './components/CustomPopover.js';
-import DeleteDialog from './components/DeleteDialog';
+import ConfirmDialog from './components/ConfirmDialog';
 import { STATUS_TYPES } from './constants';
 
 const LeavePending = ({reload}) => {
@@ -14,8 +14,11 @@ const LeavePending = ({reload}) => {
   const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave2();
   const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave2();
   const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
-  const [openDialog, setOpenDialog] = useState(false);
   const [leaveId, setLeaveId] = useState(0);
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openApproveDialog, setOpenApproveDialog] = useState(false);
+  const [openRejectDialog, setOpenRejectDialog] = useState(false);
 
   useEffect(() => {
     if (!getUserResponse && getUserError) {
@@ -55,14 +58,24 @@ const LeavePending = ({reload}) => {
 
   //TODO: force reload after performing actions
 
-  const onApprove =  async (id) => {
+  const onApprove = (id) => {
+    setLeaveId(id);
+    setOpenApproveDialog(true);
+  }
+
+  const onApproveConfirm =  async (id) => {
       await update(id, {status: STATUS_TYPES.APPROVED});
       await getAll();
       getRequests()
       reload();
   }
 
-  const onReject = async (id) => {
+  const onReject = (id) => {
+    setLeaveId(id);
+    setOpenRejectDialog(true);
+  }
+
+  const onRejectConfirm = async (id) => {
       await update(id, {status: STATUS_TYPES.REJECTED});
       await getAll();
       getRequests()
@@ -71,7 +84,7 @@ const LeavePending = ({reload}) => {
 
   const onDelete = (id) => {
     setLeaveId(id);
-    setOpenDialog(true);
+    setOpenDeleteDialog(true);
   }
 
   const onDeleteConfirm = async (id) => {
@@ -123,7 +136,24 @@ const LeavePending = ({reload}) => {
             pageSize={10}
             disableSelectionOnClick 
         />}
-        <DeleteDialog onDelete={() => onDeleteConfirm(leaveId)} open={openDialog} setOpen={setOpenDialog}/> 
+        <ConfirmDialog 
+          onConfirm={() => onApproveConfirm(leaveId)} 
+          open={openApproveDialog} 
+          setOpen={setOpenApproveDialog}
+          content="Are you sure you want to approve this application?"
+        /> 
+        <ConfirmDialog 
+          onConfirm={() => onRejectConfirm(leaveId)} 
+          open={openRejectDialog} 
+          setOpen={setOpenRejectDialog}
+          content="Are you sure you want to reject this application?"
+        /> 
+        <ConfirmDialog 
+          onConfirm={() => onDeleteConfirm(leaveId)} 
+          open={openDeleteDialog} 
+          setOpen={setOpenDeleteDialog}
+          content="Are you sure you want to delete this application?"
+        /> 
     </Box>
   );
 }

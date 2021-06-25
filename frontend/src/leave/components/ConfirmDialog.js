@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@material-ui/core';
 
-export default ({ onDelete, open, setOpen }) => (
+export default ({ content, onConfirm, open, setOpen }) => (
     <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -9,11 +9,11 @@ export default ({ onDelete, open, setOpen }) => (
     >
         <DialogContent>
                 <DialogContentText id="alert-dialog-description">
-                    Are you sure you want to delete this application?
+                    {content}
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={ () => {onDelete(); setOpen(false); }} color="primary" autoFocus>
+                <Button onClick={ () => {onConfirm(); setOpen(false); }} color="primary" autoFocus>
                     Yes
                 </Button>
                 <Button onClick={() => setOpen(false)} color="primary">

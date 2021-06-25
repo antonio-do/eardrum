@@ -7,7 +7,7 @@ import { message, Spin } from 'antd';
 import SimpleMenu from './components/Menu'
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
-import DeleteDialog from './components/DeleteDialog';
+import ConfirmDialog from './components/ConfirmDialog';
 
 const DATE_FORMAT = "DD/MM/YYYY";
 
@@ -100,7 +100,12 @@ const LeaveList = ({year, toggle}) => {
             pageSize={10}
             disableSelectionOnClick 
         />}
-        <DeleteDialog onDelete={() => onDeleteConfirm(leaveId)} open={openDialog} setOpen={setOpenDialog}/> 
+        <ConfirmDialog 
+          onConfirm={() => onDeleteConfirm(leaveId)} 
+          open={openDialog} 
+          setOpen={setOpenDialog}
+          content="Are you sure you want to delete this application?"
+        /> 
     </Box>
   );
 }
