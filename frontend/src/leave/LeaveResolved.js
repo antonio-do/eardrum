@@ -1,21 +1,16 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
-import { Box, Button, Typography } from '@material-ui/core';
-import { LeaveContext, useDeleteLeave, useGetLeaveAll  } from './hooks';
+import { Box, Typography } from '@material-ui/core';
+import { useGetLeaveAll  } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
-import ConfirmDialog from './components/ConfirmDialog';
 
 const DATE_FORMAT = "DD/MM/YYYY";
 
 const LeaveList = ({year, toggle}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
-  const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
-  const [openDialog, setOpenDialog] = useState(false);
-  const [leaveId, setLeaveId] = useState(0);
-  const leaveContext = useContext(LeaveContext);
 
   useEffect(() => {
     getAll();
@@ -46,17 +41,6 @@ const LeaveList = ({year, toggle}) => {
     setResolvedRequests(data.filter(item => item.status !== "pending" && moment(item.start_date, DATE_FORMAT).year() === year));
   }
 
-  const onDelete = (id) => {
-    setLeaveId(id);
-    setOpenDialog(true);
-  }
-
-  const onDeleteConfirm = async (id) => {
-    await deleteLeave(id);
-    await getAll();
-    getRequests();
-  }
-
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
     { field: 'start_date', headerName: 'Start date', type: 'string', flex: 1, },
@@ -72,12 +56,6 @@ const LeaveList = ({year, toggle}) => {
       <CustomPopover label="View" text={params.row.note}/>
     ) },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
-    { field: 'details', headerName: 'Action', disableColumnMenu: true, sortable: false, 
-    renderCell: (params) => leaveContext.currentUser.is_admin && (
-      <Button color='primary' style={{margin: 5}} onClick={() => onDelete(params.id)}>
-        Delete
-      </Button>
-    ), width: 100, hidden: leaveContext.currentUser.is_admin},
   ];
 
   return (
@@ -91,12 +69,6 @@ const LeaveList = ({year, toggle}) => {
             pageSize={10}
             disableSelectionOnClick 
         />}
-        <ConfirmDialog 
-          onConfirm={() => onDeleteConfirm(leaveId)} 
-          open={openDialog} 
-          setOpen={setOpenDialog}
-          content="Are you sure you want to delete this application?"
-        /> 
     </Box>
   );
 }
