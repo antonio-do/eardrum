@@ -9,14 +9,14 @@ import moment from 'moment';
 import { LEAVE_TYPES, STATUS_TYPES } from './constants';
 
 const encodeLeave = (data) => {
-    const start = data.is_start_half ? "10" : "00";
-    const end = data.is_end_half ? "01" : "00";
+    const start = data.is_start_half ? "1" : "0";
+    const end = data.is_end_half ? "1" : "0";
     return {
         user: data.name,
         typ: data.type,
         startdate: moment(data.start_date).format("DD/MM/YYYY"),
         enddate: moment(data.end_date).format("DD/MM/YYYY"),
-        half: start | end,
+        half: start + end,
         status: data.status,
         note: data.note,
     }
