@@ -51,7 +51,7 @@ const LeaveMainPage = () => {
                 <LeaveCalendar/>
             </Grid>
             <Grid item style={{flexGrow: 1}}>
-                <LeaveStat year={year}/>
+                <LeavePending reload={() => setToggle(toggle => !toggle)}/>
                 <Box mt={10}>
                   <DatePicker
                       views={["year"]}
@@ -61,10 +61,9 @@ const LeaveMainPage = () => {
                       style={{width: '100%'}}
                       onYearChange={(date) => setYear(date.getFullYear())}
                       autoOk
-                  />
-                <LeavePending reload={() => setToggle(toggle => !toggle)}/>
-                <LeaveResolved year={year} toggle={toggle}/>
-
+                    />
+                  <LeaveStat year={year}/>
+                  <LeaveResolved year={year} toggle={toggle}/>
                 </Box>
             </Grid>
         </Grid>
