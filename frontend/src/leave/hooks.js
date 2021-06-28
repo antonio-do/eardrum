@@ -180,8 +180,15 @@ function useHolidays() {
       method: 'get', 
       url: routes.api.holidays(year),
     })
-      .then((response) => setResponse(response))
-      .catch((error) => setError(error))
+      .then((response) => setResponse(response.data))
+      .catch((error) => {
+        // year could be either an integer or a string representing an integer
+        if ((Number.isInteger(year) || !isNaN(year)) && error.response && error.response.status == 404) {
+          setResponse([]);
+        } else {
+          setError(error)
+        }
+      })
       .finally(() => setLoading(false));
   }
 

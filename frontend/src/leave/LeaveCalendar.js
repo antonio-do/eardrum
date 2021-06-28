@@ -57,7 +57,7 @@ const StaticDatePicker = () => {
             console.log(holidayGenerator.error);
             message.error("Error fetching holidays.");
         } else if (holidayGenerator.response) {
-            setHolidays(holidayGenerator.response.data.map((item) => ({
+            setHolidays(holidayGenerator.response.map((item) => ({
                 "id" : item,
                 "date": moment(item, DATE_FORMAT.VALUE).toDate(),
             })))            
