@@ -12,4 +12,10 @@ const STATUS_TYPES = {
     PENDING: "pending",
 }
 
-export { LEAVE_TYPES, STATUS_TYPES }
+const DATE_FORMAT = {
+    VALUE: "YYYYMMDD",
+    LABEL: "DD/MM/YYYY",
+    LABEL_DATEFNS: "dd/MM/yyyy",
+}
+
+export { LEAVE_TYPES, STATUS_TYPES, DATE_FORMAT }

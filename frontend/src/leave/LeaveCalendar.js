@@ -15,6 +15,7 @@ import {
 import { useHolidays } from "./hooks";
 import { message } from "antd";
 import moment from "moment";
+import { DATE_FORMAT } from "./constants";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -58,7 +59,7 @@ const StaticDatePicker = () => {
         } else if (holidayGenerator.response) {
             setHolidays(holidayGenerator.response.data.map((item) => ({
                 "id" : item,
-                "date": moment(item, "YYYYMMDD").toDate(),
+                "date": moment(item, DATE_FORMAT.VALUE).toDate(),
             })))            
         }
     }, [holidayGenerator.loading, holidayGenerator.response, holidayGenerator.error])
@@ -154,7 +155,7 @@ const StaticDatePicker = () => {
                         (<Fragment>
                             <ListItem>
                                 <ListItemText 
-                                    primary={dateFns.format(item.date, "dd/MM/yyyy")} 
+                                    primary={moment(item.date).format(DATE_FORMAT.LABEL)} 
                                     secondary={item.title} />
                             </ListItem>
                             <Divider/>

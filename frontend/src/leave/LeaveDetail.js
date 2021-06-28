@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Link, useHistory } from 'react-router-dom';
 import { LeaveContext, useNewLeave } from './hooks';
 import moment from 'moment';
-import { STATUS_TYPES } from './constants';
+import { DATE_FORMAT, STATUS_TYPES } from './constants';
 
 const encodeLeave = (data) => {
     const start = data.is_start_half ? "1" : "0";
@@ -13,8 +13,8 @@ const encodeLeave = (data) => {
     return {
         user: data.name,
         typ: data.type,
-        startdate: moment(data.start_date).format("DD/MM/YYYY"),
-        enddate: moment(data.end_date).format("DD/MM/YYYY"),
+        startdate: moment(data.start_date).format(DATE_FORMAT.VALUE),
+        enddate: moment(data.end_date).format(DATE_FORMAT.VALUE),
         half: start + end,
         status: data.status,
         note: data.note,
@@ -60,7 +60,15 @@ const LeaveDetail = () => {
 
     const onSubmit = async () => {
         //TODO: fix warning "Can't perform a React state update on unmounted component..."
-        await updateLeave(encodeLeave({...application, status: STATUS_TYPES.PENDING}));
+        await updateLeave({
+            user: application.name,
+            typ: application.type,
+            startdate: moment(application.start_date).format(DATE_FORMAT.VALUE),
+            enddate: moment(application.end_date).format(DATE_FORMAT.VALUE),
+            half: (application.is_start_half ? "1" : "0") + (application.is_end_half ? "1" : "0"),
+            status: STATUS_TYPES.PENDING,
+            note: application.note,
+        })
         history.push("/leave");
     }
 
@@ -95,7 +103,7 @@ const LeaveDetail = () => {
                         variant="inline"
                         inputVariant="outlined"
                         label="Start date"
-                        format="dd/MM/yyyy"
+                        format={DATE_FORMAT.LABEL_DATEFNS}
                         value={application.start_date}
                         onChange={(date) => {
                             setApplication({...application, start_date: date}); 
@@ -112,7 +120,7 @@ const LeaveDetail = () => {
                         variant="inline"
                         inputVariant="outlined"
                         label="End date"
-                        format="dd/MM/yyyy"
+                        format={DATE_FORMAT.LABEL_DATEFNS}
                         value={application.end_date}
                         onChange={(date) => {
                             setApplication({...application, end_date: date}); 

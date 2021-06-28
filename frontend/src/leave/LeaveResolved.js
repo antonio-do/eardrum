@@ -5,8 +5,7 @@ import { useGetLeaveAll  } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
-
-const DATE_FORMAT = "DD/MM/YYYY";
+import { DATE_FORMAT } from './constants';
 
 const LeaveList = ({year, toggle}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
@@ -30,15 +29,15 @@ const LeaveList = ({year, toggle}) => {
     const data = getAllResponse.data.map(item => ({
       id: item.id,
       user: item.user,
-      start_date: item.startdate,
-      end_date: item.enddate,
+      start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+      end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
       type: item.typ,
       is_half_beginning: (item.half & "10") === 10,
       is_half_end: (item.half & "01") === 1,
       status: item.status,
       note: item.note,
     }))
-    setResolvedRequests(data.filter(item => item.status !== "pending" && moment(item.start_date, DATE_FORMAT).year() === year));
+    setResolvedRequests(data.filter(item => item.status !== "pending" && moment(item.start_date, DATE_FORMAT.LABEL).year() === year));
   }
 
   const columns = [

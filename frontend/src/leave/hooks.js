@@ -96,9 +96,9 @@ function useNewLeave() {
   const [response, setResponse] = useState(null);
   const [error, setError]= useState(null);
 
-  const save = (data) => {
+  const save = async (data) => {
     setLoading(true);
-    axios({
+    await axios({
       method: 'post', 
       url: routes.api.leaveAll(),
       data: data

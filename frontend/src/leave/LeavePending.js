@@ -5,7 +5,8 @@ import { useDeleteLeave, useGetLeaveAll, useUpdateLeave, LeaveContext  } from '.
 import { message, Spin } from 'antd';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
-import { STATUS_TYPES } from './constants';
+import { DATE_FORMAT, STATUS_TYPES } from './constants';
+import moment from "moment"
 
 const LeavePending = ({reload}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
@@ -39,8 +40,8 @@ const LeavePending = ({reload}) => {
     const data = getAllResponse.data.map(item => ({
       id: item.id,
       user: item.user,
-      start_date: item.startdate,
-      end_date: item.enddate,
+      start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+      end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
       type: item.typ,
       is_half_beginning: (item.half & "10") === 10,
       is_half_end: (item.half & "01") === 1,
