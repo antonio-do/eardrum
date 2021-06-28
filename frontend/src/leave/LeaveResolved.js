@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
 import { Box, Typography } from '@material-ui/core';
-import { useGetLeaveAll  } from './hooks';
+import { LeaveContext, useGetLeaveAll, useLeaveContext  } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
@@ -10,6 +10,7 @@ import { DATE_FORMAT } from './constants';
 const LeaveList = ({year, signal}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
+  const leaveContext = useContext(LeaveContext);
 
   useEffect(() => {
     getAll({year: year});
@@ -31,7 +32,7 @@ const LeaveList = ({year, signal}) => {
       user: item.user,
       start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
       end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-      type: item.typ,
+      type: leaveContext.leaveTypesMap[item.typ],
       is_half_beginning: (item.half & "10") === 10,
       is_half_end: (item.half & "01") === 1,
       status: item.status,

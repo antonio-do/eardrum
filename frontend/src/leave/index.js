@@ -32,7 +32,6 @@ const LeaveApp = () => {
   }, [getUserResponse, getUserLoading, getUserError])
 
   if (getUserLoading || leaveContextLoading) return <Spin size="large"/>
-  
   return (
     <div>
       <LeaveContext.Provider 
@@ -40,6 +39,11 @@ const LeaveApp = () => {
           currentUser: getUserResponse.data,
           allUsers: leaveContextResponse.data.users,
           leaveTypes: leaveContextResponse.data.leave_types,
+          leaveTypesMap: leaveContextResponse.data.leave_types.reduce((acc, cur) => {
+            let next = {...acc}; 
+            next[cur.name] = cur.label; 
+            return next;
+          }, {}),
         }}
       >
         <MuiPickersUtilsProvider utils={DateFnsUtils}>

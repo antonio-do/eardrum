@@ -40,7 +40,7 @@ const LeavePending = ({reload, signal}) => {
       user: item.user,
       start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
       end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-      type: item.typ,
+      type: leaveContext.leaveTypesMap[item.typ],
       is_half_beginning: (item.half & "10") === 10,
       is_half_end: (item.half & "01") === 1,
       status: item.status,
