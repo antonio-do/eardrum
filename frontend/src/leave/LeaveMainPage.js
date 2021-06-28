@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 const LeaveMainPage = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [date, setDate] = useState(new Date());
-  const [toggle, setToggle] = useState(true);
+  const [signal, setSignal] = useState(true);
   const classes = useStyles();
 
 
@@ -51,7 +51,7 @@ const LeaveMainPage = () => {
                 <LeaveCalendar/>
             </Grid>
             <Grid item style={{flexGrow: 1}}>
-                <LeavePending reload={() => setToggle(toggle => !toggle)}/>
+                <LeavePending reload={() => setSignal(signal => !signal)} signal={signal}/>
                 <Box mt={10}>
                   <DatePicker
                       views={["year"]}
@@ -63,7 +63,7 @@ const LeaveMainPage = () => {
                       autoOk
                     />
                   <LeaveStat year={year}/>
-                  <LeaveResolved year={year} toggle={toggle}/>
+                  <LeaveResolved year={year} signal={signal}/>
                 </Box>
             </Grid>
         </Grid>}

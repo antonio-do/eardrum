@@ -8,13 +8,12 @@ import ConfirmDialog from './components/ConfirmDialog';
 import { DATE_FORMAT, STATUS_TYPES } from './constants';
 import moment from "moment"
 
-const LeavePending = ({reload}) => {
+const LeavePending = ({reload, signal}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
   const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave();
   const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
-  const [isAdmin, setIsAdmin] = useState(false);
   const leaveContext = useContext(LeaveContext);
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -22,9 +21,8 @@ const LeavePending = ({reload}) => {
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
 
   useEffect(() => {
-    getAll();
-    setIsAdmin(leaveContext.currentUser.is_admin);
-  }, [])
+    getAll({status: STATUS_TYPES.PENDING});
+  }, [signal])
 
   useEffect(() => {
     if (!getAllResponse && getAllError) {
@@ -48,7 +46,7 @@ const LeavePending = ({reload}) => {
       status: item.status,
       note: item.note,
     }))
-    setPendingApplications(data.filter(item => item.status === "pending"));
+    setPendingApplications(data);
   }
 
   //TODO: force reload after performing actions
@@ -60,8 +58,6 @@ const LeavePending = ({reload}) => {
 
   const onApproveConfirm =  async (id) => {
       await update(id, {status: STATUS_TYPES.APPROVED});
-      await getAll();
-      getRequests()
       reload();
   }
 
@@ -72,8 +68,6 @@ const LeavePending = ({reload}) => {
 
   const onRejectConfirm = async (id) => {
       await update(id, {status: STATUS_TYPES.REJECTED});
-      await getAll();
-      getRequests()
       reload();
   }
 
@@ -84,8 +78,6 @@ const LeavePending = ({reload}) => {
 
   const onDeleteConfirm = async (id) => {
       await deleteLeave(id);
-      await getAll();
-      getRequests()
       reload();
   }
 
@@ -107,17 +99,17 @@ const LeavePending = ({reload}) => {
     { field: 'details', headerName: 'Action', disableColumnMenu: true, sortable: false, 
     renderCell: (params) => (
       <Fragment>
-        {isAdmin && <Button color='primary' style={{margin: 5}} onClick={() => onApprove(params.id)}>
+        {leaveContext.currentUser.is_admin && <Button color='primary' style={{margin: 5}} onClick={() => onApprove(params.id)}>
             Approve
         </Button>}
-        {isAdmin && <Button color='primary' style={{margin: 5}} onClick={() => onReject(params.id)}>
+        {leaveContext.currentUser.is_admin && <Button color='primary' style={{margin: 5}} onClick={() => onReject(params.id)}>
             Reject
         </Button>}
         <Button color='primary' style={{margin: 5}} onClick={() => (onDelete(params.id))}>
             Delete
         </Button>
       </Fragment>
-    ), width: (isAdmin) * 200 + 100},
+    ), width: (leaveContext.currentUser.is_admin) * 200 + 100},
   ];
 
   return (

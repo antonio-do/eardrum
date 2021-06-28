@@ -58,15 +58,15 @@ function useCurrentUser() {
   return [loading, response, error];
 }
 
-
 function useGetLeaveAll() {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
-  const get = () => {
-    axios
-      .get(routes.api.leaveAll())
+  const get = async (options) => {
+    setLoading(true)
+    await axios
+      .get(routes.api.leaveAll(options))
       .then((response) => setResponse(response))
       .catch((error) => setError(error))
       .finally(() => setLoading(false));

@@ -7,13 +7,13 @@ import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
 import { DATE_FORMAT } from './constants';
 
-const LeaveList = ({year, toggle}) => {
+const LeaveList = ({year, signal}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
 
   useEffect(() => {
-    getAll();
-  }, [toggle])
+    getAll({year: year});
+  }, [signal, year])
 
   useEffect(() => {
     if (!getAllResponse && getAllError) {
@@ -23,7 +23,7 @@ const LeaveList = ({year, toggle}) => {
     if (getAllResponse && !getAllLoading && !getAllError) {
       getRequests();
     }
-  }, [year, getAllResponse, getAllError, getAllLoading])
+  }, [getAllResponse, getAllError, getAllLoading])
 
   const getRequests = () => {
     const data = getAllResponse.data.map(item => ({
@@ -37,7 +37,7 @@ const LeaveList = ({year, toggle}) => {
       status: item.status,
       note: item.note,
     }))
-    setResolvedRequests(data.filter(item => item.status !== "pending" && moment(item.start_date, DATE_FORMAT.LABEL).year() === year));
+    setResolvedRequests(data.filter(item => item.status !== "pending"));
   }
 
   const columns = [
