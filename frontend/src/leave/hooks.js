@@ -10,22 +10,6 @@ const LeaveContext = createContext({
   allUsers: null,
 })
 
-const useLeaveTypes = () => {
-  const [loading, setLoading] = useState(true);
-  const [response, setResponse] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-      axios
-          .get(routes.api.leaveTypes())
-          .then(res => setResponse(res))
-          .catch((error) => setError(error))
-          .finally(() => setLoading(false));
-  }, []);
-
-  return [loading, response, error];
-}
-
 const useLeaveContext = () => {
   const [loading, setLoading] = useState(true);
   const [response, setResponse] = useState(null);
@@ -192,12 +176,11 @@ function useHolidays() {
       .finally(() => setLoading(false));
   }
 
-  return { get, loading, response, error};
+  return { get, loading, response, error };
 }
 
 export {
   LeaveContext,
-  useLeaveTypes,
   useLeaveContext, 
   useCurrentUser,
   useGetLeaveAll, 

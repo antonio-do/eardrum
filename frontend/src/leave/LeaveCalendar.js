@@ -35,34 +35,30 @@ const useStyles = makeStyles(theme => ({
 
 const StaticDatePicker = () => {
     const [date, setDate] = useState(new Date());
-    const [openDialog, setOpenDialog] = useState(false);
-    const [group, setGroup] = useState("");
     const [holidays, setHolidays] = useState([]);
     const [leaveUsers, setLeaveUsers] = useState([])
     const [year, setYear] = useState(new Date().getFullYear());
-    const holidayGenerator = useHolidays();
+    const fetchHoliday = useHolidays();
 
     const classes = useStyles();
 
-    const dateFns = new DateFnsUtils();
-
     useEffect(() => {
-        holidayGenerator.get(year);
+        fetchHoliday.get(year);
     }, [year])
 
     useEffect(() => {
         // TODO: handle when database have no holidays in some year
-        if (!holidayGenerator.loading) return;
-        if (holidayGenerator.error) {
-            console.log(holidayGenerator.error);
+        if (!fetchHoliday.loading) return;
+        if (fetchHoliday.error) {
+            console.log(fetchHoliday.error);
             message.error("Error fetching holidays.");
-        } else if (holidayGenerator.response) {
-            setHolidays(holidayGenerator.response.map((item) => ({
+        } else if (fetchHoliday.response) {
+            setHolidays(fetchHoliday.response.map((item) => ({
                 "id" : item,
                 "date": moment(item, DATE_FORMAT.VALUE).toDate(),
             })))            
         }
-    }, [holidayGenerator.loading, holidayGenerator.response, holidayGenerator.error])
+    }, [fetchHoliday.loading, fetchHoliday.response, fetchHoliday.error])
 
     useEffect(() => {
         setDate(date);
@@ -100,7 +96,6 @@ const StaticDatePicker = () => {
 
     return (
         <Paper className={classes.root}>
-            {/* The calendar */}
             <Paper>
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <DatePicker
@@ -115,7 +110,6 @@ const StaticDatePicker = () => {
                 </MuiPickersUtilsProvider>
             </Paper>
             <Divider/>
-            {/* The list of user on leave */}
             <ListSubheader className={classes.list}>Users on leave</ListSubheader>
             <Paper style={{overflow: 'auto'}}>
                 <List>
@@ -136,7 +130,6 @@ const StaticDatePicker = () => {
                     ))}
                 </List>
             </Paper>
-            {/* The list of holidays */}
             <ListSubheader className={classes.list}>Holidays</ListSubheader>
             <div className={classes.yearInput}>
                 <TextField 

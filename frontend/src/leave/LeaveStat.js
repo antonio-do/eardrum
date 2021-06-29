@@ -2,30 +2,29 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Box, Typography } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
 import { LeaveContext, useStat } from './hooks';
-import { LEAVE_TYPES } from './constants';
 import { message, Spin } from 'antd';
 
 const LeaveCalendar = ({year}) => {
     const [stat, setStat] = useState([]);
     const leaveContext = useContext(LeaveContext);
-    const statProducer = useStat();
+    const statisticsFetch = useStat();
     
     useEffect(() => {
-        statProducer.get(year);
+        statisticsFetch.get(year);
     }, [year])
 
     useEffect(() => {
-        if (!statProducer.loading) return;
-        if (statProducer.error) {
-            console.log(statProducer.error);
+        if (!statisticsFetch.loading) return;
+        if (statisticsFetch.error) {
+            console.log(statisticsFetch.error);
             message.error("Error fetching statistic.");
-        } else if (statProducer.response) {
-            setStat(statProducer.response.data.stats.map((item) => ({
+        } else if (statisticsFetch.response) {
+            setStat(statisticsFetch.response.data.stats.map((item) => ({
                 ...item,
                 id: item.user,
             })))            
         }
-    }, [statProducer.loading, statProducer.response, statProducer.error])
+    }, [statisticsFetch.loading, statisticsFetch.response, statisticsFetch.error])
 
     const columns = [{ 
         field: 'user', 
@@ -41,7 +40,7 @@ const LeaveCalendar = ({year}) => {
     
     return <Box m={2}>
         <Typography variant="h5" gutterBottom>Statistic</Typography>
-         {statProducer.loading ? <Spin size="small"/> : <DataGrid
+         {statisticsFetch.loading ? <Spin size="small"/> : <DataGrid
             autoHeight
             rows={stat}
             columns={columns}

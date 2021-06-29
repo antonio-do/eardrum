@@ -30,56 +30,76 @@ const LeavePending = ({reload, signal}) => {
       message.error("Error fetching leave applications.");
     }
     if (getAllResponse && !getAllLoading && !getAllError) {
-      getRequests();
+      const data = getAllResponse.data.map(item => ({
+        id: item.id,
+        user: item.user,
+        start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+        end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+        type: leaveContext.leaveTypesMap[item.typ],
+        is_half_beginning: (item.half & "10") === 10,
+        is_half_end: (item.half & "01") === 1,
+        status: item.status,
+        note: item.note,
+      }))
+      setPendingApplications(data);
     }
   }, [getAllResponse, getAllError, getAllLoading])
 
-  const getRequests = () => {
-    const data = getAllResponse.data.map(item => ({
-      id: item.id,
-      user: item.user,
-      start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-      end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-      type: leaveContext.leaveTypesMap[item.typ],
-      is_half_beginning: (item.half & "10") === 10,
-      is_half_end: (item.half & "01") === 1,
-      status: item.status,
-      note: item.note,
-    }))
-    setPendingApplications(data);
-  }
+  const APPROVE = "approve";
+  const REJECT = "reject";
+  const DELETE = "delete";
 
-  //TODO: force reload after performing actions
-
-  const onApprove = (id) => {
+  const onAction = (id, mode) => {
     setLeaveId(id);
-    setOpenApproveDialog(true);
+    switch (mode) {
+      case APPROVE:
+        setOpenApproveDialog(true);
+        return;
+      case REJECT:
+        setOpenRejectDialog(true);
+        return;
+      case DELETE:
+        setOpenDeleteDialog(true);
+        return;
+    }
   }
 
-  const onApproveConfirm =  async (id) => {
-      await update(id, {status: STATUS_TYPES.APPROVED});
-      reload();
+  const onActionConfirm = async (id, mode) => {
+    switch (mode) {
+      case APPROVE:
+        await update(id, {status: STATUS_TYPES.APPROVED});
+        break;
+      case REJECT:
+        await update(id, {status: STATUS_TYPES.REJECTED});
+        break;
+      case DELETE:
+        await deleteLeave(id);
+        break;
+    }
+    reload();
   }
 
-  const onReject = (id) => {
-    setLeaveId(id);
-    setOpenRejectDialog(true);
-  }
+  const renderNoteCell = (params) => (
+    params.row.note === "" 
+      ? <div style={{padding:10}}>-</div> 
+      : <CustomPopover label="View" text={params.row.note}/>
+  )
 
-  const onRejectConfirm = async (id) => {
-      await update(id, {status: STATUS_TYPES.REJECTED});
-      reload();
-  }
-
-  const onDelete = (id) => {
-    setLeaveId(id);
-    setOpenDeleteDialog(true);
-  }
-
-  const onDeleteConfirm = async (id) => {
-      await deleteLeave(id);
-      reload();
-  }
+  const renderActionButtons = (params) => (
+    <Fragment>
+      {leaveContext.currentUser.is_admin 
+        && <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.id, APPROVE)}>
+          Approve
+      </Button>}
+      {leaveContext.currentUser.is_admin 
+        && <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.id, REJECT)}>
+          Reject
+      </Button>}
+      <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.id, DELETE)}>
+          Delete
+      </Button>
+    </Fragment>
+  )
 
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
@@ -87,29 +107,14 @@ const LeavePending = ({reload, signal}) => {
     { field: 'end_date', headerName: 'End date', type: 'string', flex: 1, },
     { field: 'type', headerName: 'Type', type: 'string', flex: 1, },
     { field: 'is_half_beginning', headerName: 'Half-day start', type: 'boolean', flex: 1, 
-    description: "Take a half day at the beginning of leave", },
+      description: "Take a half day at the beginning of leave", },
     { field: 'is_half_end', headerName: 'Half-day end', type: 'boolean', flex: 1, 
-    description: "Take a half day at the end of leave ", },
+      description: "Take a half day at the end of leave ", },
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
-    renderCell: (params) => (
-      params.row.note === "" ? <div style={{padding:10}}>-</div> : 
-      <CustomPopover label="View" text={params.row.note}/>
-    ) },
+      renderCell: renderNoteCell },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
-    { field: 'details', headerName: 'Action', disableColumnMenu: true, sortable: false, 
-    renderCell: (params) => (
-      <Fragment>
-        {leaveContext.currentUser.is_admin && <Button color='primary' style={{margin: 5}} onClick={() => onApprove(params.id)}>
-            Approve
-        </Button>}
-        {leaveContext.currentUser.is_admin && <Button color='primary' style={{margin: 5}} onClick={() => onReject(params.id)}>
-            Reject
-        </Button>}
-        <Button color='primary' style={{margin: 5}} onClick={() => (onDelete(params.id))}>
-            Delete
-        </Button>
-      </Fragment>
-    ), width: (leaveContext.currentUser.is_admin) * 200 + 100},
+    { field: 'action', headerName: 'Action', disableColumnMenu: true, sortable: false, 
+      renderCell: renderActionButtons , width: (leaveContext.currentUser.is_admin) * 200 + 100},
   ];
 
   return (
@@ -124,19 +129,19 @@ const LeavePending = ({reload, signal}) => {
             disableSelectionOnClick 
         />}
         <ConfirmDialog 
-          onConfirm={() => onApproveConfirm(leaveId)} 
+          onConfirm={() => onActionConfirm(leaveId, APPROVE)} 
           open={openApproveDialog} 
           setOpen={setOpenApproveDialog}
           content="Are you sure you want to approve this application?"
         /> 
         <ConfirmDialog 
-          onConfirm={() => onRejectConfirm(leaveId)} 
+          onConfirm={() => onActionConfirm(leaveId, REJECT)} 
           open={openRejectDialog} 
           setOpen={setOpenRejectDialog}
           content="Are you sure you want to reject this application?"
         /> 
         <ConfirmDialog 
-          onConfirm={() => onDeleteConfirm(leaveId)} 
+          onConfirm={() => onActionConfirm(leaveId, DELETE)} 
           open={openDeleteDialog} 
           setOpen={setOpenDeleteDialog}
           content="Are you sure you want to delete this application?"

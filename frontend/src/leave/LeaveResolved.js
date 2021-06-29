@@ -22,24 +22,20 @@ const LeaveList = ({year, signal}) => {
       message.error("Error fetching leave applications.");
     }
     if (getAllResponse && !getAllLoading && !getAllError) {
-      getRequests();
+      const data = getAllResponse.data.map(item => ({
+        id: item.id,
+        user: item.user,
+        start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+        end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+        type: leaveContext.leaveTypesMap[item.typ],
+        is_half_beginning: (item.half & "10") === 10,
+        is_half_end: (item.half & "01") === 1,
+        status: item.status,
+        note: item.note,
+      }))
+      setResolvedRequests(data.filter(item => item.status !== "pending"));
     }
   }, [getAllResponse, getAllError, getAllLoading])
-
-  const getRequests = () => {
-    const data = getAllResponse.data.map(item => ({
-      id: item.id,
-      user: item.user,
-      start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-      end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-      type: leaveContext.leaveTypesMap[item.typ],
-      is_half_beginning: (item.half & "10") === 10,
-      is_half_end: (item.half & "01") === 1,
-      status: item.status,
-      note: item.note,
-    }))
-    setResolvedRequests(data.filter(item => item.status !== "pending"));
-  }
 
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },

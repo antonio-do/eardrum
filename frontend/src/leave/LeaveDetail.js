@@ -7,20 +7,6 @@ import { LeaveContext, useNewLeave } from './hooks';
 import moment from 'moment';
 import { DATE_FORMAT, STATUS_TYPES } from './constants';
 
-const encodeLeave = (data) => {
-    const start = data.is_start_half ? "1" : "0";
-    const end = data.is_end_half ? "1" : "0";
-    return {
-        user: data.name,
-        typ: data.type,
-        startdate: moment(data.start_date).format(DATE_FORMAT.VALUE),
-        enddate: moment(data.end_date).format(DATE_FORMAT.VALUE),
-        half: start + end,
-        status: data.status,
-        note: data.note,
-    }
-}
-
 const useStyles = makeStyles((theme) => ({
     root: {
         padding: '30px',
@@ -72,7 +58,8 @@ const LeaveDetail = () => {
         history.push("/leave");
     }
 
-    const checkDate = (start, end) => moment(end).isSameOrAfter(start) && (moment(end).year() === moment(start).year());
+    const checkDate = (start, end) => moment(end).isSameOrAfter(start) 
+                                    && (moment(end).year() === moment(start).year());
 
     return <Paper className={classes.root}>
         <Grid container direction="column" spacing={3}>
@@ -98,7 +85,8 @@ const LeaveDetail = () => {
                 <Grid item xs={6}>
                     <KeyboardDatePicker
                         error={errorDate}
-                        helperText={errorDate && "End date must be in the same year and no sooner than start date."}
+                        helperText={errorDate 
+                            && "End date must be in the same year and no sooner than start date."}
                         autoOk
                         variant="inline"
                         inputVariant="outlined"
@@ -115,7 +103,8 @@ const LeaveDetail = () => {
                 <Grid item xs={6}>
                     <KeyboardDatePicker
                         error={errorDate}
-                        helperText={errorDate && "End date must be in the same year and no sooner than start date."}
+                        helperText={errorDate 
+                            && "End date must be in the same year and no sooner than start date."}
                         autoOk
                         variant="inline"
                         inputVariant="outlined"
@@ -145,7 +134,7 @@ const LeaveDetail = () => {
                     />
                 </Grid>
                 <Grid item xs={6}>
-                <FormControlLabel
+                    <FormControlLabel
                         control={
                             <Checkbox
                                 checked={application.is_end_half}
@@ -175,7 +164,7 @@ const LeaveDetail = () => {
                         ))}
                     </TextField>
                 </FormControl>
-                </Grid>
+            </Grid>
             <Grid item>
                 <FormControl variant="outlined" className={classes.textField}>
                     <TextField
