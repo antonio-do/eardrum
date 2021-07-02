@@ -31,6 +31,7 @@ const LeaveApp = () => {
   }, [getUserResponse, getUserLoading, getUserError])
 
   if (getUserLoading || leaveContextLoading) return <Spin size="large"/>
+
   return (
     <div>
       <LeaveContext.Provider 
@@ -38,6 +39,7 @@ const LeaveApp = () => {
           currentUser: getUserResponse.data,
           allUsers: leaveContextResponse.data.users,
           leaveTypes: leaveContextResponse.data.leave_types,
+          //dictionary that map the name of leave type to its label (i.e. work_from_home => Work From Home)
           leaveTypesMap: leaveContextResponse.data.leave_types.reduce((acc, cur) => {
             let next = {...acc}; 
             next[cur.name] = cur.label; 

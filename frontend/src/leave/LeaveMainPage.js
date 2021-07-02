@@ -37,6 +37,9 @@ const useStyles = makeStyles(theme => ({
 const LeaveMainPage = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [date, setDate] = useState(new Date());
+  // signal to pass to both pending and resolved list: when an action in pending list is performed
+  // (i.e. delete, approve, reject), the pending list toggle the signal while the resolved list
+  // listen for signal and reload if the signal is changed
   const [signal, setSignal] = useState(true);
   const classes = useStyles();
 

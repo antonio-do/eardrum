@@ -47,7 +47,6 @@ const StaticDatePicker = () => {
     }, [year])
 
     useEffect(() => {
-        // TODO: handle when database have no holidays in some year
         if (!fetchHoliday.loading) return;
         if (fetchHoliday.error) {
             console.log(fetchHoliday.error);
@@ -57,6 +56,8 @@ const StaticDatePicker = () => {
                 "id" : item,
                 "date": moment(item, DATE_FORMAT.VALUE).toDate(),
             }))
+
+            // date (day in year) - today + 365 (or 366 if leap year)
             let dayRank = date => {
                 let numberOfDay = moment([moment().year()]).isLeapYear() ? 366 : 365;
                 return (moment(date).dayOfYear() - moment().dayOfYear() + numberOfDay) % numberOfDay ;
@@ -68,7 +69,7 @@ const StaticDatePicker = () => {
 
     useEffect(() => {
         setDate(date);
-        // TODO: set users on leave on that day
+        // TODO: use API
         setLeaveUsers([{
             group: "Group 1",
             users: ["Alice", "Bob", "Mallory", "Valentine", "Maria", "Lord"],
@@ -87,7 +88,8 @@ const StaticDatePicker = () => {
         }, ]);
     }, [date])
 
-    const renderDay=(day, selectedDate, dayInCurrentMonth, dayComponent) => { 
+    // render holidays differently
+    const renderDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => { 
         const isHoliday = (day) => {
             return holidays.find(item => {return item.date.getTime() == day.getTime()});
         }
@@ -144,9 +146,7 @@ const StaticDatePicker = () => {
                         type="number" 
                         defaultValue={year} 
                         fullWidth
-                        onChange={(event) => {
-                            setYear(event.target.value);
-                        }}
+                        onChange={(event) => setYear(event.target.value)}
                     />
                 </div>
                 <List>

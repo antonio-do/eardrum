@@ -45,7 +45,6 @@ const LeaveDetail = () => {
     const classes = useStyles();
 
     const onSubmit = async () => {
-        //TODO: fix warning "Can't perform a React state update on unmounted component..."
         await updateLeave({
             user: application.name,
             typ: application.type,
@@ -58,6 +57,7 @@ const LeaveDetail = () => {
         history.push("/leave");
     }
 
+    // check if start and end are same year and start is no later than year
     const checkDate = (start, end) => moment(end).isSameOrAfter(start) 
                                     && (moment(end).year() === moment(start).year());
 

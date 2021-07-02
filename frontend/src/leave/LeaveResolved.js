@@ -7,7 +7,7 @@ import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
 import { DATE_FORMAT } from './constants';
 
-const LeaveList = ({year, signal}) => {
+const LeaveResolved = ({year, signal}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
   const leaveContext = useContext(LeaveContext);
@@ -69,4 +69,4 @@ const LeaveList = ({year, signal}) => {
   );
 }
 
-export default LeaveList;
+export default LeaveResolved;
