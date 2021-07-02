@@ -53,10 +53,16 @@ const StaticDatePicker = () => {
             console.log(fetchHoliday.error);
             message.error("Error fetching holidays.");
         } else if (fetchHoliday.response) {
-            setHolidays(fetchHoliday.response.map((item) => ({
+            let unsortedHolidays = fetchHoliday.response.map((item) => ({
                 "id" : item,
                 "date": moment(item, DATE_FORMAT.VALUE).toDate(),
-            })))            
+            }))
+            let dayRank = date => {
+                let numberOfDay = moment([moment().year()]).isLeapYear() ? 366 : 365;
+                return (moment(date).dayOfYear() - moment().dayOfYear() + numberOfDay) % numberOfDay ;
+            }
+            unsortedHolidays.sort((holiday1, holiday2) => (dayRank(holiday1.date) - dayRank(holiday2.date)));
+            setHolidays(unsortedHolidays)            
         }
     }, [fetchHoliday.loading, fetchHoliday.response, fetchHoliday.error])
 
@@ -131,25 +137,29 @@ const StaticDatePicker = () => {
                 </List>
             </Paper>
             <ListSubheader className={classes.list}>Holidays</ListSubheader>
-            <div className={classes.yearInput}>
-                <TextField 
-                    label="Year" 
-                    type="number" 
-                    defaultValue={year} 
-                    fullWidth
-                    onChange={(event) => {
-                        setYear(event.target.value);
-                    }}
-                />
-            </div>
             <Paper>
+                <div className={classes.yearInput}>
+                    <TextField 
+                        label="Year" 
+                        type="number" 
+                        defaultValue={year} 
+                        fullWidth
+                        onChange={(event) => {
+                            setYear(event.target.value);
+                        }}
+                    />
+                </div>
                 <List>
                     {holidays.map(item => 
                         (<Fragment>
                             <ListItem>
                                 <ListItemText 
                                     primary={moment(item.date).format(DATE_FORMAT.LABEL)} 
-                                    secondary={item.title} />
+                                    secondary={
+                                        moment(item.date).dayOfYear() < moment().dayOfYear()
+                                            ? "Passed"
+                                            : `${moment(item.date).dayOfYear() - moment().dayOfYear()} day(s) left`
+                                    } />
                             </ListItem>
                             <Divider/>
                         </Fragment>)
