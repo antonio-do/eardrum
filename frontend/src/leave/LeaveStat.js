@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Box, Typography } from '@material-ui/core'
+import { Box, Typography, Tooltip,Grid } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
 import { LeaveContext, useStat } from './hooks';
 import { message, Spin } from 'antd';
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 
 const LeaveCalendar = ({year}) => {
     const [stat, setStat] = useState([]);
@@ -30,16 +31,22 @@ const LeaveCalendar = ({year}) => {
         field: 'user', 
         headerName: 'User', 
         type: 'string', 
-        flex: 1, 
+        flex: 0.5, 
     }].concat(leaveContext.leaveTypes.map((item) => ({ 
         field: item.name, 
-        headerName: item.label, 
+        headerName: item.label + ` (max: ${item.limitation} days)`, 
         type: 'number', 
         flex: 1, 
     })))
     
     return <Box m={2}>
-        <Typography variant="h5" gutterBottom>Statistic</Typography>
+        
+            <Grid container direction="row">
+                <Typography variant="h5" gutterBottom>Statistic</Typography>
+                <Tooltip title="Number of leave days spent for each user and each type"  >
+                    <InfoOutlinedIcon style={{marginLeft:5}}/>
+                </Tooltip>
+            </Grid>
          {statisticsFetch.loading ? <Spin size="small"/> : <DataGrid
             autoHeight
             rows={stat}
