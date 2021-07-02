@@ -56,7 +56,7 @@ const LeaveList = ({year, signal}) => {
 
   return (
     <Box m={2}>
-        <Typography variant="h5" gutterBottom>Resolved requests</Typography>
+        <Typography variant="h5" gutterBottom>Resolved requests (year {year})</Typography>
         {(getAllLoading) ? <Spin size="small"/> : <DataGrid
             autoHeight 
             rows={resolvedRequests} 

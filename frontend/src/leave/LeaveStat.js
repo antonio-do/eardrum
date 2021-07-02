@@ -42,7 +42,7 @@ const LeaveCalendar = ({year}) => {
     return <Box m={2}>
         
             <Grid container direction="row">
-                <Typography variant="h5" gutterBottom>Statistic</Typography>
+                <Typography variant="h5" gutterBottom>Statistic (year {year})</Typography>
                 <Tooltip title="Number of leave days spent for each user and each type"  >
                     <InfoOutlinedIcon style={{marginLeft:5}}/>
                 </Tooltip>
