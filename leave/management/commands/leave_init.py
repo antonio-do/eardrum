@@ -1,4 +1,5 @@
 import datetime
+import calendar
 import json
 from collections import namedtuple
 
@@ -7,7 +8,7 @@ from django.core.management.base import (
     CommandError,
 )
 
-from leave.models import ConfigEntry
+from leave.models import ConfigEntry, LeaveMask
 
 
 class Command(BaseCommand):
@@ -68,3 +69,22 @@ class Command(BaseCommand):
             holidays_config.extra = '{}0101'.format(year)
             holidays_config.save()
             self.stdout.write(self.style.SUCCESS('ConfigEntry[name={}] is created'.format(holidays_name)))
+
+        # base leave mask for a specific year
+        mask_name = '__{}'.format(year)
+        if LeaveMask.objects.filter(name=mask_name).count() == 0:
+            holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split('\r\n')
+            holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1 
+                                for item in holidays]
+            first_sat = 6 - (datetime.datetime(year, 1, 1).weekday() + 1) % 7
+            mask = ['0'] * (366 if calendar.isleap(year) else 365)
+            for holiday in holidays_in_year:
+                mask[holiday] = '2'
+            for saturday in range(first_sat, len(mask), 7):
+                mask[saturday] = '2'
+            for sunday in range(first_sat + 1, len(mask), 7):
+                mask[sunday] = '2'
+            leave_mask = LeaveMask(name=mask_name, value=''.join(mask))
+            leave_mask.save()
+            self.stdout.write(self.style.SUCCESS('LeaveMask[name={}] is created'.format(mask_name)))
+        
