@@ -28,8 +28,10 @@ const LeaveResolved = ({year, signal}) => {
         start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
         end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
         type: leaveContext.leaveTypesMap[item.typ],
-        is_half_beginning: (item.half & "10") === 10,
-        is_half_end: (item.half & "01") === 1,
+        is_half: (item.half.replace(/[01]/g, (m) => ({
+          '0': '[ False ]',
+          '1': '[ True ]'
+        }[m]))),  
         status: item.status,
         note: item.note,
       }))
@@ -42,10 +44,8 @@ const LeaveResolved = ({year, signal}) => {
     { field: 'start_date', headerName: 'Start date', type: 'string', flex: 1, },
     { field: 'end_date', headerName: 'End date', type: 'string', flex: 1, },
     { field: 'type', headerName: 'Type', type: 'string', flex: 1, sortable: false, },
-    { field: 'is_half_beginning', headerName: 'Half-day start', type: 'boolean', flex: 1, 
-    description: "Take a half day at the beginning of leave", sortable: false, },
-    { field: 'is_half_end', headerName: 'Half-day end', type: 'boolean', flex: 1, 
-    description: "Take a half day at the end of leave ", sortable: false, },
+    { field: 'is_half', headerName: 'Half-day leave', type: 'string', flex: 1, 
+      description: "Whether the leave request apply for half-day leave on the first and last day, respectively", sortable: false, },
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
     renderCell: (params) => (
       params.row.note === "" ? <div style={{padding:10}}>-</div> : 
