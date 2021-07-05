@@ -36,6 +36,7 @@ const LeaveCalendar = ({year}) => {
         field: item.name, 
         headerName: item.label + ` (max: ${item.limitation} days)`, 
         type: 'number', 
+        sortable: false,
         flex: 1, 
     })))
     

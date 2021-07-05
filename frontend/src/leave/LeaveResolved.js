@@ -41,17 +41,17 @@ const LeaveResolved = ({year, signal}) => {
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
     { field: 'start_date', headerName: 'Start date', type: 'string', flex: 1, },
     { field: 'end_date', headerName: 'End date', type: 'string', flex: 1, },
-    { field: 'type', headerName: 'Type', type: 'string', flex: 1, },
+    { field: 'type', headerName: 'Type', type: 'string', flex: 1, sortable: false, },
     { field: 'is_half_beginning', headerName: 'Half-day start', type: 'boolean', flex: 1, 
-    description: "Take a half day at the beginning of leave", },
+    description: "Take a half day at the beginning of leave", sortable: false, },
     { field: 'is_half_end', headerName: 'Half-day end', type: 'boolean', flex: 1, 
-    description: "Take a half day at the end of leave ", },
+    description: "Take a half day at the end of leave ", sortable: false, },
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
     renderCell: (params) => (
       params.row.note === "" ? <div style={{padding:10}}>-</div> : 
       <CustomPopover label="View" text={params.row.note}/>
-    ) },
-    { field: 'status', headerName: 'Status', type: 'string', flex: 1, },
+    ), sortable: false },
+    { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false },
   ];
 
   return (
