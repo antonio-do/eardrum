@@ -31,3 +31,7 @@ class ConfigEntry(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class LeaveMask(models.Model):
+    name = models.CharField(max_length=260, unique=True)
+    value = models.TextField(max_length=366)
