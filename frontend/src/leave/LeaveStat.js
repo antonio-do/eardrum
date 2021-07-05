@@ -3,7 +3,7 @@ import { Box, Typography, Tooltip,Grid } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
 import { LeaveContext, useStat } from './hooks';
 import { message, Spin } from 'antd';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
 
 const LeaveCalendar = ({year}) => {
     const [stat, setStat] = useState([]);
@@ -34,19 +34,22 @@ const LeaveCalendar = ({year}) => {
         flex: 0.5, 
     }].concat(leaveContext.leaveTypes.map((item) => ({ 
         field: item.name, 
-        headerName: item.label + ` (max: ${item.limitation} days)`, 
-        type: 'number', 
+        renderHeader: (params) => (
+            <Grid container direction="row">
+                <Typography gutterBottom>{item.label}</Typography>
+                <Tooltip title={`Number of ${item.label} leave days ` 
+                        + `spent for each user (max: ${item.limitation} days)`} >
+                    <HelpOutlineOutlinedIcon style={{marginLeft:5}} fontSize="small"/>
+                </Tooltip>
+            </Grid>
+        ), 
+        type: 'string', 
         sortable: false,
         flex: 1, 
     })))
     
     return <Box m={2}>
-        <Grid container direction="row">
-            <Typography variant="h5" gutterBottom>Statistic (year {year})</Typography>
-            <Tooltip title="Number of leave days spent for each user and each type"  >
-                <InfoOutlinedIcon style={{marginLeft:5}}/>
-            </Tooltip>
-        </Grid>
+        <Typography variant="h5" gutterBottom>Statistic (year {year})</Typography>
          {statisticsFetch.loading ? <Spin size="small"/> : <DataGrid
             autoHeight
             rows={stat}
