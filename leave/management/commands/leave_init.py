@@ -77,13 +77,16 @@ class Command(BaseCommand):
             holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1 
                                 for item in holidays]
             first_sat = 6 - (datetime.datetime(year, 1, 1).weekday() + 1) % 7
-            mask = ['0'] * (366 if calendar.isleap(year) else 365)
+            mask = ['0'] * ((366 if calendar.isleap(year) else 365) * 2)
             for holiday in holidays_in_year:
-                mask[holiday] = '2'
-            for saturday in range(first_sat, len(mask), 7):
-                mask[saturday] = '2'
-            for sunday in range(first_sat + 1, len(mask), 7):
-                mask[sunday] = '2'
+                mask[2 * holiday] = '2'
+                mask[2 * holiday + 1] = '2'
+            for saturday in range(first_sat, len(mask) // 2, 7):
+                mask[2 * saturday] = '2'
+                mask[2 * saturday + 1] = '2'
+            for sunday in range(first_sat + 1, len(mask) // 2, 7):
+                mask[2 * sunday] = '2'
+                mask[2 * sunday + 1] = '2'
             leave_mask = LeaveMask(name=mask_name, value=''.join(mask))
             leave_mask.save()
             self.stdout.write(self.style.SUCCESS('LeaveMask[name={}] is created'.format(mask_name)))

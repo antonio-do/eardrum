@@ -34,4 +34,4 @@ class ConfigEntry(models.Model):
 
 class LeaveMask(models.Model):
     name = models.CharField(max_length=260, unique=True)
-    value = models.TextField(max_length=366)
+    value = models.TextField(max_length=732)
