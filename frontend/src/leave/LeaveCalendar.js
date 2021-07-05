@@ -57,12 +57,15 @@ const StaticDatePicker = () => {
                 "date": moment(item, DATE_FORMAT.VALUE).toDate(),
             }))
 
-            // date (day in year) - today + 365 (or 366 if leap year)
-            let dayRank = date => {
-                let numberOfDay = moment([moment().year()]).isLeapYear() ? 366 : 365;
-                return (moment(date).dayOfYear() - moment().dayOfYear() + numberOfDay) % numberOfDay ;
-            }
-            unsortedHolidays.sort((holiday1, holiday2) => (dayRank(holiday1.date) - dayRank(holiday2.date)));
+            unsortedHolidays.sort((holiday1, holiday2) => {
+                let dif1 = moment(holiday1.date).diff(moment().startOf('day'), 'days');
+                let dif2 = moment(holiday2.date).diff(moment().startOf('day'), 'days');
+                // if today is between holiday1 and holiday2
+                if (dif1 < 0 ^ dif2 < 0) return dif1 < dif2 ? 1 : -1;
+                // if today is either sooner or later than both holiday1 and holiday2
+                return dif1 < dif2 ? -1 : 1
+            });
+
             setHolidays(unsortedHolidays)            
         }
     }, [fetchHoliday.loading, fetchHoliday.response, fetchHoliday.error])
@@ -156,9 +159,9 @@ const StaticDatePicker = () => {
                                 <ListItemText 
                                     primary={moment(item.date).format(DATE_FORMAT.LABEL)} 
                                     secondary={
-                                        moment(item.date).dayOfYear() < moment().dayOfYear()
+                                        moment(item.date).diff(moment().startOf('day'), 'days') < 0 
                                             ? "Passed"
-                                            : `${moment(item.date).dayOfYear() - moment().dayOfYear()} day(s) left`
+                                            : `${moment(item.date).diff(moment().startOf('day'), 'days')} day(s) left`
                                     } />
                             </ListItem>
                             <Divider/>
