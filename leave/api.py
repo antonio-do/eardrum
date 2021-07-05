@@ -111,7 +111,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         instance = self.get_object()
         if instance.status == 'pending':
             instance.active = False
-            instance.save(update_fields=['status'])
+            instance.save(update_fields=['active'])
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             errors = {
