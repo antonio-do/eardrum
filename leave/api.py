@@ -1,5 +1,4 @@
 import json
-import random
 import datetime
 import copy
 
@@ -128,8 +127,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
             return
 
         year = str(datetime.datetime.strptime(instance.startdate, '%Y%m%d').timetuple().tm_year)
-        mask_name = "{user}_{typ}_{year}".format(user=instance.user, typ=instance.typ, year=year)
-        
+        mask_name = "{user}_{year}".format(user=instance.user, year=year)
+
+        # Create mask from base mask if not exist
         if LeaveMask.objects.filter(name=mask_name).count() == 0:
             base_mask_name = "__{}".format(year)
             mask = LeaveMask.objects.get(name=base_mask_name)
@@ -137,18 +137,30 @@ class LeaveViewSet(mixins.CreateModelMixin,
             mask.pk = None
             mask.save()
 
-        mask = LeaveMask.objects.get(name=mask_name)
+        leave_type_config = ConfigEntry.objects.get(name='leave_context')
+        leave_types = json.loads(leave_type_config.extra)['leave_types']
+        priority = next((leave_type for leave_type 
+                         in leave_types if leave_type['name'] == instance.typ), None)['priority']
+
+        # represent every day with 2 characters, each for the morning and afternoon shift
         start = datetime.datetime.strptime(instance.startdate, '%Y%m%d').timetuple().tm_yday
         start = 2 * (start - 1) + (instance.half[0] == "1")
         end = datetime.datetime.strptime(instance.enddate, '%Y%m%d').timetuple().tm_yday
         end = 2 * (end - 1) + (instance.half[1] == "0")
+
+        mask = LeaveMask.objects.get(name=mask_name)
         arr = list(mask.value)
+        
+        # '-': work day
+        # '0': holiday/weekend
+        # otherwise: on leave, the representing character is the same as the leave type's priority,
+        #            lower priority value means higher priority
         for i in range(start, end + 1):
-            if arr[i] != '2':
-                arr[i] = '1'
+            if arr[i] == '-' or int(arr[i]) > priority :
+                arr[i] = str(priority)
+
         mask.value = ''.join(arr)
         mask.save()
-        
 
     @decorators.action(methods=['GET'], detail=False)
     def context(self, *args, **kwargs):
@@ -197,17 +209,20 @@ class LeaveViewSet(mixins.CreateModelMixin,
             if not self.is_admin_user():
                 users = users.filter(username=self.request.user.username)
 
-            # TODO get the real stats
             stats = []
             for user in users:
                 stat = {}
                 for leave_type in leave_types:
-                    mask_name = "{user}_{typ}_{year}".format(user=user, typ=leave_type["name"], year=year)
+                    mask_name = "{user}_{year}".format(user=user, year=year)
                     if LeaveMask.objects.filter(name=mask_name).count() == 0:
                         stat[leave_type['name']] = 0
                     else:
                         mask = LeaveMask.objects.get(name=mask_name)
-                        stat[leave_type['name']] = mask.value.count('1') / 2
+                        # '-': work day
+                        # '0': holiday/weekend
+                        # otherwise: on leave, the representing character is the same as the leave type's 
+                        #            priority
+                        stat[leave_type['name']] = mask.value.count(str(leave_type['priority'])) / 2
 
                 stats.append({**stat, 'user': user.username})
 

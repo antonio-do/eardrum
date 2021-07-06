@@ -23,7 +23,7 @@ class Command(BaseCommand):
         year = options['year']
         self.stdout.write('[INFO] Initialize database config for year ' + str(year))
 
-        LeaveType = namedtuple('LeaveType', ['name', 'label', 'limitation'])
+        LeaveType = namedtuple('LeaveType', ['name', 'label', 'limitation', 'priority'])
         LeaveStatus = namedtuple('LeaveStatus', ['name', 'label'])
         # leave context
         leave_context_name = 'leave_context'
@@ -31,11 +31,11 @@ class Command(BaseCommand):
             leave_context_config = ConfigEntry(name=leave_context_name)
             leave_context = {
                 'leave_types': [
-                    LeaveType('personal', 'Personal', 15)._asdict(),
-                    LeaveType('medical', 'Medical', 14)._asdict(),
-                    LeaveType('compassionate', 'Compassionate', 99)._asdict(),
-                    LeaveType('childcare', 'Childcare', 14)._asdict(),
-                    LeaveType('work_from_home', 'Work From Home', 12)._asdict(),
+                    LeaveType('personal', 'Personal', 15, 5)._asdict(),
+                    LeaveType('medical', 'Medical', 14, 2)._asdict(),
+                    LeaveType('compassionate', 'Compassionate', 99, 1)._asdict(),
+                    LeaveType('childcare', 'Childcare', 14, 3)._asdict(),
+                    LeaveType('work_from_home', 'Work From Home', 12, 4)._asdict(),
                 ],
                 'leave_statuses': [
                     LeaveStatus('pending', 'pending')._asdict(),
@@ -52,11 +52,11 @@ class Command(BaseCommand):
         if ConfigEntry.objects.filter(name=leave_type_name).count() == 0:
             leave_type_config = ConfigEntry(name=leave_type_name)
             leave_types = [
-                LeaveType('personal', 'Personal', 15)._asdict(),
-                LeaveType('medical', 'Medical', 14)._asdict(),
-                LeaveType('compassionate', 'Compassionate', 99)._asdict(),
-                LeaveType('childcare', 'Childcare', 14)._asdict(),
-                LeaveType('work_from_home', 'Work From Home', 12)._asdict(),
+                LeaveType('personal', 'Personal', 15, 5)._asdict(),
+                LeaveType('medical', 'Medical', 14, 2)._asdict(),
+                LeaveType('compassionate', 'Compassionate', 99, 1)._asdict(),
+                LeaveType('childcare', 'Childcare', 14, 3)._asdict(),
+                LeaveType('work_from_home', 'Work From Home', 12, 4)._asdict(),
             ]
             leave_type_config.extra = json.dumps(leave_types, indent=2)
             leave_type_config.save()
@@ -77,16 +77,16 @@ class Command(BaseCommand):
             holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1 
                                 for item in holidays]
             first_sat = 6 - (datetime.datetime(year, 1, 1).weekday() + 1) % 7
-            mask = ['0'] * ((366 if calendar.isleap(year) else 365) * 2)
+            mask = ['-'] * ((366 if calendar.isleap(year) else 365) * 2)
             for holiday in holidays_in_year:
-                mask[2 * holiday] = '2'
-                mask[2 * holiday + 1] = '2'
+                mask[2 * holiday] = '0'
+                mask[2 * holiday + 1] = '0'
             for saturday in range(first_sat, len(mask) // 2, 7):
-                mask[2 * saturday] = '2'
-                mask[2 * saturday + 1] = '2'
+                mask[2 * saturday] = '0'
+                mask[2 * saturday + 1] = '0'
             for sunday in range(first_sat + 1, len(mask) // 2, 7):
-                mask[2 * sunday] = '2'
-                mask[2 * sunday + 1] = '2'
+                mask[2 * sunday] = '0'
+                mask[2 * sunday + 1] = '0'
             leave_mask = LeaveMask(name=mask_name, value=''.join(mask))
             leave_mask.save()
             self.stdout.write(self.style.SUCCESS('LeaveMask[name={}] is created'.format(mask_name)))
