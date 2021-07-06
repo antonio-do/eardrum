@@ -5,14 +5,14 @@ import { LeaveContext, useStat } from './hooks';
 import { message, Spin } from 'antd';
 import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
 
-const LeaveCalendar = ({year}) => {
+const LeaveCalendar = ({year, signal}) => {
     const [stat, setStat] = useState([]);
     const leaveContext = useContext(LeaveContext);
     const statisticsFetch = useStat();
     
     useEffect(() => {
-        statisticsFetch.get(year);
-    }, [year])
+        setTimeout(() => statisticsFetch.get(year), 1000);
+    }, [year, signal])
 
     useEffect(() => {
         if (!statisticsFetch.loading) return;

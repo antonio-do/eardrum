@@ -65,7 +65,7 @@ const LeaveMainPage = () => {
                       onYearChange={(date) => setYear(date.getFullYear())}
                       autoOk
                     />
-                  <LeaveStat year={year}/>
+                  <LeaveStat year={year} signal={signal}/>
                   <LeaveResolved year={year} signal={signal} reload={() => setSignal(signal => !signal)}/>
                 </Box>
             </Grid>
