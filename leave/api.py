@@ -120,6 +120,29 @@ class LeaveViewSet(mixins.CreateModelMixin,
         instance.active = False
         instance.save(update_fields=['active'])
 
+        if instance.status == 'approved':
+            leave_type_config = ConfigEntry.objects.get(name='leave_context')
+            leave_types = json.loads(leave_type_config.extra)['leave_types']
+            
+            mask = LeaveMask.objects.get(name="{user}_{year}".format(user=instance.user, year=instance.year))
+            base_mask = LeaveMask.objects.get(name="__{year}".format(year=instance.year))
+            arr = list(base_mask.value)
+
+            shortlist = Leave.objects.filter(user=instance.user, year=instance.year, status='approved', active=True)
+            for leave_request in shortlist:
+                start = datetime.datetime.strptime(leave_request.startdate, '%Y%m%d').timetuple().tm_yday
+                start = 2 * (start - 1) + (leave_request.half[0] == "1")
+                end = datetime.datetime.strptime(leave_request.enddate, '%Y%m%d').timetuple().tm_yday
+                end = 2 * (end - 1) + (leave_request.half[1] == "0")
+
+                priority = next((leave_type for leave_type 
+                         in leave_types if leave_type['name'] == leave_request.typ), None)['priority']
+
+                for i in range(start, end + 1):
+                    if arr[i] == '-' or int(arr[i]) > priority :
+                        arr[i] = str(priority)
+            mask.value = ''.join(arr)
+            mask.save(update_fields=['value'])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -128,12 +151,11 @@ class LeaveViewSet(mixins.CreateModelMixin,
         if (instance.status != "approved"):
             return
 
-        year = str(datetime.datetime.strptime(instance.startdate, '%Y%m%d').timetuple().tm_year)
-        mask_name = "{user}_{year}".format(user=instance.user, year=year)
+        mask_name = "{user}_{year}".format(user=instance.user, year=instance.year)
 
         # Create mask from base mask if not exist
         if LeaveMask.objects.filter(name=mask_name).count() == 0:
-            base_mask_name = "__{}".format(year)
+            base_mask_name = "__{}".format(instance.year)
             mask = LeaveMask.objects.get(name=base_mask_name)
             mask.name = mask_name
             mask.pk = None
@@ -141,8 +163,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         leave_type_config = ConfigEntry.objects.get(name='leave_context')
         leave_types = json.loads(leave_type_config.extra)['leave_types']
-        priority = next((leave_type for leave_type 
-                         in leave_types if leave_type['name'] == instance.typ), None)['priority']
+        
+        mask = LeaveMask.objects.get(name=mask_name)
+        arr = list(mask.value)
 
         # represent every day with 2 characters, each for the morning and afternoon shift
         start = datetime.datetime.strptime(instance.startdate, '%Y%m%d').timetuple().tm_yday
@@ -150,8 +173,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
         end = datetime.datetime.strptime(instance.enddate, '%Y%m%d').timetuple().tm_yday
         end = 2 * (end - 1) + (instance.half[1] == "0")
 
-        mask = LeaveMask.objects.get(name=mask_name)
-        arr = list(mask.value)
+        priority = next((leave_type for leave_type 
+                         in leave_types if leave_type['name'] == instance.typ), None)['priority']
+ 
         
         # '-': work day
         # '0': holiday/weekend
@@ -162,7 +186,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 arr[i] = str(priority)
 
         mask.value = ''.join(arr)
-        mask.save()
+        mask.save(update_fields=['value'])
 
     @decorators.action(methods=['GET'], detail=False)
     def context(self, *args, **kwargs):
