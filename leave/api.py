@@ -109,17 +109,19 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.status == 'pending':
-            instance.active = False
-            instance.save(update_fields=['active'])
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
+        if instance.status != 'pending' and not self.is_admin_user():
             errors = {
                 'errors': {
                     'status': ['is not pending'],
                 }
             }
             return Response(errors, status=status.HTTP_403_FORBIDDEN)
+            
+        instance.active = False
+        instance.save(update_fields=['active'])
+
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_update(self, serializer):
         instance = serializer.save()
