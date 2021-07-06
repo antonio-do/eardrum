@@ -66,7 +66,7 @@ const LeaveMainPage = () => {
                       autoOk
                     />
                   <LeaveStat year={year}/>
-                  <LeaveResolved year={year} signal={signal}/>
+                  <LeaveResolved year={year} signal={signal} reload={() => setSignal(signal => !signal)}/>
                 </Box>
             </Grid>
         </Grid>}

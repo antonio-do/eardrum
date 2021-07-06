@@ -1,16 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
-import { Box, Typography } from '@material-ui/core';
-import { LeaveContext, useGetLeaveAll, useLeaveContext  } from './hooks';
+import { Box, Typography, Button } from '@material-ui/core';
+import { LeaveContext, useGetLeaveAll, useDeleteLeave  } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
+import ConfirmDialog from './components/ConfirmDialog';
 import { DATE_FORMAT } from './constants';
 
-const LeaveResolved = ({year, signal}) => {
+const LeaveResolved = ({year, signal, reload}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
+  const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
+  const [leaveId, setLeaveId] = useState(0);
   const leaveContext = useContext(LeaveContext);
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   useEffect(() => {
     getAll({year: year});
@@ -39,6 +44,22 @@ const LeaveResolved = ({year, signal}) => {
     }
   }, [getAllResponse, getAllError, getAllLoading])
 
+  const onDelete = (id) => {
+    setLeaveId(id);
+    setOpenDeleteDialog(true);
+  }
+
+  const onDeleteConfirm = async (id) => {
+    await deleteLeave(id);
+    reload();
+  }
+
+  const renderActionButton = (params) => (
+    <Button color='primary' style={{margin: 5}} onClick={() => onDelete(params.id)}>
+        Delete
+    </Button>
+  )
+
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
     { field: 'start_date', headerName: 'Start date', type: 'string', flex: 1, },
@@ -52,6 +73,8 @@ const LeaveResolved = ({year, signal}) => {
       <CustomPopover label="View" text={params.row.note}/>
     ), sortable: false },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false },
+    { field: 'action', headerName: 'Action', disableColumnMenu: true, sortable: false, 
+      renderCell: renderActionButton , width: 100, hide: !leaveContext.currentUser.is_admin, },
   ];
 
   return (
@@ -65,6 +88,12 @@ const LeaveResolved = ({year, signal}) => {
             pageSize={10}
             disableSelectionOnClick 
         />}
+        <ConfirmDialog 
+          onConfirm={() => onDeleteConfirm(leaveId)} 
+          open={openDeleteDialog} 
+          setOpen={setOpenDeleteDialog}
+          content="Are you sure you want to delete this application?"
+        /> 
     </Box>
   );
 }
