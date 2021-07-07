@@ -36,7 +36,7 @@ const LeaveCalendar = ({year, signal}) => {
         field: item.name, 
         renderHeader: (params) => (
             <Grid container direction="row">
-                <Typography gutterBottom>{item.label}</Typography>
+                <Typography gutterBottom>{item.label} (max: {item.limitation}d)</Typography>
                 <Tooltip title={`Number of ${item.label} leave days ` 
                         + `spent for each user (max: ${item.limitation} days)`} >
                     <HelpOutlineOutlinedIcon style={{marginLeft:5}} fontSize="small"/>
