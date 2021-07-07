@@ -51,7 +51,7 @@ const LeaveMainPage = () => {
                 <Button to='/leave/new' color="primary" variant="contained" component={ Link }>New</Button>
             </Grid>
             <Grid item >
-                <LeaveCalendar/>
+                <LeaveCalendar signal={signal}/>
             </Grid>
             <Grid item style={{flexGrow: 1}}>
                 <LeavePending reload={() => setSignal(signal => !signal)} signal={signal}/>

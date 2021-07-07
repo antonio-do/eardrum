@@ -179,6 +179,27 @@ function useHolidays() {
   return { get, loading, response, error };
 }
 
+function useLeaveUsers() {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError]= useState(null);
+
+  const get = (date) => {
+    setLoading(true);
+    axios({
+      method: 'get', 
+      url: routes.api.leaveUsers(date),
+    })
+      .then((response) => setResponse(response.data))
+      .catch((error) => {
+        setError(error);
+      })
+      .finally(() => setLoading(false));
+  }
+
+  return { get, loading, response, error };
+}
+
 export {
   LeaveContext,
   useLeaveContext, 
@@ -190,4 +211,5 @@ export {
   useDeleteLeave,
   useStat,
   useHolidays,
+  useLeaveUsers,
 }

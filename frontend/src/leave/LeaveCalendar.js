@@ -10,9 +10,9 @@ import {
     ListItemText, 
     ListSubheader, 
     makeStyles, Paper, 
-    TextField 
+    TextField, Typography
 } from "@material-ui/core";
-import { useHolidays } from "./hooks";
+import { useHolidays, useLeaveUsers } from "./hooks";
 import { message } from "antd";
 import moment from "moment";
 import { DATE_FORMAT } from "./constants";
@@ -33,14 +33,19 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-const StaticDatePicker = () => {
+const StaticDatePicker = ({signal}) => {
     const [date, setDate] = useState(new Date());
     const [holidays, setHolidays] = useState([]);
     const [leaveUsers, setLeaveUsers] = useState([])
     const [year, setYear] = useState(new Date().getFullYear());
     const fetchHoliday = useHolidays();
+    const fetchLeaveUsers = useLeaveUsers();
 
     const classes = useStyles();
+
+    useEffect(() => {
+        fetchLeaveUsers.get(moment().format("YYYYMMDD"))
+    }, [])
 
     useEffect(() => {
         fetchHoliday.get(year);
@@ -71,25 +76,32 @@ const StaticDatePicker = () => {
     }, [fetchHoliday.loading, fetchHoliday.response, fetchHoliday.error])
 
     useEffect(() => {
-        setDate(date);
+        fetchLeaveUsers.get(moment(date).format("YYYYMMDD"));
+    }, [date, signal])
+
+    useEffect(() => {
         // TODO: use API
-        setLeaveUsers([{
-            group: "Group 1",
-            users: ["Alice", "Bob", "Mallory", "Valentine", "Maria", "Lord"],
-        }, { 
-            group: "Group 2",
-            users: ["Alice", "Bob", "Mallory", "Valentine", "Maria", "Lord"],
-        }, { 
-            group: "Group 3",
-            users: ["Alice", "Bob", "Mallory", "Valentine", "Maria", "Lord"],
-        }, { 
-            group: "Group 4",
-            users: ["Alice", "Bob", "Mallory", "Valentine", "Maria", "Lord"],
-        }, { 
-            group: "Group 5",
-            users: ["Alice", "Bob", "Mallory", "Valentine", "Maria", "Lord"],
-        }, ]);
-    }, [date])
+
+        if (!fetchLeaveUsers.loading) return;
+        if (fetchLeaveUsers.error) {
+            console.log(fetchHoliday.error);
+            message.error("Error fetching leave users.");
+        } else if (fetchLeaveUsers.response) {
+            let data = []
+            //console.log(fetchLeaveUsers.response.leave_status)
+            for (const group in fetchLeaveUsers.response.leave_status) {
+                let obj = {}
+                obj.group = group
+                obj.users = Object.entries(fetchLeaveUsers.response.leave_status[group])
+                                    .map(entry => entry[0] + '[' + entry[1].replace(/[01]/g, (m) => ({
+                                        '0': '_',
+                                        '1': 'X'
+                                      }[m])) + ']')
+                data.push(obj)
+            }
+            setLeaveUsers(data)
+        }
+    }, [fetchLeaveUsers.loading, fetchLeaveUsers.response, fetchLeaveUsers.error])
 
     // render holidays differently
     const renderDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => { 
@@ -129,7 +141,7 @@ const StaticDatePicker = () => {
                             <Card style={{display: 'flex', flexWrap: 'wrap', maxWidth: '310px'}}>
                                 <CardContent style={{padding: 5}}>
                                     <Fragment>
-                                        <div className={classes.chips}>{item.group}</div>
+                                        <Typography variant="h6" className={classes.chips}>{item.group}</Typography>
                                         {item.users.map(user => 
                                             (<Chip label={user} className={classes.chips}/>)
                                         )}
