@@ -2,7 +2,7 @@ import json
 import datetime
 import copy
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.forms.models import model_to_dict
 
 from rest_framework import (
@@ -195,7 +195,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         users = User.objects.all()
         if not self.is_admin_user():
             users = users.filter(username=self.request.user.username)
-
+            
         res = {
             **leave_context,
             "users": list(map(lambda x: model_to_dict(x, fields=['id', 'username']), users)),
@@ -260,3 +260,44 @@ class LeaveViewSet(mixins.CreateModelMixin,
             return Response(ret)
         else:
             return Response(None, status=status.HTTP_404_NOT_FOUND)
+
+
+    @decorators.action(methods=['GET'], detail=False)
+    def leave_users(self, request, *args, **kargs):
+        date = request.query_params.get('date')           
+        try:
+            datetime.datetime.strptime(date, '%Y%m%d')
+        except (ValueError, TypeError) as e:
+            ret = {
+                'message': "Date format must be YYYYMMDD"
+            }
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST) 
+        
+        leave_status = {group.name: {} for group in Group.objects.all()}
+        leave_status['all'] = {}
+        users = User.objects.all()
+        if not self.is_admin_user():
+            users = users.filter(username=self.request.user.username)
+
+        for user in users:
+            try: 
+                mask = LeaveMask.objects.get(name="{user}_{year}".format(user=user.username, year=date[:4])).value
+            except LeaveMask.DoesNotExist:
+                mask = LeaveMask.objects.get(name="__{year}".format(year=date[:4])).value
+            day_in_year = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday
+            # 0 = work, 1 = leave
+            leave = ''.join(['0' if i == '-' else '1' for i in mask[(2 * day_in_year - 2):(2 * day_in_year)]])
+
+            groups = user.groups.all()
+
+            for group in groups:
+                leave_status[group.name][user.username] = leave
+
+            leave_status['all'][user.username] = leave
+
+        ret = {
+            'date': date,
+            'leave_status': leave_status,
+        }
+
+        return Response(ret)
