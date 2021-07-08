@@ -48,7 +48,7 @@ const StaticDatePicker = ({signal}) => {
     }, [])
 
     useEffect(() => {
-        fetchHoliday.get(year);
+        fetchHoliday.execute({year: year});
     }, [year])
 
     useEffect(() => {
@@ -56,8 +56,8 @@ const StaticDatePicker = ({signal}) => {
         if (fetchHoliday.error) {
             console.error(fetchHoliday.error);
             message.error("Error fetching holidays.");
-        } else if (fetchHoliday.response) {
-            let unsortedHolidays = fetchHoliday.response.map((item) => ({
+        } else if (fetchHoliday.data) {
+            let unsortedHolidays = fetchHoliday.data.map((item) => ({
                 "id" : item,
                 "date": moment(item, DATE_FORMAT.VALUE).toDate(),
             }))
@@ -73,7 +73,7 @@ const StaticDatePicker = ({signal}) => {
 
             setHolidays(unsortedHolidays)            
         }
-    }, [fetchHoliday.loading, fetchHoliday.response, fetchHoliday.error])
+    }, [fetchHoliday.loading, fetchHoliday.data, fetchHoliday.error])
 
     useEffect(() => {
         fetchLeaveUsers.execute({date: moment(date).format("YYYYMMDD")});

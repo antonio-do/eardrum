@@ -12,18 +12,18 @@ const LeaveContext = createContext({
 
 const fetchOnStart = (route) => {
   const [loading, setLoading] = useState(true);
-  const [response, setResponse] = useState(null);
+  const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
       axios
           .get(route)
-          .then(res => setResponse(res))
+          .then(res => setData(res))
           .catch((error) => setError(error))
           .finally(() => setLoading(false));
   }, []);
 
-  return [loading, response, error];
+  return { loading, data, error };
 }
 
 const useLeaveContext = () => fetchOnStart(routes.api.context());
@@ -80,6 +80,7 @@ const useStat = () => actionOnCall(options => ({
   url: routes.api.statistics(options.year),
 }))
 
+// options: { date: string }
 const useLeaveUsers = () => actionOnCall(options => ({
   method: 'get',
   url: routes.api.leaveUsers(options.date),
@@ -87,20 +88,20 @@ const useLeaveUsers = () => actionOnCall(options => ({
 
 function useHolidays() {
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
+  const [data, setData] = useState(null);
   const [error, setError]= useState(null);
 
-  const get = (year) => {
+  const execute = (options) => {
     setLoading(true);
     axios({
       method: 'get', 
-      url: routes.api.holidays(year),
+      url: routes.api.holidays(options.year),
     })
-      .then((response) => setResponse(response.data))
+      .then((response) => setData(response.data))
       .catch((error) => {
         // year could be either an integer or a string representing an integer
-        if ((Number.isInteger(year) || !isNaN(year)) && error.response && error.response.status == 404) {
-          setResponse([]);
+        if ((Number.isInteger(options.year) || !isNaN(options.year)) && error.response && error.response.status == 404) {
+          setData([]);
         } else {
           setError(error)
         }
@@ -108,7 +109,7 @@ function useHolidays() {
       .finally(() => setLoading(false));
   }
 
-  return { get, loading, response, error };
+  return { execute, loading, data, error };
 }
 
 export {

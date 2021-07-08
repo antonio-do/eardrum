@@ -13,36 +13,36 @@ import { message, Spin } from 'antd';
 
 const LeaveApp = () => {
   let { path } = useRouteMatch();
-  const [leaveContextLoading, leaveContextResponse, leaveContextError] = useLeaveContext();
-  const [getUserLoading, getUserResponse, getUserError] = useCurrentUser();
+  const leaveContext = useLeaveContext();
+  const currentUser = useCurrentUser();
 
   useEffect(() => {
-    if (!leaveContextResponse && leaveContextError) {
-      console.error(leaveContextError);
+    if (!leaveContext.data && leaveContext.error) {
+      console.error(leaveContext.error);
       message.error('Errors occured while fetching context!');
     }
-  }, [leaveContextResponse, leaveContextLoading, leaveContextError])
+  }, [leaveContext.data, leaveContext.loading, leaveContext.error])
 
   useEffect(() => {
-    if (!getUserResponse && getUserError) {
-      console.error(getUserError);
+    if (!currentUser.data && currentUser.error) {
+      console.error(currentUser.error);
       message.error('Errors occured while fetching current user!');
     }
-  }, [getUserResponse, getUserLoading, getUserError])
+  }, [currentUser.data, currentUser.loading, currentUser.error])
 
-  if (getUserLoading || leaveContextLoading) return <Spin size="large"/>
+  if (currentUser.loading || leaveContext.loading) return <Spin size="large"/>
 
-  if (getUserError || leaveContextError) return <div>Something went wrong</div>
+  if (currentUser.error || leaveContext.error) return <div>Something went wrong</div>
   
   return (
     <div>
       <LeaveContext.Provider 
         value={{
-          currentUser: getUserResponse.data,
-          allUsers: leaveContextResponse.data.users,
-          leaveTypes: leaveContextResponse.data.leave_types,
+          currentUser: currentUser.data.data,
+          allUsers: leaveContext.data.data.users,
+          leaveTypes: leaveContext.data.data.leave_types,
           //dictionary that map the name of leave type to its label (i.e. work_from_home => Work From Home)
-          leaveTypesMap: leaveContextResponse.data.leave_types.reduce((acc, cur) => {
+          leaveTypesMap: leaveContext.data.data.leave_types.reduce((acc, cur) => {
             let next = {...acc}; 
             next[cur.name] = cur.label; 
             return next;
