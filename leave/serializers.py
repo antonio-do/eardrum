@@ -54,3 +54,16 @@ class LeaveSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Incorrect data format, should be YYYYMMDD")
 
         return value
+
+    # https://github.com/encode/django-rest-framework/issues/3070
+    def validate(self, data):
+        startdate = data.get('startdate', self.instance.startdate if self.instance else None)
+        enddate = data.get('enddate', self.instance.enddate if self.instance else None)
+        
+        if startdate > enddate:
+            raise serializers.ValidationError("startdate must be before enddate")
+
+        if startdate[:4] != enddate[:4]:
+            raise serializers.ValidationError("startdate and enddate must be in the same year")
+
+        return data
