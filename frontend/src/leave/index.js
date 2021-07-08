@@ -32,6 +32,8 @@ const LeaveApp = () => {
 
   if (getUserLoading || leaveContextLoading) return <Spin size="large"/>
 
+  if (getUserError || leaveContextError) return <div>Something went wrong</div>
+  
   return (
     <div>
       <LeaveContext.Provider 

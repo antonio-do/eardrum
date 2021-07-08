@@ -70,19 +70,36 @@ const LeavePending = ({reload, signal}) => {
     switch (mode) {
       case APPROVE:
         await updateLeave.execute({id: id, data: {status: STATUS_TYPES.APPROVED}});
-        message.success("Successfully approved");
         break;
       case REJECT:
         await updateLeave.execute({id: id, data: {status: STATUS_TYPES.REJECTED}});
-        message.success("Successfully rejected");
         break;
       case DELETE:
         await deleteLeave.execute({id: id});
-        message.success("Successfully deleted");
         break;
     }
     reload();
   }
+
+  useEffect(() => {
+    if (deleteLeave.loading) return;
+    if (deleteLeave.error) {
+      message.error("Something went wrong");
+      return;
+    } else if (deleteLeave.data) {
+      message.success("Action successfully performed");
+    }
+  }, [deleteLeave.loading, deleteLeave.data, deleteLeave.error])
+
+  useEffect(() => {
+    if (updateLeave.loading) return;
+    if (updateLeave.error) {
+      message.error("Something went wrong");
+      return;
+    } else if (updateLeave.data) {
+      message.success("Action successfully performed");
+    }
+  }, [updateLeave.loading, updateLeave.data, updateLeave.error])
 
   const renderNoteCell = (params) => (
     params.row.note === "" 

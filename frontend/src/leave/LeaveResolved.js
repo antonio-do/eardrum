@@ -51,9 +51,18 @@ const LeaveResolved = ({year, signal, reload}) => {
 
   const onDeleteConfirm = async (id) => {
     await deleteLeave.execute({id: id});
-    message.success("Successfully deleted");
     reload();
   }
+
+  useEffect(() => {
+    if (deleteLeave.loading) return;
+    if (deleteLeave.error) {
+      message.error("Something went wrong");
+      return;
+    } else if (deleteLeave.data) {
+      message.success("Action successfully performed");
+    }
+  }, [deleteLeave.loading, deleteLeave.data, deleteLeave.error])
 
   const renderActionButton = (params) => (
     <Button color='primary' style={{margin: 5}} onClick={() => onDelete(params.id)}>
