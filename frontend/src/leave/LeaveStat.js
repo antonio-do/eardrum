@@ -8,24 +8,24 @@ import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
 const LeaveCalendar = ({year, signal}) => {
     const [stat, setStat] = useState([]);
     const leaveContext = useContext(LeaveContext);
-    const statisticsFetch = useStat();
+    const getStat = useStat();
     
     useEffect(() => {
-        setTimeout(() => statisticsFetch.get(year), 1000);
+        setTimeout(() => getStat.execute({year: year}), 1000);
     }, [year, signal])
 
     useEffect(() => {
-        if (!statisticsFetch.loading) return;
-        if (statisticsFetch.error) {
-            console.error(statisticsFetch.error);
+        if (!getStat.loading) return;
+        if (getStat.error) {
+            console.error(getStat.error);
             message.error("Error fetching statistic.");
-        } else if (statisticsFetch.response) {
-            setStat(statisticsFetch.response.data.stats.map((item) => ({
+        } else if (getStat.data) {
+            setStat(getStat.data.data.stats.map((item) => ({
                 ...item,
                 id: item.user,
             })))            
         }
-    }, [statisticsFetch.loading, statisticsFetch.response, statisticsFetch.error])
+    }, [getStat.loading, getStat.data, getStat.error])
 
     const columns = [{ 
         field: 'user', 
@@ -50,7 +50,7 @@ const LeaveCalendar = ({year, signal}) => {
     
     return <Box m={2}>
         <Typography variant="h5" gutterBottom>Statistic (year {year})</Typography>
-         {statisticsFetch.loading ? <Spin size="small"/> : <DataGrid
+         {getStat.loading ? <Spin size="small"/> : <DataGrid
             autoHeight
             rows={stat}
             columns={columns}

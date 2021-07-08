@@ -10,24 +10,24 @@ import { DATE_FORMAT } from './constants';
 
 const LeaveResolved = ({year, signal, reload}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
-  const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
-  const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
+  const getLeaveAll = useGetLeaveAll();
+  const deleteLeave = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
   const leaveContext = useContext(LeaveContext);
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   useEffect(() => {
-    getAll({year: year});
+    getLeaveAll.execute({year: year});
   }, [signal, year])
 
   useEffect(() => {
-    if (!getAllResponse && getAllError) {
-      console.error(getAllError);
+    if (!getLeaveAll.data && getLeaveAll.error) {
+      console.error(getLeaveAll.error);
       message.error("Error fetching leave applications.");
     }
-    if (getAllResponse && !getAllLoading && !getAllError) {
-      const data = getAllResponse.data.map(item => ({
+    if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
+      const data = getLeaveAll.data.data.map(item => ({
         id: item.id,
         user: item.user,
         start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
@@ -42,7 +42,7 @@ const LeaveResolved = ({year, signal, reload}) => {
       }))
       setResolvedRequests(data.filter(item => item.status !== "pending"));
     }
-  }, [getAllResponse, getAllError, getAllLoading])
+  }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
 
   const onDelete = (id) => {
     setLeaveId(id);
@@ -50,7 +50,7 @@ const LeaveResolved = ({year, signal, reload}) => {
   }
 
   const onDeleteConfirm = async (id) => {
-    await deleteLeave(id);
+    await deleteLeave.execute({id: id});
     message.success("Successfully deleted");
     reload();
   }
@@ -81,7 +81,7 @@ const LeaveResolved = ({year, signal, reload}) => {
   return (
     <Box m={2}>
         <Typography variant="h5" gutterBottom>Resolved requests (year {year})</Typography>
-        {(getAllLoading) ? <Spin size="small"/> : <DataGrid
+        {(getLeaveAll.loading) ? <Spin size="small"/> : <DataGrid
             autoHeight 
             rows={resolvedRequests} 
             columns={columns}

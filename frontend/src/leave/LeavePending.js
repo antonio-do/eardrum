@@ -10,9 +10,9 @@ import moment from "moment"
 
 const LeavePending = ({reload, signal}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
-  const [getAll, getAllLoading, getAllResponse, getAllError] = useGetLeaveAll();
-  const [update, loadingUpdate, responseUpdate, errorUpdate] = useUpdateLeave();
-  const [deleteLeave, deleteLoading, deleteResponse, deleteUpdate] = useDeleteLeave();
+  const getLeaveAll = useGetLeaveAll();
+  const updateLeave = useUpdateLeave();
+  const deleteLeave = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
   const leaveContext = useContext(LeaveContext);
 
@@ -21,16 +21,16 @@ const LeavePending = ({reload, signal}) => {
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
 
   useEffect(() => {
-    getAll({status: STATUS_TYPES.PENDING});
+    getLeaveAll.execute({status: STATUS_TYPES.PENDING});
   }, [signal])
 
   useEffect(() => {
-    if (!getAllResponse && getAllError) {
-      console.error(getAllError);
+    if (!getLeaveAll.data && getLeaveAll.error) {
+      console.error(getLeaveAll.error);
       message.error("Error fetching leave applications.");
     }
-    if (getAllResponse && !getAllLoading && !getAllError) {
-      const data = getAllResponse.data.map(item => ({
+    if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
+      const data = getLeaveAll.data.data.map(item => ({
         id: item.id,
         user: item.user,
         start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
@@ -45,7 +45,7 @@ const LeavePending = ({reload, signal}) => {
       }))
       setPendingApplications(data);
     }
-  }, [getAllResponse, getAllError, getAllLoading])
+  }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
 
   const APPROVE = "approve";
   const REJECT = "reject";
@@ -69,15 +69,15 @@ const LeavePending = ({reload, signal}) => {
   const onActionConfirm = async (id, mode) => {
     switch (mode) {
       case APPROVE:
-        await update(id, {status: STATUS_TYPES.APPROVED});
+        await updateLeave.execute({id: id, data: {status: STATUS_TYPES.APPROVED}});
         message.success("Successfully approved");
         break;
       case REJECT:
-        await update(id, {status: STATUS_TYPES.REJECTED});
+        await updateLeave.execute({id: id, data: {status: STATUS_TYPES.REJECTED}});
         message.success("Successfully rejected");
         break;
       case DELETE:
-        await deleteLeave(id);
+        await deleteLeave.execute({id: id});
         message.success("Successfully deleted");
         break;
     }
@@ -123,7 +123,7 @@ const LeavePending = ({reload, signal}) => {
   return (
     <Box m={2}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
-        {(getAllLoading) ? <Spin size="small"/> : <DataGrid
+        {(getLeaveAll.loading) ? <Spin size="small"/> : <DataGrid
             autoHeight 
             rows={pendingRequests} 
             columns={columns}

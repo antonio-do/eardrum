@@ -44,7 +44,7 @@ const StaticDatePicker = ({signal}) => {
     const classes = useStyles();
 
     useEffect(() => {
-        fetchLeaveUsers.get(moment().format("YYYYMMDD"))
+        fetchLeaveUsers.execute({date: moment().format("YYYYMMDD")})
     }, [])
 
     useEffect(() => {
@@ -76,7 +76,7 @@ const StaticDatePicker = ({signal}) => {
     }, [fetchHoliday.loading, fetchHoliday.response, fetchHoliday.error])
 
     useEffect(() => {
-        fetchLeaveUsers.get(moment(date).format("YYYYMMDD"));
+        fetchLeaveUsers.execute({date: moment(date).format("YYYYMMDD")});
     }, [date, signal])
 
     useEffect(() => {
@@ -84,12 +84,12 @@ const StaticDatePicker = ({signal}) => {
         if (fetchLeaveUsers.error) {
             console.error(fetchHoliday.error);
             message.error("Error fetching leave users.");
-        } else if (fetchLeaveUsers.response) {
+        } else if (fetchLeaveUsers.data) {
             let data = []
-            for (const group in fetchLeaveUsers.response.leave_status) {
+            for (const group in fetchLeaveUsers.data.leave_status) {
                 let obj = {}
                 obj.group = group
-                obj.users = Object.entries(fetchLeaveUsers.response.leave_status[group])
+                obj.users = Object.entries(fetchLeaveUsers.data.leave_status[group])
                                     .map(entry => entry[0] + '[' + entry[1].replace(/[01]/g, (m) => ({
                                         '0': '_',
                                         '1': 'X'
@@ -98,7 +98,7 @@ const StaticDatePicker = ({signal}) => {
             }
             setLeaveUsers(data)
         }
-    }, [fetchLeaveUsers.loading, fetchLeaveUsers.response, fetchLeaveUsers.error])
+    }, [fetchLeaveUsers.loading, fetchLeaveUsers.data, fetchLeaveUsers.error])
 
     // render holidays differently
     const renderDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => { 

@@ -10,14 +10,14 @@ const LeaveContext = createContext({
   allUsers: null,
 })
 
-const useLeaveContext = () => {
+const fetchOnStart = (route) => {
   const [loading, setLoading] = useState(true);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
       axios
-          .get(routes.api.context())
+          .get(route)
           .then(res => setResponse(res))
           .catch((error) => setError(error))
           .finally(() => setLoading(false));
@@ -26,132 +26,64 @@ const useLeaveContext = () => {
   return [loading, response, error];
 }
 
-function useCurrentUser() {
-  const [loading, setLoading] = useState(true);
-  const [response, setResponse] = useState(null);
-  const [error, setError] = useState(null);
+const useLeaveContext = () => fetchOnStart(routes.api.context());
 
-  useEffect(() => {
-    axios
-      .get(routes.api.currentUser())
-      .then((response) => setResponse(response))
-      .catch((error) => setError(error))
-      .finally(() => setLoading(false));
-  }, []);
+const useCurrentUser = () => fetchOnStart(routes.api.currentUser());
 
-  return [loading, response, error];
-}
 
-function useGetLeaveAll() {
+
+const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, ) => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
-  const get = async (options) => {
+  const execute = async (options) => {
     setLoading(true)
-    await axios
-      .get(routes.api.leaveAll(options))
-      .then((response) => setResponse(response))
+    await axios(axiosConfigGetter(options))
+      .then((response) => setResponse(dataExtractor(response)))
       .catch((error) => setError(error))
       .finally(() => setLoading(false));
   };
 
-  return [get,loading, response, error];
+  return { execute, loading, data: response, error };
 }
 
-function useGetLeave(id) {
-  const [loading, setLoading] = useState(true);
-  const [response, setResponse] = useState(null);
-  const [error, setError] = useState(null);
+// options: { status: string, year: int }
+const useGetLeaveAll = () => actionOnCall(options => ({
+  method: 'get',
+  url: routes.api.leaveAll(options)
+}))
 
-  useEffect(() => {
-    axios
-      .get(routes.api.leaveDetail(id))
-      .then((response) => setResponse(response))
-      .catch((error) => setError(error))
-      .finally(() => setLoading(false));
-  }, []);
+// options: { data: object }
+const useNewLeave = () => actionOnCall(options => ({
+  method: 'post',
+  url: routes.api.leaveAll(),
+  data: options.data,
+}))
 
-  return [loading, response, error];
-}
+// options: { id: int }
+const useDeleteLeave = () => actionOnCall(options => ({
+  method: 'delete', 
+  url: routes.api.leaveDetail(options.id),
+}))
 
-function useNewLeave() {
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
-  const [error, setError]= useState(null);
+// options: { id: int, data: object }
+const useUpdateLeave = () => actionOnCall(options => ({
+  method: 'patch',
+  url: routes.api.leaveDetail(options.id),
+  data: options.data,
+}))
 
-  const save = async (data) => {
-    setLoading(true);
-    await axios({
-      method: 'post', 
-      url: routes.api.leaveAll(),
-      data: data
-    })
-      .then((response) => setResponse(response))
-      .catch((error) => setError(error))
-      .finally(() => setLoading(false));
-  }
+// options: { year: int }
+const useStat = () => actionOnCall(options => ({
+  method: 'get',
+  url: routes.api.statistics(options.year),
+}))
 
-  return [save, loading, response, error];
-}
-
-function useUpdateLeave() {
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
-  const [error, setError]= useState(null);
-
-  const save = (id, data) => {
-    setLoading(true);
-    axios({
-      method: 'patch', 
-      url: routes.api.leaveDetail(id),
-      data: data,
-    })
-      .then((response) => setResponse(response))
-      .catch((error) => setError(error))
-      .finally(() => setLoading(false));
-  }
-
-  return [save, loading, response, error];
-}
-
-function useDeleteLeave() {
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
-  const [error, setError]= useState(null);
-
-  const save = (id) => {
-    setLoading(true);
-    axios({
-      method: 'delete', 
-      url: routes.api.leaveDetail(id),
-    })
-      .then((response) => setResponse(response))
-      .catch((error) => setError(error))
-      .finally(() => setLoading(false));
-  }
-
-  return [save, loading, response, error];
-}
-
-function useStat() {
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
-  const [error, setError]= useState(null);
-
-  const get = (year) => {
-    setLoading(true);
-    axios({
-      method: 'get', 
-      url: routes.api.statistics(year),
-    })
-      .then((response) => setResponse(response))
-      .catch((error) => setError(error))
-      .finally(() => setLoading(false));
-  }
-
-  return { get, loading, response, error};
-}
+const useLeaveUsers = () => actionOnCall(options => ({
+  method: 'get',
+  url: routes.api.leaveUsers(options.date),
+}), response => response.data)
 
 function useHolidays() {
   const [loading, setLoading] = useState(false);
@@ -179,33 +111,11 @@ function useHolidays() {
   return { get, loading, response, error };
 }
 
-function useLeaveUsers() {
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
-  const [error, setError]= useState(null);
-
-  const get = (date) => {
-    setLoading(true);
-    axios({
-      method: 'get', 
-      url: routes.api.leaveUsers(date),
-    })
-      .then((response) => setResponse(response.data))
-      .catch((error) => {
-        setError(error);
-      })
-      .finally(() => setLoading(false));
-  }
-
-  return { get, loading, response, error };
-}
-
 export {
   LeaveContext,
   useLeaveContext, 
   useCurrentUser,
   useGetLeaveAll, 
-  useGetLeave, 
   useNewLeave, 
   useUpdateLeave, 
   useDeleteLeave,

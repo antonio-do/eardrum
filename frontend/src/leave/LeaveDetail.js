@@ -38,21 +38,23 @@ const LeaveDetail = () => {
         is_end_half: false,
         status: "",
     });
-    const [updateLeave, updateLeaveLoading, updateLeaveResponse, updateLeaveError] = useNewLeave() 
+    const newLeave = useNewLeave() 
     const [errorDate, setErrorDate] = useState(false);
     
     let history = useHistory();
     const classes = useStyles();
 
     const onSubmit = async () => {
-        await updateLeave({
-            user: application.name,
-            typ: application.type,
-            startdate: moment(application.start_date).format(DATE_FORMAT.VALUE),
-            enddate: moment(application.end_date).format(DATE_FORMAT.VALUE),
-            half: (application.is_start_half ? "1" : "0") + (application.is_end_half ? "1" : "0"),
-            status: STATUS_TYPES.PENDING,
-            note: application.note,
+        await newLeave.execute({ 
+            data: {
+                user: application.name,
+                typ: application.type,
+                startdate: moment(application.start_date).format(DATE_FORMAT.VALUE),
+                enddate: moment(application.end_date).format(DATE_FORMAT.VALUE),
+                half: (application.is_start_half ? "1" : "0") + (application.is_end_half ? "1" : "0"),
+                status: STATUS_TYPES.PENDING,
+                note: application.note,
+            }
         })
         history.replace("/leave");
     }
