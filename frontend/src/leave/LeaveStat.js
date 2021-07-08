@@ -17,7 +17,7 @@ const LeaveCalendar = ({year, signal}) => {
     useEffect(() => {
         if (!statisticsFetch.loading) return;
         if (statisticsFetch.error) {
-            console.log(statisticsFetch.error);
+            console.error(statisticsFetch.error);
             message.error("Error fetching statistic.");
         } else if (statisticsFetch.response) {
             setStat(statisticsFetch.response.data.stats.map((item) => ({

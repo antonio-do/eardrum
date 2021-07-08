@@ -23,7 +23,7 @@ const LeaveResolved = ({year, signal, reload}) => {
 
   useEffect(() => {
     if (!getAllResponse && getAllError) {
-      console.log(getAllError);
+      console.error(getAllError);
       message.error("Error fetching leave applications.");
     }
     if (getAllResponse && !getAllLoading && !getAllError) {

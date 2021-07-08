@@ -18,14 +18,14 @@ const LeaveApp = () => {
 
   useEffect(() => {
     if (!leaveContextResponse && leaveContextError) {
-      console.log(leaveContextError);
+      console.error(leaveContextError);
       message.error('Errors occured while fetching context!');
     }
   }, [leaveContextResponse, leaveContextLoading, leaveContextError])
 
   useEffect(() => {
     if (!getUserResponse && getUserError) {
-      console.log(getUserError);
+      console.error(getUserError);
       message.error('Errors occured while fetching current user!');
     }
   }, [getUserResponse, getUserLoading, getUserError])

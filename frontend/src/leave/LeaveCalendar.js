@@ -54,7 +54,7 @@ const StaticDatePicker = ({signal}) => {
     useEffect(() => {
         if (!fetchHoliday.loading) return;
         if (fetchHoliday.error) {
-            console.log(fetchHoliday.error);
+            console.error(fetchHoliday.error);
             message.error("Error fetching holidays.");
         } else if (fetchHoliday.response) {
             let unsortedHolidays = fetchHoliday.response.map((item) => ({
@@ -80,15 +80,12 @@ const StaticDatePicker = ({signal}) => {
     }, [date, signal])
 
     useEffect(() => {
-        // TODO: use API
-
         if (!fetchLeaveUsers.loading) return;
         if (fetchLeaveUsers.error) {
-            console.log(fetchHoliday.error);
+            console.error(fetchHoliday.error);
             message.error("Error fetching leave users.");
         } else if (fetchLeaveUsers.response) {
             let data = []
-            //console.log(fetchLeaveUsers.response.leave_status)
             for (const group in fetchLeaveUsers.response.leave_status) {
                 let obj = {}
                 obj.group = group
