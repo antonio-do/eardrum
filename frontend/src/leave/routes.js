@@ -4,8 +4,9 @@ export default {
         currentUser: () => '/api/account/current_user/',
         leaveAll: (options) => {
             if (!options) return '/api/leave/';
-            const {year, status} = options;
-            return `/api/leave/?${year ? `year=${year}` : ''}&${status ? `status=${status}` : ''}`;
+            let query = Object.entries(options)
+                            .map(option => `${option[0]}=${encodeURIComponent(option[1])}`).join('&')
+            return `/api/leave/?${query}`;
         },
         leaveDetail: (id) => `/api/leave/${id}/`,
         statistics: (year) => `/api/leave/statistics/?year=${year}`,
