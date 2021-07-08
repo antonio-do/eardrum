@@ -40,8 +40,6 @@ const LeavePending = ({reload, signal}) => {
               '0': '[ False ]',
               '1': '[ True ]'
           }[m]))),
-        is_half_beginning: (item.half & "10") === 10,
-        is_half_end: (item.half & "01") === 1,
         status: item.status,
         note: item.note,
       }))

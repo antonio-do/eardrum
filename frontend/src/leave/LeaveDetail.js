@@ -54,7 +54,7 @@ const LeaveDetail = () => {
             status: STATUS_TYPES.PENDING,
             note: application.note,
         })
-        history.push("/leave");
+        history.replace("/leave");
     }
 
     // check if start and end are same year and start is no later than year
