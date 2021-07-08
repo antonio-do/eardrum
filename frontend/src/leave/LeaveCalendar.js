@@ -5,12 +5,16 @@ import DateFnsUtils from '@date-io/date-fns';
 import { 
     Card, 
     CardContent, 
-    Chip, Divider, 
-    List, ListItem, 
+    Chip, 
+    Divider, 
+    List, 
+    ListItem, 
     ListItemText, 
     ListSubheader, 
-    makeStyles, Paper, 
-    TextField, Typography
+    makeStyles, 
+    Paper, 
+    TextField, 
+    Typography
 } from "@material-ui/core";
 import { useHolidays, useLeaveUsers } from "./hooks";
 import { message } from "antd";
@@ -63,8 +67,9 @@ const StaticDatePicker = ({signal}) => {
             }))
 
             unsortedHolidays.sort((holiday1, holiday2) => {
-                let dif1 = moment(holiday1.date).diff(moment().startOf('day'), 'days');
-                let dif2 = moment(holiday2.date).diff(moment().startOf('day'), 'days');
+                let now = moment().startOf('day')
+                let dif1 = moment(holiday1.date).diff(now, 'days');
+                let dif2 = moment(holiday2.date).diff(now, 'days');
                 // if today is between holiday1 and holiday2
                 if (dif1 < 0 ^ dif2 < 0) return dif1 < dif2 ? 1 : -1;
                 // if today is either sooner or later than both holiday1 and holiday2
