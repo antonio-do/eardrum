@@ -12,18 +12,18 @@ class LeaveSerializer(serializers.ModelSerializer):
     HALF_CHOICES = '00,01,10,11'.split(',')
 
     def __init__(self, instance=None, data=empty, **kwargs):
+        leave_context = json.loads(ConfigEntry.objects.get(name="leave_context").extra)
+
         self.fields['half'] = serializers.ChoiceField(choices=self.HALF_CHOICES)
 
         self.fields['typ'] = serializers.ChoiceField(
-            choices=[item['name'] for item
-                     in json.loads(ConfigEntry.objects.get(name="leave_context").extra)['leave_types']])
+            choices=[item['name'] for item in leave_context['leave_types']])
 
         self.fields['user'] = serializers.ChoiceField(
             choices=[user.username for user in User.objects.all()])
 
         self.fields['status'] = serializers.ChoiceField(
-            choices=[item['name'] for item
-                     in json.loads(ConfigEntry.objects.get(name="leave_context").extra)['leave_statuses']])
+            choices=[item['name'] for item in leave_context['leave_statuses']])
 
         super().__init__(instance, data, **kwargs)
 
