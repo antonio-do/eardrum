@@ -70,12 +70,15 @@ const LeavePending = ({reload, signal}) => {
     switch (mode) {
       case APPROVE:
         await update(id, {status: STATUS_TYPES.APPROVED});
+        message.success("Successfully approved");
         break;
       case REJECT:
         await update(id, {status: STATUS_TYPES.REJECTED});
+        message.success("Successfully rejected");
         break;
       case DELETE:
         await deleteLeave(id);
+        message.success("Successfully deleted");
         break;
     }
     reload();

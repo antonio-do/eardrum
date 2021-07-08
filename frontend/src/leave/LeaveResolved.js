@@ -51,6 +51,7 @@ const LeaveResolved = ({year, signal, reload}) => {
 
   const onDeleteConfirm = async (id) => {
     await deleteLeave(id);
+    message.success("Successfully deleted");
     reload();
   }
 
