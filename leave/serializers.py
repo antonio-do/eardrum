@@ -54,3 +54,15 @@ class LeaveSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Incorrect data format, should be YYYYMMDD")
 
         return value
+
+    def validate(self, data):
+        """
+        Check that start is before finish.
+        """
+        if data['startdate'] > data['enddate']:
+            raise serializers.ValidationError("startdate must be before enddate")
+
+        if data['startdate'][:4] != data['enddate'][:4]:
+            raise serializers.ValidationError("startdate and enddate must be in the same year")
+
+        return data
