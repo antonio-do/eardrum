@@ -13,10 +13,10 @@ export default ({ content, onConfirm, open, setOpen }) => (
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={ () => {onConfirm(); setOpen(false); }} color="primary" autoFocus>
+                <Button onClick={ () => {onConfirm(); setOpen(false); }} color="primary">
                     Yes
                 </Button>
-                <Button onClick={() => setOpen(false)} color="primary">
+                <Button onClick={() => setOpen(false)} color="primary" autoFocus>
                     No
                 </Button>
         </DialogActions>
