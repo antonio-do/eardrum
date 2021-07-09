@@ -40,7 +40,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         def validate_year(value):
             try:
                 year = int(value)
-            except ValueError:
+            except (ValueError, TypeError) as e:
                 return None
             else:
                 current_year = datetime.datetime.now().year
@@ -61,7 +61,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             'status': validate_status,
         }
 
-        return (fieldname, value) if validation_funcs.get(fieldname) is not None else (fieldname, None)
+        return (fieldname, validation_funcs[fieldname](value)) if validation_funcs.get(fieldname) is not None else (fieldname, None)
 
     def get_permissions(self):
         """
@@ -270,7 +270,6 @@ class LeaveViewSet(mixins.CreateModelMixin,
         else:
             return Response(None, status=status.HTTP_404_NOT_FOUND)
 
-
     @decorators.action(methods=['GET'], detail=False)
     def leave_users(self, request, *args, **kargs):
         date = request.query_params.get('date')           
@@ -309,3 +308,35 @@ class LeaveViewSet(mixins.CreateModelMixin,
         }
 
         return Response(ret)
+
+    @decorators.action(methods=['GET'], detail=False)
+    def recalculate_masks(self, request, *args, **kargs):
+        _, year = self.get_validated_query_value('year', request.query_params.get('year'))
+
+        if year is None:
+            ret = {
+                'message': 'no year provided'
+            }
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        for user in User.objects.all():
+            mask = self.get_mask(user=user.username, year=year)
+            leaves = Leave.objects.filter(user=user.username, 
+                                          year=year, 
+                                          status='approved', 
+                                          active=True)
+
+            if leaves.count() == 0:
+                if mask is not None:
+                    mask.delete()
+            else:
+                if mask is None:
+                    mask = self.get_mask(user=user.username, year=year, create=True)
+
+                # assumption: base_mask exists for every year leave request exist
+                base_mask = self.get_mask(user='_', year=year)
+                mask.value = base_mask.value
+                mask.summary = base_mask.summary
+
+                self.accumulate_mask(mask, leaves)
+
+        return Response({})
