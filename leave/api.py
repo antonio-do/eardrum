@@ -36,12 +36,6 @@ class LeaveViewSet(mixins.CreateModelMixin,
     def is_admin_user(self):
         return permissions.IsAdminUser.has_permission(None, self.request, self)
 
-    def get_updated_fields(self):
-        if self.is_admin_user():
-            return self.ADMIN_UPDATED_FIELDS
-        else:
-            return self.UPDATED_FIELDS
-
     def get_validated_query_value(self, fieldname, value):
         def validate_year(value):
             try:
@@ -89,6 +83,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         for queried_field, queried_value in queries:
             if queried_value is None:
+                # Return none queryset if there is an invalid query_param
                 return self.queryset.none()
 
         queries = {queried_field: queried_value for queried_field, queried_value in queries}
@@ -101,6 +96,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
     def create(self, request, *args, **kwargs):
         initial_data = copy.deepcopy(request.data)
         initial_data['year'] = initial_data.get('startdate', '')[:4]
+        initial_data['status'] = 'pending'
         serializer = self.get_serializer(data=initial_data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -109,53 +105,60 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.status != 'pending' and not self.is_admin_user():
-            errors = {
-                'errors': {
-                    'status': ['is not pending'],
+        
+        if not self.is_admin_user():
+            if instance.status == 'pending':
+                instance.active = False
+                instance.save(update_fields=['active'])
+
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                errors = {
+                    'errors': {
+                        'status': ['is not pending'],
+                    }
                 }
-            }
-            return Response(errors, status=status.HTTP_403_FORBIDDEN)
-            
-        instance.active = False
-        instance.save(update_fields=['active'])
+                return Response(errors, status=status.HTTP_403_FORBIDDEN)
+        else: 
+            instance.active = False
+            instance.save(update_fields=['active'])
 
-        if instance.status == 'approved':
-            leave_type_config = ConfigEntry.objects.get(name='leave_context')
-            leave_types = json.loads(leave_type_config.extra)['leave_types']
-            
-            mask = LeaveMask.objects.get(name="{user}_{year}".format(user=instance.user, year=instance.year))
-            base_mask = LeaveMask.objects.get(name="__{year}".format(year=instance.year))
-            arr = list(base_mask.value)
-
-            typ_with_priority = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
-            summary = {leave_type['name']: 0 for leave_type in leave_types}
-
-            shortlist = Leave.objects.filter(user=instance.user, year=instance.year, status='approved', active=True)
-            for leave_request in shortlist:
-                start = datetime.datetime.strptime(leave_request.startdate, '%Y%m%d').timetuple().tm_yday
-                start = 2 * (start - 1) + (leave_request.half[0] == "1")
-                end = datetime.datetime.strptime(leave_request.enddate, '%Y%m%d').timetuple().tm_yday
-                end = 2 * (end - 1) + (leave_request.half[1] == "0")
-
-                priority = next((leave_type for leave_type 
-                         in leave_types if leave_type['name'] == leave_request.typ), None)['priority']
-
-                for i in range(start, end + 1):
-                    if arr[i] == '-' or int(arr[i]) > priority :
-                        this_type = typ_with_priority[priority] 
-                        summary[this_type] = summary[this_type] + 1
-                        if arr[i] != '-' and arr[i] != '0':
-                            last_type = typ_with_priority[int(arr[i])] 
-                            summary[last_type] = summary[last_type] - 1
+            if instance.status == 'approved':
+                leave_type_config = ConfigEntry.objects.get(name='leave_context')
+                leave_types = json.loads(leave_type_config.extra)['leave_types']
                 
-                        arr[i] = str(priority)
+                mask = LeaveMask.objects.get(name="{user}_{year}".format(user=instance.user, year=instance.year))
+                base_mask = LeaveMask.objects.get(name="__{year}".format(year=instance.year))
+                arr = list(base_mask.value)
 
-            mask.value = ''.join(arr)
-            mask.summary = json.dumps(summary, indent=2)
-            mask.save(update_fields=['value', 'summary'])
+                typ_with_priority = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
+                summary = {leave_type['name']: 0 for leave_type in leave_types}
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+                shortlist = Leave.objects.filter(user=instance.user, year=instance.year, status='approved', active=True)
+                for leave_request in shortlist:
+                    start = datetime.datetime.strptime(leave_request.startdate, '%Y%m%d').timetuple().tm_yday
+                    start = 2 * (start - 1) + (leave_request.half[0] == "1")
+                    end = datetime.datetime.strptime(leave_request.enddate, '%Y%m%d').timetuple().tm_yday
+                    end = 2 * (end - 1) + (leave_request.half[1] == "0")
+
+                    priority = next((leave_type for leave_type 
+                            in leave_types if leave_type['name'] == leave_request.typ), None)['priority']
+
+                    for i in range(start, end + 1):
+                        if arr[i] == '-' or int(arr[i]) > priority :
+                            this_type = typ_with_priority[priority] 
+                            summary[this_type] = summary[this_type] + 1
+                            if arr[i] != '-' and arr[i] != '0':
+                                last_type = typ_with_priority[int(arr[i])] 
+                                summary[last_type] = summary[last_type] - 1
+                    
+                            arr[i] = str(priority)
+
+                mask.value = ''.join(arr)
+                mask.summary = json.dumps(summary, indent=2)
+                mask.save(update_fields=['value', 'summary'])
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_update(self, serializer):
         instance = serializer.save()
@@ -292,7 +295,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             }
             return Response(ret, status=status.HTTP_400_BAD_REQUEST) 
         
-        leave_status = {group.name: {} for group in Group.objects.all()}
+        leave_status = {group.name: {} for group in Group.objects.filter(name__startswith='leave_app_')}
         leave_status['all'] = {}
         users = User.objects.all()
         if not self.is_admin_user():
@@ -307,7 +310,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             # 0 = work, 1 = leave
             leave = ''.join(['0' if i == '-' else '1' for i in mask[(2 * day_in_year - 2):(2 * day_in_year)]])
 
-            groups = user.groups.all()
+            groups = user.groups.filter(name__startswith='leave_app_')
 
             for group in groups:
                 leave_status[group.name][user.username] = leave
