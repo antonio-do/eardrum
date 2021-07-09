@@ -128,6 +128,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
             base_mask = LeaveMask.objects.get(name="__{year}".format(year=instance.year))
             arr = list(base_mask.value)
 
+            typ_with_priority = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
+            summary = {leave_type['name']: 0 for leave_type in leave_types}
+
             shortlist = Leave.objects.filter(user=instance.user, year=instance.year, status='approved', active=True)
             for leave_request in shortlist:
                 start = datetime.datetime.strptime(leave_request.startdate, '%Y%m%d').timetuple().tm_yday
@@ -140,9 +143,17 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
                 for i in range(start, end + 1):
                     if arr[i] == '-' or int(arr[i]) > priority :
+                        this_type = typ_with_priority[priority] 
+                        summary[this_type] = summary[this_type] + 1
+                        if arr[i] != '-' and arr[i] != '0':
+                            last_type = typ_with_priority[int(arr[i])] 
+                            summary[last_type] = summary[last_type] - 1
+                
                         arr[i] = str(priority)
+
             mask.value = ''.join(arr)
-            mask.save(update_fields=['value'])
+            mask.summary = json.dumps(summary, indent=2)
+            mask.save(update_fields=['value', 'summary'])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -187,7 +198,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             if arr[i] == '-' or int(arr[i]) > priority :
                 this_type = typ_with_priority[priority] 
                 delta[this_type] = delta[this_type] + 1
-                if arr[i] != '-':
+                if arr[i] != '-' and arr[i] != '0':
                     last_type = typ_with_priority[int(arr[i])] 
                     delta[last_type] = delta[last_type] - 1
                 
