@@ -261,17 +261,13 @@ class LeaveViewSet(mixins.CreateModelMixin,
             stats = []
             for user in users:
                 stat = {}
-                for leave_type in leave_types:
-                    mask_name = "{user}_{year}".format(user=user, year=year)
-                    if LeaveMask.objects.filter(name=mask_name).count() == 0:
-                        stat[leave_type['name']] = 0
-                    else:
-                        mask = LeaveMask.objects.get(name=mask_name)
-                        # '-': work day
-                        # '0': holiday/weekend
-                        # otherwise: on leave, the representing character is the same as the leave type's 
-                        #            priority
-                        stat[leave_type['name']] = mask.value.count(str(leave_type['priority'])) / 2
+                mask_name = "{user}_{year}".format(user=user, year=year)
+                if LeaveMask.objects.filter(name=mask_name).count() == 0:
+                    stat = {leave_type['name']: 0 for leave_type in leave_types}
+                else:
+                    mask = LeaveMask.objects.get(name=mask_name)
+                    stat = {leave_type['name']: json.loads(mask.summary)[leave_type['name']] / 2
+                            for leave_type in leave_types }
 
                 stats.append({**stat, 'user': user.username})
 
