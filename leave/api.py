@@ -93,6 +93,25 @@ class LeaveViewSet(mixins.CreateModelMixin,
         else:
             return self.queryset.filter(user=self.request.user.username, active=True, **queries)
 
+    def get_mask(self, **kwargs):
+        user = kwargs.get("user")
+        year = kwargs.get("year")
+        create = kwargs.get("create", False)
+
+        mask_name = "{user}_{year}".format(user=user, year=year)
+        try: 
+            mask = LeaveMask.objects.get(name=mask_name)
+            return mask
+        except LeaveMask.DoesNotExist:
+            if create:
+                mask = LeaveMask.objects.get(name="__{year}".format(year=year))
+                mask.name = mask_name
+                mask.pk = None
+                mask.save()
+                return mask
+            else:
+                return None
+                
     def create(self, request, *args, **kwargs):
         initial_data = copy.deepcopy(request.data)
         initial_data['year'] = initial_data.get('startdate', '')[:4]
@@ -127,9 +146,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 leave_type_config = ConfigEntry.objects.get(name='leave_context')
                 leave_types = json.loads(leave_type_config.extra)['leave_types']
                 
-                mask = LeaveMask.objects.get(name="{user}_{year}".format(user=instance.user, year=instance.year))
-                base_mask = LeaveMask.objects.get(name="__{year}".format(year=instance.year))
-                arr = list(base_mask.value)
+                mask = self.get_mask(user=instance.user, year=instance.year)
+                arr = list(self.get_mask(user='_', year=instance.year).value)
 
                 typ_with_priority = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
                 summary = {leave_type['name']: 0 for leave_type in leave_types}
@@ -165,20 +183,10 @@ class LeaveViewSet(mixins.CreateModelMixin,
         if (instance.status != "approved"):
             return
 
-        mask_name = "{user}_{year}".format(user=instance.user, year=instance.year)
-
-        # Create mask from base mask if not exist
-        if LeaveMask.objects.filter(name=mask_name).count() == 0:
-            base_mask_name = "__{}".format(instance.year)
-            mask = LeaveMask.objects.get(name=base_mask_name)
-            mask.name = mask_name
-            mask.pk = None
-            mask.save()
-
         leave_type_config = ConfigEntry.objects.get(name='leave_context')
         leave_types = json.loads(leave_type_config.extra)['leave_types']
         
-        mask = LeaveMask.objects.get(name=mask_name)
+        mask = self.get_mask(user=instance.user, year=instance.year, create=True)
         arr = list(mask.value)
 
         # represent every day with 2 characters, each for the morning and afternoon shift
@@ -264,11 +272,10 @@ class LeaveViewSet(mixins.CreateModelMixin,
             stats = []
             for user in users:
                 stat = {}
-                mask_name = "{user}_{year}".format(user=user, year=year)
-                if LeaveMask.objects.filter(name=mask_name).count() == 0:
+                mask = self.get_mask(user=user, year=year)
+                if mask is None:
                     stat = {leave_type['name']: 0 for leave_type in leave_types}
                 else:
-                    mask = LeaveMask.objects.get(name=mask_name)
                     stat = {leave_type['name']: json.loads(mask.summary)[leave_type['name']] / 2
                             for leave_type in leave_types }
 
@@ -302,13 +309,12 @@ class LeaveViewSet(mixins.CreateModelMixin,
             users = users.filter(username=self.request.user.username)
 
         for user in users:
-            try: 
-                mask = LeaveMask.objects.get(name="{user}_{year}".format(user=user.username, year=date[:4])).value
-            except LeaveMask.DoesNotExist:
-                mask = LeaveMask.objects.get(name="__{year}".format(year=date[:4])).value
+            mask = self.get_mask(user=user.username, year=date[:4])
+            mask_value = mask.value if mask is not None else self.get_mask(user='_', year=date[:4]).value
             day_in_year = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday
             # 0 = work, 1 = leave
-            leave = ''.join(['0' if i == '-' else '1' for i in mask[(2 * day_in_year - 2):(2 * day_in_year)]])
+            leave = ''.join(['0' if i == '-' else '1' 
+                             for i in mask_value[(2 * day_in_year - 2):(2 * day_in_year)]])
 
             groups = user.groups.filter(name__startswith='leave_app_')
 
