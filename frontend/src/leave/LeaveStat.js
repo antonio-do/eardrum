@@ -20,7 +20,7 @@ const LeaveCalendar = ({year, signal}) => {
             console.error(getStat.error);
             message.error("Error fetching statistic.");
         } else if (getStat.data) {
-            setStat(getStat.data.data.stats.map((item) => ({
+            setStat(getStat.data.stats.map((item) => ({
                 ...item,
                 id: item.user,
             })))            

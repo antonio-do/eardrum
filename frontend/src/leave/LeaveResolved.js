@@ -27,7 +27,7 @@ const LeaveResolved = ({year, signal, reload}) => {
       message.error("Error fetching leave applications.");
     }
     if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
-      const data = getLeaveAll.data.data.map(item => ({
+      const data = getLeaveAll.data.map(item => ({
         id: item.id,
         user: item.user,
         start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),

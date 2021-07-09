@@ -10,7 +10,7 @@ const LeaveContext = createContext({
   allUsers: null,
 })
 
-const fetchOnStart = (route) => {
+const fetchOnStart = (route, dataExtractor = response => response) => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -18,7 +18,7 @@ const fetchOnStart = (route) => {
   useEffect(() => {
       axios
           .get(route)
-          .then(res => setData(res))
+          .then(res => setData(dataExtractor(res)))
           .catch((error) => setError(error))
           .finally(() => setLoading(false));
   }, []);
@@ -26,9 +26,9 @@ const fetchOnStart = (route) => {
   return { loading, data, error };
 }
 
-const useLeaveContext = () => fetchOnStart(routes.api.context());
+const useLeaveContext = () => fetchOnStart(routes.api.context(), response => response.data);
 
-const useCurrentUser = () => fetchOnStart(routes.api.currentUser());
+const useCurrentUser = () => fetchOnStart(routes.api.currentUser(), response => response.data);
 
 
 
@@ -47,12 +47,12 @@ const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, )
 
   return { execute, loading, data: response, error };
 }
-
+ 
 // options: { status: string, year: int }
 const useGetLeaveAll = () => actionOnCall(options => ({
   method: 'get',
   url: routes.api.leaveAll(options)
-}))
+}), response => response.data)
 
 // options: { data: object }
 const useNewLeave = () => actionOnCall(options => ({
@@ -78,7 +78,7 @@ const useUpdateLeave = () => actionOnCall(options => ({
 const useStat = () => actionOnCall(options => ({
   method: 'get',
   url: routes.api.statistics(options.year),
-}))
+}), response => response.data)
 
 // options: { date: string }
 const useLeaveUsers = () => actionOnCall(options => ({

@@ -38,11 +38,11 @@ const LeaveApp = () => {
     <div>
       <LeaveContext.Provider 
         value={{
-          currentUser: currentUser.data.data,
-          allUsers: leaveContext.data.data.users,
-          leaveTypes: leaveContext.data.data.leave_types,
+          currentUser: currentUser.data,
+          allUsers: leaveContext.data.users,
+          leaveTypes: leaveContext.data.leave_types,
           //dictionary that map the name of leave type to its label (i.e. work_from_home => Work From Home)
-          leaveTypesMap: leaveContext.data.data.leave_types.reduce((acc, cur) => {
+          leaveTypesMap: leaveContext.data.leave_types.reduce((acc, cur) => {
             let next = {...acc}; 
             next[cur.name] = cur.label; 
             return next;
