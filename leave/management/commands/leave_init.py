@@ -87,7 +87,12 @@ class Command(BaseCommand):
             for sunday in range(first_sat + 1, len(mask) // 2, 7):
                 mask[2 * sunday] = '0'
                 mask[2 * sunday + 1] = '0'
-            leave_mask = LeaveMask(name=mask_name, value=''.join(mask))
+
+            leave_type_config = ConfigEntry.objects.get(name='leave_context')
+            leave_types = json.loads(leave_type_config.extra)['leave_types']
+            summary = json.dumps({leave_type['name']: 0 for leave_type in leave_types}, indent=2)
+
+            leave_mask = LeaveMask(name=mask_name, value=''.join(mask), summary=summary)
             leave_mask.save()
             self.stdout.write(self.style.SUCCESS('LeaveMask[name={}] is created'.format(mask_name)))
         

@@ -176,17 +176,29 @@ class LeaveViewSet(mixins.CreateModelMixin,
         priority = next((leave_type for leave_type 
                          in leave_types if leave_type['name'] == instance.typ), None)['priority']
  
-        
+        typ_with_priority = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
+        delta = {leave_type['name']: 0 for leave_type in leave_types}
+
         # '-': work day
         # '0': holiday/weekend
         # otherwise: on leave, the representing character is the same as the leave type's priority,
         #            lower priority value means higher priority
         for i in range(start, end + 1):
             if arr[i] == '-' or int(arr[i]) > priority :
+                this_type = typ_with_priority[priority] 
+                delta[this_type] = delta[this_type] + 1
+                if arr[i] != '-':
+                    last_type = typ_with_priority[int(arr[i])] 
+                    delta[last_type] = delta[last_type] - 1
+                
                 arr[i] = str(priority)
 
+        summary = json.loads(mask.summary)
+
         mask.value = ''.join(arr)
-        mask.save(update_fields=['value'])
+        mask.summary = json.dumps({leave_type: summary[leave_type] + delta[leave_type] 
+                                   for leave_type in summary}, indent=2)
+        mask.save(update_fields=['value', 'summary'])
 
     @decorators.action(methods=['GET'], detail=False)
     def context(self, *args, **kwargs):
