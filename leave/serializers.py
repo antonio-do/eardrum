@@ -59,7 +59,7 @@ class LeaveSerializer(serializers.ModelSerializer):
     def validate(self, data):
         startdate = data.get('startdate', self.instance.startdate if self.instance else None)
         enddate = data.get('enddate', self.instance.enddate if self.instance else None)
-        
+
         if startdate > enddate:
             raise serializers.ValidationError("startdate must be before enddate")
 

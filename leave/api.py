@@ -40,7 +40,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         def validate_year(value):
             try:
                 year = int(value)
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError):
                 return None
             else:
                 current_year = datetime.datetime.now().year
@@ -99,7 +99,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         create = kwargs.get("create", False)
 
         mask_name = "{user}_{year}".format(user=user, year=year)
-        try: 
+        try:
             mask = LeaveMask.objects.get(name=mask_name)
             return mask
         except LeaveMask.DoesNotExist:
@@ -115,7 +115,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
     def accumulate_mask(self, mask, leave_requests):
         leave_type_config = ConfigEntry.objects.get(name='leave_context')
         leave_types = json.loads(leave_type_config.extra)['leave_types']
-        
+
         arr = list(mask.value)
 
         typ_with_priority = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
@@ -128,21 +128,21 @@ class LeaveViewSet(mixins.CreateModelMixin,
             end = datetime.datetime.strptime(leave_request.enddate, '%Y%m%d').timetuple().tm_yday
             end = 2 * (end - 1) + (leave_request.half[1] == "0")
 
-            priority = next((leave_type for leave_type 
-                    in leave_types if leave_type['name'] == leave_request.typ), None)['priority']
+            priority = next((leave_type for leave_type
+                             in leave_types if leave_type['name'] == leave_request.typ), None)['priority']
 
             # '-': work day
             # '0': holiday/weekend
             # otherwise: on leave, the representing character is the same as the leave type's priority,
             #            lower priority value means higher priority
             for i in range(start, end + 1):
-                if arr[i] == '-' or int(arr[i]) > priority :
-                    this_type = typ_with_priority[priority] 
+                if arr[i] == '-' or int(arr[i]) > priority:
+                    this_type = typ_with_priority[priority]
                     summary[this_type] = summary[this_type] + 1
                     if arr[i] != '-' and arr[i] != '0':
-                        last_type = typ_with_priority[int(arr[i])] 
+                        last_type = typ_with_priority[int(arr[i])]
                         summary[last_type] = summary[last_type] - 1
-            
+
                     arr[i] = str(priority)
 
         mask.value = ''.join(arr)
@@ -163,7 +163,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        
+
         if not self.is_admin_user():
             if instance.status == 'pending':
                 instance.active = False
@@ -177,7 +177,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                     }
                 }
                 return Response(errors, status=status.HTTP_403_FORBIDDEN)
-        else: 
+        else:
             instance.active = False
             instance.save(update_fields=['active'])
 
@@ -187,9 +187,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 mask.value = base_mask.value
                 mask.summary = base_mask.summary
 
-                self.accumulate_mask(mask, Leave.objects.filter(user=instance.user, 
-                                                                year=instance.year, 
-                                                                status='approved', 
+                self.accumulate_mask(mask, Leave.objects.filter(user=instance.user,
+                                                                year=instance.year,
+                                                                status='approved',
                                                                 active=True))
 
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -209,7 +209,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         users = User.objects.all()
         if not self.is_admin_user():
             users = users.filter(username=self.request.user.username)
-            
+
         res = {
             **leave_context,
             "users": list(map(lambda x: model_to_dict(x, fields=['id', 'username']), users)),
@@ -257,7 +257,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                     stat = {leave_type['name']: 0 for leave_type in leave_types}
                 else:
                     stat = {leave_type['name']: json.loads(mask.summary)[leave_type['name']] / 2
-                            for leave_type in leave_types }
+                            for leave_type in leave_types}
 
                 stats.append({**stat, 'user': user.username})
 
@@ -272,15 +272,15 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
     @decorators.action(methods=['GET'], detail=False)
     def leave_users(self, request, *args, **kargs):
-        date = request.query_params.get('date')           
+        date = request.query_params.get('date')
         try:
             datetime.datetime.strptime(date, '%Y%m%d')
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError):
             ret = {
                 'message': "Date format must be YYYYMMDD"
             }
-            return Response(ret, status=status.HTTP_400_BAD_REQUEST) 
-        
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+
         leave_status = {group.name: {} for group in Group.objects.filter(name__startswith='leave_app_')}
         leave_status['all'] = {}
         users = User.objects.all()
@@ -292,7 +292,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             mask_value = mask.value if mask is not None else self.get_mask(user='_', year=date[:4]).value
             day_in_year = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday
             # 0 = work, 1 = leave
-            leave = ''.join(['0' if i == '-' else '1' 
+            leave = ''.join(['0' if i == '-' else '1'
                              for i in mask_value[(2 * day_in_year - 2):(2 * day_in_year)]])
 
             groups = user.groups.filter(name__startswith='leave_app_')
@@ -320,9 +320,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
         for user in User.objects.all():
             mask = self.get_mask(user=user.username, year=year)
-            leaves = Leave.objects.filter(user=user.username, 
-                                          year=year, 
-                                          status='approved', 
+            leaves = Leave.objects.filter(user=user.username,
+                                          year=year,
+                                          status='approved',
                                           active=True)
 
             if leaves.count() == 0:

@@ -5,7 +5,6 @@ from collections import namedtuple
 
 from django.core.management.base import (
     BaseCommand,
-    CommandError,
 )
 
 from leave.models import ConfigEntry, LeaveMask
@@ -16,7 +15,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         current_year = datetime.datetime.now().year
-        YEAR_CHOICES=[current_year + add - 5 for add in range(11)]
+        YEAR_CHOICES = [current_year + add - 5 for add in range(11)]
         parser.add_argument('year', type=int, choices=YEAR_CHOICES)
 
     def handle(self, *args, **options):
@@ -74,7 +73,7 @@ class Command(BaseCommand):
         mask_name = '__{}'.format(year)
         if LeaveMask.objects.filter(name=mask_name).count() == 0:
             holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split('\r\n')
-            holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1 
+            holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1
                                 for item in holidays]
             first_sat = 6 - (datetime.datetime(year, 1, 1).weekday() + 1) % 7
             mask = ['-'] * ((366 if calendar.isleap(year) else 365) * 2)
@@ -95,4 +94,3 @@ class Command(BaseCommand):
             leave_mask = LeaveMask(name=mask_name, value=''.join(mask), summary=summary)
             leave_mask.save()
             self.stdout.write(self.style.SUCCESS('LeaveMask[name={}] is created'.format(mask_name)))
-        
