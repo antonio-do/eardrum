@@ -6,7 +6,7 @@ import {
   Route,
   useRouteMatch,
 } from "react-router-dom";
-import LeaveDetail from './LeaveDetail';
+import LeaveAdd from './LeaveAdd';
 import LeaveMainPage from './LeaveMainPage';
 import { LeaveContext, useCurrentUser, useLeaveContext } from './hooks';
 import { message, Spin } from 'antd';
@@ -51,7 +51,7 @@ const LeaveApp = () => {
       >
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
           <Switch>
-            <Route exact path={`${path}/new`} component={LeaveDetail}/>
+            <Route exact path={`${path}/new`} component={LeaveAdd}/>
             <Route exact path={path} component={LeaveMainPage}/>
           </Switch>
         </MuiPickersUtilsProvider>

@@ -1,11 +1,12 @@
 import { Button, Checkbox, FormControl, FormControlLabel, Grid, MenuItem, Paper, TextField } from '@material-ui/core'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
 import { Link, useHistory } from 'react-router-dom';
 import { LeaveContext, useNewLeave } from './hooks';
 import moment from 'moment';
 import { DATE_FORMAT, STATUS_TYPES } from './constants';
+import { message } from 'antd';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -24,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const LeaveDetail = () => {
+const LeaveAdd = () => {
     const leaveContext = useContext(LeaveContext);
     
     // The field name and type would not render properly if use useState(null) or useState({})
@@ -56,8 +57,18 @@ const LeaveDetail = () => {
                 note: application.note,
             }
         })
-        history.replace("/leave");
     }
+
+    useEffect(() => {
+        if (newLeave.loading) return;
+        if (newLeave.error) {
+            message.error("Something went wrong");
+            return;
+        } else if (newLeave.data) {
+            message.success("Leave request submitted");
+            history.replace("/leave");
+        }
+    }, [newLeave.loading, newLeave.data, newLeave.error])
 
     // check if start and end are same year and start is no later than year
     const checkDate = (start, end) => moment(end).isSameOrAfter(start) 
@@ -192,4 +203,4 @@ const LeaveDetail = () => {
     </Paper>
 }
 
-export default LeaveDetail;
+export default LeaveAdd;
