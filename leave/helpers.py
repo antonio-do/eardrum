@@ -1,5 +1,6 @@
 import json
 import datetime
+from collections import Counter
 
 from .models import (
     LeaveMask,
@@ -29,7 +30,6 @@ def accumulate_mask(mask, leave_requests):
 
     priority_to_type = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
     type_to_priority = {leave_type['name']: leave_type['priority'] for leave_type in leave_types}
-    summary = {leave_type['name']: 0 for leave_type in leave_types}
 
     for leave_request in leave_requests:
         # represent every day with 2 characters, each for the morning and afternoon shift
@@ -46,16 +46,12 @@ def accumulate_mask(mask, leave_requests):
         #            lower priority value means higher priority
         for i in range(start, end + 1):
             if arr[i] == '-' or int(arr[i]) > priority:
-                this_type = priority_to_type[priority]
-                summary[this_type] = summary[this_type] + 1
-                if arr[i] != '-' and arr[i] != '0':
-                    last_type = priority_to_type[int(arr[i])]
-                    summary[last_type] = summary[last_type] - 1
-
                 arr[i] = str(priority)
 
+    count = Counter(arr)
+    summary = {leave_type['name']: count.get(str(type_to_priority[leave_type['name']]), 0) 
+               for leave_type in leave_types}
+
     mask.value = ''.join(arr)
-    old_summary = json.loads(mask.summary)
-    new_summary = {leave_type: summary[leave_type] + old_summary[leave_type] for leave_type in summary}
-    mask.summary = json.dumps(new_summary, indent=2)
+    mask.summary = json.dumps(summary, indent=2)
     mask.save(update_fields=['value', 'summary'])
