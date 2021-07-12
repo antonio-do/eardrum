@@ -115,7 +115,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         arr = list(mask.value)
 
-        typ_with_priority = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
+        priority_to_type = {leave_type['priority']: leave_type['name'] for leave_type in leave_types}
+        type_to_priority = {leave_type['name']: leave_type['priority'] for leave_type in leave_types}
         summary = {leave_type['name']: 0 for leave_type in leave_types}
 
         for leave_request in leave_requests:
@@ -125,19 +126,18 @@ class LeaveViewSet(mixins.CreateModelMixin,
             end = datetime.datetime.strptime(leave_request.enddate, '%Y%m%d').timetuple().tm_yday
             end = 2 * (end - 1) + (leave_request.half[1] == "0")
 
-            priority = next((leave_type for leave_type
-                             in leave_types if leave_type['name'] == leave_request.typ), None)['priority']
-
+            priority = type_to_priority[leave_request.typ]
+            
             # '-': work day
             # '0': holiday/weekend
             # otherwise: on leave, the representing character is the same as the leave type's priority,
             #            lower priority value means higher priority
             for i in range(start, end + 1):
                 if arr[i] == '-' or int(arr[i]) > priority:
-                    this_type = typ_with_priority[priority]
+                    this_type = priority_to_type[priority]
                     summary[this_type] = summary[this_type] + 1
                     if arr[i] != '-' and arr[i] != '0':
-                        last_type = typ_with_priority[int(arr[i])]
+                        last_type = priority_to_type[int(arr[i])]
                         summary[last_type] = summary[last_type] - 1
 
                     arr[i] = str(priority)
