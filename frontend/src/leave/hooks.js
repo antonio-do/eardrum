@@ -115,7 +115,8 @@ const useLeaveUsers = () => actionOnCall(options => ({
   let data = [];
   for (const group in response.data.leave_status) {
     let obj = {}
-    obj.group = group
+    // remove prefix "leave_app_" (if any) and replace all underscores with blank spaces
+    obj.group = group.replace("leave_app_", "").replace(/[_]/g, (m) => (m == '_' ? " " : m))
     obj.users = Object.entries(response.data.leave_status[group])
                         .map(entry => entry[0] + '[' + entry[1].replace(/[-012345]/g, (m) => (
                             m == '-' ? '_' : 'X'

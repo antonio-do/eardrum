@@ -259,18 +259,28 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 'message': 'no year provided'
             }
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+
+        success = []
+        failed = []
         for user in User.objects.all():
-            mask = get_mask(user=user.username, year=year)
-            leaves = Leave.objects.filter(user=user.username,
-                                          year=year,
-                                          status='approved',
-                                          active=True)
+            try:
+                mask = get_mask(user=user.username, year=year)
+                leaves = Leave.objects.filter(user=user.username,
+                                            year=year,
+                                            status='approved',
+                                            active=True)
 
-            # assumption: base_mask exists for every year leave request exist
-            base_mask = get_mask(user='_', year=year)
-            mask.value = base_mask.value
-            mask.summary = base_mask.summary
+                # assumption: base_mask exists for every year leave request exist
+                base_mask = get_mask(user='_', year=year)
+                mask.value = base_mask.value
+                mask.summary = base_mask.summary
 
-            accumulate_mask(mask, leaves)
+                accumulate_mask(mask, leaves)
+                success.append({'user': user.username})
+            except Exception as e:
+                failed.append({'user': user.username, 'error': str(e)})
 
-        return Response({})
+        return Response({
+            'success': success,
+            'failed': failed,
+        }, status=status.HTTP_200_OK )
