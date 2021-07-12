@@ -14,7 +14,8 @@ import {
     makeStyles, 
     Paper, 
     TextField, 
-    Typography
+    Tooltip,
+    Typography,
 } from "@material-ui/core";
 import { useHolidays, useLeaveUsers } from "./hooks";
 import { message } from "antd";
@@ -119,7 +120,9 @@ const StaticDatePicker = ({signal}) => {
                                     <Fragment>
                                         <Typography variant="h6" className={classes.chips}>{item.group}</Typography>
                                         {item.users.map(user => 
-                                            (<Chip label={user} className={classes.chips}/>)
+                                            ((user.status != '') && <Tooltip title={user.status} >
+                                                <Chip label={user.name} className={classes.chips}/>
+                                            </Tooltip>)
                                         )}
                                     </Fragment>
                                 </CardContent>

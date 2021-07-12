@@ -113,14 +113,20 @@ const useLeaveUsers = () => actionOnCall(options => ({
   url: routes.api.leaveUsers(options.date),
 }), response => {
   let data = [];
+  const toStatus = (str) => {
+    let morningOff = (str[0] != '-')
+    let afternoonOff = (str[1] != '-')
+    if (morningOff && afternoonOff) return "all-day off";
+    else if (morningOff) return "morning off";
+    else if (afternoonOff) return "afternoon off";
+    else return '';
+  }
   for (const group in response.data.leave_status) {
     let obj = {}
     // remove prefix "leave_app_" (if any) and replace all underscores with blank spaces
     obj.group = group.replace("leave_app_", "").replace(/[_]/g, (m) => (m == '_' ? " " : m))
     obj.users = Object.entries(response.data.leave_status[group])
-                        .map(entry => entry[0] + '[' + entry[1].replace(/[-012345]/g, (m) => (
-                            m == '-' ? '_' : 'X'
-                        )) + ']')
+                        .map(entry => ({name: entry[0], status: toStatus(entry[1])}))
     data.push(obj)
   }
   return data;
