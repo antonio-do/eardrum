@@ -1,8 +1,9 @@
 import React, { createContext, useEffect, useState } from 'react'
 
 import axios from 'axios';
-
+import moment from 'moment';
 import routes from './routes';
+import { DATE_FORMAT } from './constants';
 
 const LeaveContext = createContext({
   currentUser: null,
@@ -48,17 +49,38 @@ const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, )
   return { execute, loading, data: response, error };
 }
  
-// options: { status: string, year: int }
-const useGetLeaveAll = () => actionOnCall(options => ({
+// options: { status: string, year: int, leaveContext: obj }
+const useGetLeaveAll = (context) => actionOnCall(options => ({
   method: 'get',
   url: routes.api.leaveAll(options)
-}), response => response.data)
+}), response => {
+  return response.data.map(item => ({
+    id: item.id,
+    user: item.user,
+    start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+    end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+    type: context.leaveTypesMap[item.typ],
+    is_half: (item.half.replace(/[01]/g, (m) => ({
+      '0': '[ False ]',
+      '1': '[ True ]'
+    }[m]))),  
+    status: item.status,
+    note: item.note,
+  }))
+})
 
 // options: { data: object }
 const useNewLeave = () => actionOnCall(options => ({
   method: 'post',
   url: routes.api.leaveAll(),
-  data: options.data,
+  data: {
+    user: options.data.name,
+    typ: options.data.type,
+    startdate: moment(options.data.start_date).format(DATE_FORMAT.VALUE),
+    enddate: moment(options.data.end_date).format(DATE_FORMAT.VALUE),
+    half: (options.data.is_start_half ? "1" : "0") + (options.data.is_end_half ? "1" : "0"),
+    note: options.data.note,
+  },
 }))
 
 // options: { id: int }
@@ -78,13 +100,30 @@ const useUpdateLeave = () => actionOnCall(options => ({
 const useStat = () => actionOnCall(options => ({
   method: 'get',
   url: routes.api.statistics(options.year),
-}), response => response.data)
+}), response => {
+  return response.data.stats.map((item) => ({
+    ...item,
+    id: item.user,
+  }))
+})
 
 // options: { date: string }
 const useLeaveUsers = () => actionOnCall(options => ({
   method: 'get',
   url: routes.api.leaveUsers(options.date),
-}), response => response.data)
+}), response => {
+  let data = [];
+  for (const group in response.data.leave_status) {
+    let obj = {}
+    obj.group = group
+    obj.users = Object.entries(response.data.leave_status[group])
+                        .map(entry => entry[0] + '[' + entry[1].replace(/[-012345]/g, (m) => (
+                            m == '-' ? '_' : 'X'
+                        )) + ']')
+    data.push(obj)
+  }
+  return data;
+})
 
 function useHolidays() {
   const [loading, setLoading] = useState(false);
@@ -97,7 +136,23 @@ function useHolidays() {
       method: 'get', 
       url: routes.api.holidays(options.year),
     })
-      .then((response) => setData(response.data))
+      .then((response) => {
+        let unsortedHolidays = response.data.map((item) => ({
+          "id" : item,
+          "date": moment(item, DATE_FORMAT.VALUE).toDate(),
+        }))
+
+        unsortedHolidays.sort((holiday1, holiday2) => {
+          let now = moment().startOf('day')
+          let dif1 = moment(holiday1.date).diff(now, 'days');
+          let dif2 = moment(holiday2.date).diff(now, 'days');
+          // if today is between holiday1 and holiday2
+          if (dif1 < 0 ^ dif2 < 0) return dif1 < dif2 ? 1 : -1;
+          // if today is either sooner or later than both holiday1 and holiday2
+          return dif1 < dif2 ? -1 : 1
+        });
+        setData(unsortedHolidays)
+      })
       .catch((error) => {
         // year could be either an integer or a string representing an integer
         if ((Number.isInteger(options.year) || !isNaN(options.year)) && error.response && error.response.status == 404) {

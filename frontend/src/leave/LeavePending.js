@@ -10,11 +10,11 @@ import moment from "moment"
 
 const LeavePending = ({reload, signal}) => {
   const [pendingRequests, setPendingApplications] = useState([]);
-  const getLeaveAll = useGetLeaveAll();
   const updateLeave = useUpdateLeave();
   const deleteLeave = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
   const leaveContext = useContext(LeaveContext);
+  const getLeaveAll = useGetLeaveAll(leaveContext);
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openApproveDialog, setOpenApproveDialog] = useState(false);
@@ -30,20 +30,7 @@ const LeavePending = ({reload, signal}) => {
       message.error("Error fetching leave applications.");
     }
     if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
-      const data = getLeaveAll.data.map(item => ({
-        id: item.id,
-        user: item.user,
-        start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-        end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-        type: leaveContext.leaveTypesMap[item.typ],
-        is_half: (item.half.replace(/[01]/g, (m) => ({
-              '0': '[ False ]',
-              '1': '[ True ]'
-          }[m]))),
-        status: item.status,
-        note: item.note,
-      }))
-      setPendingApplications(data);
+      setPendingApplications(getLeaveAll.data);
     }
   }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
 

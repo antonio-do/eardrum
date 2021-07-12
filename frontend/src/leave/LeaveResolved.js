@@ -10,10 +10,10 @@ import { DATE_FORMAT } from './constants';
 
 const LeaveResolved = ({year, signal, reload}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
-  const getLeaveAll = useGetLeaveAll();
   const deleteLeave = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
   const leaveContext = useContext(LeaveContext);
+  const getLeaveAll = useGetLeaveAll(leaveContext);
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
@@ -27,20 +27,7 @@ const LeaveResolved = ({year, signal, reload}) => {
       message.error("Error fetching leave applications.");
     }
     if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
-      const data = getLeaveAll.data.map(item => ({
-        id: item.id,
-        user: item.user,
-        start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-        end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-        type: leaveContext.leaveTypesMap[item.typ],
-        is_half: (item.half.replace(/[01]/g, (m) => ({
-          '0': '[ False ]',
-          '1': '[ True ]'
-        }[m]))),  
-        status: item.status,
-        note: item.note,
-      }))
-      setResolvedRequests(data.filter(item => item.status !== "pending"));
+      setResolvedRequests(getLeaveAll.data.filter(item => item.status !== "pending"));
     }
   }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
 

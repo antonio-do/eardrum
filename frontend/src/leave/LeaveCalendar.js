@@ -61,22 +61,7 @@ const StaticDatePicker = ({signal}) => {
             console.error(fetchHoliday.error);
             message.error("Error fetching holidays.");
         } else if (fetchHoliday.data) {
-            let unsortedHolidays = fetchHoliday.data.map((item) => ({
-                "id" : item,
-                "date": moment(item, DATE_FORMAT.VALUE).toDate(),
-            }))
-
-            unsortedHolidays.sort((holiday1, holiday2) => {
-                let now = moment().startOf('day')
-                let dif1 = moment(holiday1.date).diff(now, 'days');
-                let dif2 = moment(holiday2.date).diff(now, 'days');
-                // if today is between holiday1 and holiday2
-                if (dif1 < 0 ^ dif2 < 0) return dif1 < dif2 ? 1 : -1;
-                // if today is either sooner or later than both holiday1 and holiday2
-                return dif1 < dif2 ? -1 : 1
-            });
-
-            setHolidays(unsortedHolidays)            
+            setHolidays(fetchHoliday.data)            
         }
     }, [fetchHoliday.loading, fetchHoliday.data, fetchHoliday.error])
 
@@ -90,17 +75,7 @@ const StaticDatePicker = ({signal}) => {
             console.error(fetchHoliday.error);
             message.error("Error fetching leave users.");
         } else if (fetchLeaveUsers.data) {
-            let data = []
-            for (const group in fetchLeaveUsers.data.leave_status) {
-                let obj = {}
-                obj.group = group
-                obj.users = Object.entries(fetchLeaveUsers.data.leave_status[group])
-                                    .map(entry => entry[0] + '[' + entry[1].replace(/[-012345]/g, (m) => (
-                                        m == '-' ? '_' : 'X'
-                                    )) + ']')
-                data.push(obj)
-            }
-            setLeaveUsers(data)
+            setLeaveUsers(fetchLeaveUsers.data)
         }
     }, [fetchLeaveUsers.loading, fetchLeaveUsers.data, fetchLeaveUsers.error])
 
