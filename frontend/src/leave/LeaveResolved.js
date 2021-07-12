@@ -14,7 +14,7 @@ const LeaveResolved = ({year, signal, reload}) => {
   const [leaveId, setLeaveId] = useState(0);
   const leaveContext = useContext(LeaveContext);
   const getLeaveAll = useGetLeaveAll(leaveContext);
-
+  const [dialogContent, setDialogContent] = useState({})
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   useEffect(() => {
@@ -31,8 +31,9 @@ const LeaveResolved = ({year, signal, reload}) => {
     }
   }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
 
-  const onDelete = (id) => {
-    setLeaveId(id);
+  const onDelete = (item) => {
+    setLeaveId(item.id);
+    setDialogContent(item)
     setOpenDeleteDialog(true);
   }
 
@@ -52,7 +53,7 @@ const LeaveResolved = ({year, signal, reload}) => {
   }, [deleteLeave.loading, deleteLeave.data, deleteLeave.error])
 
   const renderActionButton = (params) => (
-    <Button color='primary' style={{margin: 5}} onClick={() => onDelete(params.id)}>
+    <Button color='primary' style={{margin: 5}} onClick={() => onDelete(params.row)}>
         Delete
     </Button>
   )
@@ -102,7 +103,8 @@ const LeaveResolved = ({year, signal, reload}) => {
           onConfirm={() => onDeleteConfirm(leaveId)} 
           open={openDeleteDialog} 
           setOpen={setOpenDeleteDialog}
-          content="Are you sure you want to delete this application?"
+          title="Delete this leave request?"
+          content={dialogContent}
         /> 
     </Box>
   );

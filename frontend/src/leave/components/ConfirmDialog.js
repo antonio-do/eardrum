@@ -1,24 +1,37 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@material-ui/core';
+import { Dialog, DialogContent, DialogContentText, DialogActions, Button, DialogTitle } from '@material-ui/core';
 
-export default ({ content, onConfirm, open, setOpen }) => (
-    <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        aria-describedby="alert-dialog-description"
-    >
-        <DialogContent>
-                <DialogContentText id="alert-dialog-description">
-                    {content}
-                </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={ () => {onConfirm(); setOpen(false); }} color="primary">
-                    Yes
-                </Button>
-                <Button onClick={() => setOpen(false)} color="primary" autoFocus>
-                    No
-                </Button>
-        </DialogActions>
-    </Dialog> 
-)
+export default ({ content, onConfirm, open, setOpen, title }) => {
+    let item = {}
+    Object.entries(content).map(([key, value]) => {
+        if (key == 'id' || key == 'note') return;
+        if (key == 'is_half') item['Half day leave on the first/last day'] = value;
+        else {
+            let capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
+            item[capitalizedKey.replace('_', ' ')] = value;
+        }
+    })
+    return (
+        <Dialog
+            open={open}
+            onClose={() => setOpen(false)}
+            aria-describedby="alert-dialog-description"
+        >
+            <DialogTitle>{title}</DialogTitle>
+                <DialogContent>
+                    {Object.entries(item).map(([key, value]) => 
+                        (<DialogContentText id="alert-dialog-description">
+                            {key}: {value}
+                        </DialogContentText>)
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={ () => {onConfirm(); setOpen(false); }} color="primary">
+                        Yes
+                    </Button>
+                    <Button onClick={() => setOpen(false)} color="primary" autoFocus>
+                        No
+                    </Button>
+            </DialogActions>
+        </Dialog> 
+)}

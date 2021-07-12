@@ -19,6 +19,8 @@ const LeavePending = ({reload, signal}) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openApproveDialog, setOpenApproveDialog] = useState(false);
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
+  const [dialogTitle, setDialogTitle] = useState({})
+  const [dialogContent, setDialogContent] = useState({})
 
   useEffect(() => {
     getLeaveAll.execute({status: STATUS_TYPES.PENDING});
@@ -38,17 +40,23 @@ const LeavePending = ({reload, signal}) => {
   const REJECT = "reject";
   const DELETE = "delete";
 
-  const onAction = (id, mode) => {
-    setLeaveId(id);
+  const onAction = (item, mode) => {
+    setLeaveId(item.id);
     switch (mode) {
       case APPROVE:
         setOpenApproveDialog(true);
+        setDialogTitle("Approve this leave request?")
+        setDialogContent(item)
         return;
       case REJECT:
         setOpenRejectDialog(true);
+        setDialogTitle("Reject this leave request?")
+        setDialogContent(item)
         return;
       case DELETE:
         setOpenDeleteDialog(true);
+        setDialogTitle("Delete this leave request?")
+        setDialogContent(item)
         return;
     }
   }
@@ -97,14 +105,14 @@ const LeavePending = ({reload, signal}) => {
   const renderActionButtons = (params) => (
     <Fragment>
       {leaveContext.currentUser.is_admin 
-        && <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.id, APPROVE)}>
+        && <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.row, APPROVE)}>
           Approve
       </Button>}
       {leaveContext.currentUser.is_admin 
-        && <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.id, REJECT)}>
+        && <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.row, REJECT)}>
           Reject
       </Button>}
-      <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.id, DELETE)}>
+      <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.row, DELETE)}>
           Delete
       </Button>
     </Fragment>
@@ -148,19 +156,22 @@ const LeavePending = ({reload, signal}) => {
           onConfirm={() => onActionConfirm(leaveId, APPROVE)} 
           open={openApproveDialog} 
           setOpen={setOpenApproveDialog}
-          content="Are you sure you want to approve this application?"
+          content={dialogContent}
+          title={dialogTitle}
         /> 
         <ConfirmDialog 
           onConfirm={() => onActionConfirm(leaveId, REJECT)} 
           open={openRejectDialog} 
           setOpen={setOpenRejectDialog}
-          content="Are you sure you want to reject this application?"
+          content={dialogContent}
+          title={dialogTitle}
         /> 
         <ConfirmDialog 
           onConfirm={() => onActionConfirm(leaveId, DELETE)} 
           open={openDeleteDialog} 
           setOpen={setOpenDeleteDialog}
-          content="Are you sure you want to delete this application?"
+          content={dialogContent}
+          title={dialogTitle}
         /> 
     </Box>
   );
