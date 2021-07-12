@@ -11,7 +11,7 @@ const LeaveCalendar = ({year, signal}) => {
     const getStat = useStat();
     
     useEffect(() => {
-        setTimeout(() => getStat.execute({year: year}), 1000);
+        getStat.execute({year: year});
     }, [year, signal])
 
     useEffect(() => {
