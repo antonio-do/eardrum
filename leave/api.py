@@ -234,8 +234,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             mask_value = get_mask(user=user.username, year=date[:4]).value
             day_in_year = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday
             # 0 = work, 1 = leave
-            leave = ''.join(['0' if i == '-' else '1'
-                             for i in mask_value[(2 * day_in_year - 2):(2 * day_in_year)]])
+            leave = mask_value[(2 * day_in_year - 2):(2 * day_in_year)]
 
             groups = user.groups.filter(name__startswith='leave_app_')
 

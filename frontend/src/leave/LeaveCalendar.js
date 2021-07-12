@@ -95,10 +95,9 @@ const StaticDatePicker = ({signal}) => {
                 let obj = {}
                 obj.group = group
                 obj.users = Object.entries(fetchLeaveUsers.data.leave_status[group])
-                                    .map(entry => entry[0] + '[' + entry[1].replace(/[01]/g, (m) => ({
-                                        '0': '_',
-                                        '1': 'X'
-                                      }[m])) + ']')
+                                    .map(entry => entry[0] + '[' + entry[1].replace(/[-012345]/g, (m) => (
+                                        m == '-' ? '_' : 'X'
+                                    )) + ']')
                 data.push(obj)
             }
             setLeaveUsers(data)
