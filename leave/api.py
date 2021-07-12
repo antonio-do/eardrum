@@ -103,14 +103,11 @@ class LeaveViewSet(mixins.CreateModelMixin,
             mask = LeaveMask.objects.get(name=mask_name)
             return mask
         except LeaveMask.DoesNotExist:
-            if create:
-                mask = LeaveMask.objects.get(name="__{year}".format(year=year))
-                mask.name = mask_name
-                mask.pk = None
-                mask.save()
-                return mask
-            else:
-                return None
+            mask = LeaveMask.objects.get(name="__{year}".format(year=year))
+            mask.name = mask_name
+            mask.pk = None
+            mask.save()
+            return mask
 
     def accumulate_mask(self, mask, leave_requests):
         leave_type_config = ConfigEntry.objects.get(name='leave_context')
@@ -199,7 +196,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         if (instance.status != "approved"):
             return
 
-        mask = self.get_mask(user=instance.user, year=instance.year, create=True)
+        mask = self.get_mask(user=instance.user, year=instance.year)
         self.accumulate_mask(mask, [instance])
 
     @decorators.action(methods=['GET'], detail=False)
@@ -253,11 +250,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
             for user in users:
                 stat = {}
                 mask = self.get_mask(user=user, year=year)
-                if mask is None:
-                    stat = {leave_type['name']: 0 for leave_type in leave_types}
-                else:
-                    stat = {leave_type['name']: json.loads(mask.summary)[leave_type['name']] / 2
-                            for leave_type in leave_types}
+                stat = {leave_type['name']: json.loads(mask.summary)[leave_type['name']] / 2
+                        for leave_type in leave_types}
 
                 stats.append({**stat, 'user': user.username})
 
@@ -288,8 +282,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             users = users.filter(username=self.request.user.username)
 
         for user in users:
-            mask = self.get_mask(user=user.username, year=date[:4])
-            mask_value = mask.value if mask is not None else self.get_mask(user='_', year=date[:4]).value
+            mask_value = self.get_mask(user=user.username, year=date[:4]).value
             day_in_year = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday
             # 0 = work, 1 = leave
             leave = ''.join(['0' if i == '-' else '1'
@@ -325,18 +318,11 @@ class LeaveViewSet(mixins.CreateModelMixin,
                                           status='approved',
                                           active=True)
 
-            if leaves.count() == 0:
-                if mask is not None:
-                    mask.delete()
-            else:
-                if mask is None:
-                    mask = self.get_mask(user=user.username, year=year, create=True)
+            # assumption: base_mask exists for every year leave request exist
+            base_mask = self.get_mask(user='_', year=year)
+            mask.value = base_mask.value
+            mask.summary = base_mask.summary
 
-                # assumption: base_mask exists for every year leave request exist
-                base_mask = self.get_mask(user='_', year=year)
-                mask.value = base_mask.value
-                mask.summary = base_mask.summary
-
-                self.accumulate_mask(mask, leaves)
+            self.accumulate_mask(mask, leaves)
 
         return Response({})
