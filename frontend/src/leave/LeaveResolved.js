@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
-import { Box, Typography, Button } from '@material-ui/core';
+import { Box, Typography, Button, Chip } from '@material-ui/core';
 import { LeaveContext, useGetLeaveAll, useDeleteLeave  } from './hooks';
 import { message, Spin } from 'antd';
 import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
-import { DATE_FORMAT } from './constants';
+import { DATE_FORMAT, STATUS_TYPES } from './constants';
 
 const LeaveResolved = ({year, signal, reload}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
@@ -57,19 +57,32 @@ const LeaveResolved = ({year, signal, reload}) => {
     </Button>
   )
 
+  const renderNoteCell = (params) => (
+    params.row.note === "" ? <div style={{padding:10}}>-</div> : 
+    <CustomPopover label="View" text={params.row.note}/>
+  )
+
+  const renderStatusCell = (params) => (
+    <Chip 
+      label={params.value} 
+      color="primary"
+      variant={params.value == STATUS_TYPES.REJECTED ? "outlined" : "default"}/>
+  )
+
+  const renderTypeCell = (params) => (
+    <Chip label={params.value} variant="outlined"/>
+  )
+
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
     { field: 'start_date', headerName: 'Start date', type: 'string', flex: 1, },
     { field: 'end_date', headerName: 'End date', type: 'string', flex: 1, },
-    { field: 'type', headerName: 'Type', type: 'string', flex: 1, sortable: false, },
+    { field: 'type', headerName: 'Type', type: 'string', flex: 1, sortable: false, renderCell: renderTypeCell },
     { field: 'is_half', headerName: 'Half-day leave', type: 'string', flex: 1, 
       description: "Whether the leave request apply for half-day leave on the first and last day, respectively", sortable: false, },
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
-    renderCell: (params) => (
-      params.row.note === "" ? <div style={{padding:10}}>-</div> : 
-      <CustomPopover label="View" text={params.row.note}/>
-    ), sortable: false },
-    { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false },
+    renderCell: renderNoteCell, sortable: false },
+    { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false, renderCell: renderStatusCell },
     { field: 'action', headerName: 'Action', disableColumnMenu: true, sortable: false, 
       renderCell: renderActionButton , width: 100, hide: !leaveContext.currentUser.is_admin, },
   ];
