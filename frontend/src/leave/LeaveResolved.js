@@ -48,7 +48,7 @@ const LeaveResolved = ({year, signal, reload}) => {
       message.error("Something went wrong");
       return;
     } else if (deleteLeave.data) {
-      message.success("Action successfully performed");
+      message.success("Leave request deleted");
     }
   }, [deleteLeave.loading, deleteLeave.data, deleteLeave.error])
 

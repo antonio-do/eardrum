@@ -21,6 +21,7 @@ const LeavePending = ({reload, signal}) => {
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
   const [dialogTitle, setDialogTitle] = useState({})
   const [dialogContent, setDialogContent] = useState({})
+  const [actionType, setActionType] = useState("")
 
   useEffect(() => {
     getLeaveAll.execute({status: STATUS_TYPES.PENDING});
@@ -42,6 +43,7 @@ const LeavePending = ({reload, signal}) => {
 
   const onAction = (item, mode) => {
     setLeaveId(item.id);
+    setActionType(mode);
     switch (mode) {
       case APPROVE:
         setOpenApproveDialog(true);
@@ -82,7 +84,7 @@ const LeavePending = ({reload, signal}) => {
       message.error("Something went wrong");
       return;
     } else if (deleteLeave.data) {
-      message.success("Action successfully performed");
+      message.success("Leave request deleted");
     }
   }, [deleteLeave.loading, deleteLeave.data, deleteLeave.error])
 
@@ -92,7 +94,14 @@ const LeavePending = ({reload, signal}) => {
       message.error("Something went wrong");
       return;
     } else if (updateLeave.data) {
-      message.success("Action successfully performed");
+        switch(actionType) {
+          case APPROVE:
+            message.success("Leave request approved");
+            break;
+          case REJECT:
+            message.success("Leave request rejected");
+            break;
+        }
     }
   }, [updateLeave.loading, updateLeave.data, updateLeave.error])
 
