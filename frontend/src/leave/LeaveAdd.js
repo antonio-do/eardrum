@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControl, FormControlLabel, Grid, MenuItem, Paper, TextField } from '@material-ui/core'
+import { Button, Checkbox, FormControl, FormControlLabel, Grid, MenuItem, Paper, TextField, FormHelperText } from '@material-ui/core'
 import React, { useContext, useEffect, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
@@ -41,6 +41,7 @@ const LeaveAdd = () => {
     });
     const newLeave = useNewLeave() 
     const [errorDate, setErrorDate] = useState(false);
+    const [errorBox, setErrorBox] = useState(false);
     
     let history = useHistory();
     const classes = useStyles();
@@ -60,15 +61,24 @@ const LeaveAdd = () => {
         }
     }, [newLeave.loading, newLeave.data, newLeave.error])
 
-    // check if start and end are same year and start is no later than year
-    const checkDate = (start, end) => moment(end).isSameOrAfter(start) 
-                                    && (moment(end).year() === moment(start).year());
+    useEffect(() => {
+        let start = application.start_date
+        let end = application.end_date
+        let isDateCorrect = moment(end).isSameOrAfter(start) 
+                                && (moment(end).year() === moment(start).year());
+        setErrorDate(!isDateCorrect);
+
+        let isSameDay = (moment(start).startOf('day').isSame(moment(end).startOf('day')))
+        let box = (isSameDay && application.is_start_half && application.is_end_half);
+        setErrorBox(box)
+    }, [application.start_date, application.end_date, application.is_start_half, application.is_end_half])
 
     return <Paper className={classes.root}>
-        <Grid container direction="column" spacing={3}>
-            <Grid item xs={12}>
-                <FormControl variant="outlined" className={classes.textField}>
+        <FormControl error={errorBox}>
+            <Grid container direction="column" spacing={3}>
+                <Grid item xs={12}>
                     <TextField
+                        fullWidth
                         label="Name"
                         onChange={ (event) => {setApplication({...application, name: event.target.value});} }
                         variant='outlined'
@@ -82,77 +92,76 @@ const LeaveAdd = () => {
                             </MenuItem>
                         ))}
                     </TextField>
-                </FormControl>
-            </Grid>
-            <Grid item container spacing={3} xs={12}>
-                <Grid item xs={6}>
-                    <KeyboardDatePicker
-                        error={errorDate}
-                        helperText={errorDate 
-                            && "End date must be in the same year and no sooner than start date."}
-                        autoOk
-                        variant="inline"
-                        inputVariant="outlined"
-                        label="Start date"
-                        format={DATE_FORMAT.LABEL_DATEFNS}
-                        value={application.start_date}
-                        onChange={(date) => {
-                            setApplication({...application, start_date: date}); 
-                            setErrorDate(!checkDate(date, application.end_date));
-                        }}
-                        className={classes.dateField}
-                    />
                 </Grid>
-                <Grid item xs={6}>
-                    <KeyboardDatePicker
-                        error={errorDate}
-                        helperText={errorDate 
-                            && "End date must be in the same year and no sooner than start date."}
-                        autoOk
-                        variant="inline"
-                        inputVariant="outlined"
-                        label="End date"
-                        format={DATE_FORMAT.LABEL_DATEFNS}
-                        value={application.end_date}
-                        onChange={(date) => {
-                            setApplication({...application, end_date: date}); 
-                            setErrorDate(!checkDate(application.start_date, date));
-                        }}
-                        className={classes.dateField}
-                    />
+                <Grid item container spacing={3} xs={12}>
+                    <Grid item xs={6}>
+                        <KeyboardDatePicker
+                            error={errorDate}
+                            helperText={errorDate 
+                                && "End date must be in the same year and no sooner than start date."}
+                            autoOk
+                            variant="inline"
+                            inputVariant="outlined"
+                            label="Start date"
+                            format={DATE_FORMAT.LABEL_DATEFNS}
+                            value={application.start_date}
+                            onChange={(date) => {
+                                setApplication({...application, start_date: date});
+                            }}
+                            className={classes.dateField}
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <KeyboardDatePicker
+                            error={errorDate}
+                            helperText={errorDate 
+                                && "End date must be in the same year and no sooner than start date."}
+                            autoOk
+                            variant="inline"
+                            inputVariant="outlined"
+                            label="End date"
+                            format={DATE_FORMAT.LABEL_DATEFNS}
+                            value={application.end_date}
+                            onChange={(date) => {
+                                setApplication({...application, end_date: date}); 
+                            }}
+                            className={classes.dateField}
+                        />
+                    </Grid>
                 </Grid>
-            </Grid>
-            <Grid item container spacing={3} xs={12}>
-                <Grid item xs={6}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={application.is_start_half}
-                                onChange={event => setApplication({...application, is_start_half: event.target.checked})}
-                                name="isStartHalf"
-                                color="primary"
-                            />
-                        }
-                        label="Take a half day off at the beginning of leave"
-                    />
+                <Grid item container spacing={3} xs={12}>
+                    <Grid item xs={6}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={application.is_start_half}
+                                    onChange={event => setApplication({...application, is_start_half: event.target.checked})}
+                                    name="isStartHalf"
+                                    color="primary"
+                                />
+                            }
+                            label="Take only the afternoon off on the first leave day"
+                        />
+                        {errorBox && <FormHelperText>Cannot check both boxes if the two days are the same</FormHelperText>}
+                    </Grid>
+                    <Grid item xs={6}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={application.is_end_half}
+                                    onChange={event => setApplication({...application, is_end_half: event.target.checked})}
+                                    name="isEndHalf"
+                                    color="primary"
+                                />
+                            }
+                            label="Take only the morning off on the last leave day"
+                        />
+                        {errorBox && <FormHelperText>Cannot check both boxes if the two days are the same</FormHelperText>}
+                    </Grid>
                 </Grid>
-                <Grid item xs={6}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={application.is_end_half}
-                                onChange={event => setApplication({...application, is_end_half: event.target.checked})}
-                                name="isEndHalf"
-                                color="primary"
-                            />
-                        }
-                        label="Take a half day off at the end of leave"
-                    />
-                </Grid>
-            </Grid>
-            <Grid item>
-                <FormControl variant="outlined" className={classes.textField}>
+                <Grid item>
                     <TextField
+                        fullWidth
                         label="Type"
                         onChange={ (event) => setApplication({...application, type: event.target.value}) }
                         variant='outlined'
@@ -166,10 +175,8 @@ const LeaveAdd = () => {
                             </MenuItem>
                         ))}
                     </TextField>
-                </FormControl>
-            </Grid>
-            <Grid item>
-                <FormControl variant="outlined" className={classes.textField}>
+                </Grid>
+                <Grid item>
                     <TextField
                         label="Note"
                         onChange={ (event) => setApplication({...application, note: event.target.value}) }
@@ -180,16 +187,17 @@ const LeaveAdd = () => {
                         rows={15}
                         rowsMax={15}
                         value={ application.note || " " }
+                        fullWidth
                     />
-                </FormControl>
+                </Grid>
             </Grid>
-        </Grid>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-            <Button onClick={ onSubmit } color='primary' variant='contained' className={ classes.button } disabled={errorDate}>
-                Submit
-            </Button>
-            <Button to='/leave' component={ Link } color='primary' variant='outlined' className={ classes.button }>Back</Button>
-        </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <Button onClick={ onSubmit } color='primary' variant='contained' className={ classes.button } disabled={errorDate || errorBox}>
+                    Submit
+                </Button>
+                <Button to='/leave' component={ Link } color='primary' variant='outlined' className={ classes.button }>Back</Button>
+            </div>
+        </FormControl>
     </Paper>
 }
 
