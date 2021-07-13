@@ -60,10 +60,7 @@ const useGetLeaveAll = (context) => actionOnCall(options => ({
     start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
     end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
     type: context.leaveTypesMap[item.typ],
-    is_half: (item.half.replace(/[01]/g, (m) => ({
-      '0': '[ False ]',
-      '1': '[ True ]'
-    }[m]))),  
+    is_half: item.half,  
     status: item.status,
     note: item.note,
   }))

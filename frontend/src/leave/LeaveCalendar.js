@@ -110,7 +110,7 @@ const StaticDatePicker = ({signal}) => {
                 </MuiPickersUtilsProvider>
             </Paper>
             <Divider/>
-            <ListSubheader className={classes.list}>Users on leave</ListSubheader>
+            <ListSubheader className={classes.list}>Users on leave ({moment(date).format("DD/MM/YYYY")})</ListSubheader>
             <Paper style={{overflow: 'auto'}}>
                 <List>
                     {leaveUsers.map(item => (

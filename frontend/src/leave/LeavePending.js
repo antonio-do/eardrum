@@ -9,7 +9,7 @@ import { DATE_FORMAT, STATUS_TYPES } from './constants';
 import moment from "moment"
 
 const LeavePending = ({reload, signal}) => {
-  const [pendingRequests, setPendingApplications] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
   const updateLeave = useUpdateLeave();
   const deleteLeave = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
@@ -30,10 +30,16 @@ const LeavePending = ({reload, signal}) => {
   useEffect(() => {
     if (!getLeaveAll.data && getLeaveAll.error) {
       console.error(getLeaveAll.error);
-      message.error("Error fetching leave applications.");
+      message.error("Error fetching leave requests.");
     }
     if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
-      setPendingApplications(getLeaveAll.data);
+      setPendingRequests(getLeaveAll.data.map(item => ({
+        ...item,
+        is_half: (item.is_half.replace(/[01]/g, (m) => ({
+          '0': '[ False ]',
+          '1': '[ True ]'
+        }[m])))
+      })));
     }
   }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
 

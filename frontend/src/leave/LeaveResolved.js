@@ -24,10 +24,16 @@ const LeaveResolved = ({year, signal, reload}) => {
   useEffect(() => {
     if (!getLeaveAll.data && getLeaveAll.error) {
       console.error(getLeaveAll.error);
-      message.error("Error fetching leave applications.");
+      message.error("Error fetching leave requests.");
     }
     if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
-      setResolvedRequests(getLeaveAll.data.filter(item => item.status !== "pending"));
+      setResolvedRequests(getLeaveAll.data.filter(item => item.status !== "pending").map(item => ({
+        ...item,
+        is_half: (item.is_half.replace(/[01]/g, (m) => ({
+          '0': '[ False ]',
+          '1': '[ True ]'
+        }[m])))
+      })));
     }
   }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
 
