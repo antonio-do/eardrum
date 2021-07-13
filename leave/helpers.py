@@ -49,7 +49,7 @@ def accumulate_mask(mask, leave_requests):
                 arr[i] = str(priority)
 
     count = Counter(arr)
-    summary = {leave_type['name']: count.get(str(type_to_priority[leave_type['name']]), 0) 
+    summary = {leave_type['name']: count.get(str(type_to_priority[leave_type['name']]), 0) / 2 
                for leave_type in leave_types}
 
     mask.value = ''.join(arr)

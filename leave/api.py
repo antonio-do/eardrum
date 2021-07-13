@@ -197,11 +197,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
             stats = []
             for user in users:
-                stat = {}
                 mask = get_mask(user=user, year=year)
-                stat = {leave_type['name']: json.loads(mask.summary)[leave_type['name']] / 2
-                        for leave_type in leave_types}
-
+                stat = json.loads(mask.summary)
                 stats.append({**stat, 'user': user.username})
 
             ret = {
@@ -226,19 +223,15 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         leave_status = {group.name: {} for group in Group.objects.filter(name__startswith='leave_app_')}
         leave_status['all'] = {}
-        users = User.objects.all()
-        if not self.is_admin_user():
-            users = users.filter(username=self.request.user.username)
-
-        for user in users:
+        
+        for user in User.objects.all():
             mask_value = get_mask(user=user.username, year=date[:4]).value
             day_in_year = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday
-            # 0 = work, 1 = leave
+            
+            # '-' = work, otherwise = leave
             leave = mask_value[(2 * day_in_year - 2):(2 * day_in_year)]
 
-            groups = user.groups.filter(name__startswith='leave_app_')
-
-            for group in groups:
+            for group in user.groups.filter(name__startswith='leave_app_'):
                 leave_status[group.name][user.username] = leave
 
             leave_status['all'][user.username] = leave
@@ -274,14 +267,16 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 base_mask = get_mask(user='_', year=year)
                 mask.value = base_mask.value
                 mask.summary = base_mask.summary
-
                 accumulate_mask(mask, leaves)
+                
                 success.append({'user': user.username})
+
             except Exception as e:
                 failed.append({'user': user.username, 'error': str(e)})
 
-        return Response({
+        ret = {
             'year': year,
             'success': success,
             'failed': failed,
-        }, status=status.HTTP_200_OK )
+        }
+        return Response(ret)
