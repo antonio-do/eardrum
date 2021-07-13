@@ -250,9 +250,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         return Response(ret)
 
-    @decorators.action(methods=['GET'], detail=False)
+    @decorators.action(methods=['POST'], detail=False)
     def recalculate_masks(self, request, *args, **kargs):
-        _, year = self.get_validated_query_value('year', request.query_params.get('year'))
+        _, year = self.get_validated_query_value('year', request.data.get('year'))
 
         if year is None:
             ret = {
@@ -281,6 +281,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 failed.append({'user': user.username, 'error': str(e)})
 
         return Response({
+            'year': year,
             'success': success,
             'failed': failed,
         }, status=status.HTTP_200_OK )
