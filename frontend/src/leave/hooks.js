@@ -129,6 +129,19 @@ const useLeaveUsers = () => actionOnCall(options => ({
   return data;
 })
 
+// options: { date: string }
+const useAddHoliday = () => actionOnCall(options => ({
+  method: 'post',
+  url: routes.api.addHoliday,
+  data: { date: options.date }
+}))
+
+// options: { date: string }
+const useDeleteHoliday = () => actionOnCall(options => ({
+  method: 'delete',
+  url: routes.api.deleteHoliday(options.date),
+}))
+
 function useHolidays() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
