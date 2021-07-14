@@ -34,7 +34,7 @@ const LeavePending = ({reload, signal}) => {
     if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
       setPendingRequests(getLeaveAll.data.map(item => ({
         ...item,
-        is_half: (item.is_half.replace(/[01]/g, (m) => ({
+        half: (item.half.replace(/[01]/g, (m) => ({
           '0': '[ False ]',
           '1': '[ True ]'
         }[m])))
@@ -150,10 +150,10 @@ const LeavePending = ({reload, signal}) => {
 
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
-    { field: 'start_date', headerName: 'Start date', type: 'string', flex: 1, },
-    { field: 'end_date', headerName: 'End date', type: 'string', flex: 1, },
+    { field: 'startdate', headerName: 'Start date', type: 'string', flex: 1, },
+    { field: 'enddate', headerName: 'End date', type: 'string', flex: 1, },
     { field: 'type', headerName: 'Type', type: 'string', flex: 1, sortable: false, renderCell: renderTypeCell, },
-    { field: 'is_half', headerName: 'Half-day leave', type: 'string', flex: 1, 
+    { field: 'half', headerName: 'Half-day leave', type: 'string', flex: 1, 
       description: "Whether the leave request apply for half-day leave on the first and last day, respectively", sortable: false, },
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
       renderCell: renderNoteCell, sortable: false, },

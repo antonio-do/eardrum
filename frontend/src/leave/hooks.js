@@ -57,10 +57,10 @@ const useGetLeaveAll = (context) => actionOnCall(options => ({
   return response.data.map(item => ({
     id: item.id,
     user: item.user,
-    start_date: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
-    end_date: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+    startdate: moment(item.startdate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
+    enddate: moment(item.enddate, DATE_FORMAT.VALUE).format(DATE_FORMAT.LABEL),
     type: context.leaveTypesMap[item.typ],
-    is_half: item.half,  
+    half: item.half,  
     status: item.status,
     note: item.note,
   }))
@@ -71,11 +71,11 @@ const useNewLeave = () => actionOnCall(options => ({
   method: 'post',
   url: routes.api.leaveAll(),
   data: {
-    user: options.data.name,
+    user: options.data.user,
     typ: options.data.type,
-    startdate: moment(options.data.start_date).format(DATE_FORMAT.VALUE),
-    enddate: moment(options.data.end_date).format(DATE_FORMAT.VALUE),
-    half: (options.data.is_start_half ? "1" : "0") + (options.data.is_end_half ? "1" : "0"),
+    startdate: moment(options.data.startdate).format(DATE_FORMAT.VALUE),
+    enddate: moment(options.data.enddate).format(DATE_FORMAT.VALUE),
+    half: options.data.half,
     note: options.data.note,
   },
 }))

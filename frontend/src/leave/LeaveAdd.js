@@ -30,13 +30,12 @@ const LeaveAdd = () => {
     
     // The field name and type would not render properly if use useState(null) or useState({})
     const [application, setApplication] = useState({
-        name: leaveContext.currentUser.username,
+        user: leaveContext.currentUser.username,
         type: leaveContext.leaveTypes[0].name,
         note: "",
-        start_date: new Date(),
-        end_date: new Date(),
-        is_start_half: false,
-        is_end_half: false,
+        startdate: new Date(),
+        enddate: new Date(),
+        half: "00",
         status: "",
     });
     const newLeave = useNewLeave() 
@@ -62,16 +61,16 @@ const LeaveAdd = () => {
     }, [newLeave.loading, newLeave.data, newLeave.error])
 
     useEffect(() => {
-        let start = application.start_date
-        let end = application.end_date
+        let start = application.startdate
+        let end = application.enddate
         let isDateCorrect = moment(end).isSameOrAfter(start) 
                                 && (moment(end).year() === moment(start).year());
         setErrorDate(!isDateCorrect);
 
         let isSameDay = (moment(start).startOf('day').isSame(moment(end).startOf('day')))
-        let box = (isSameDay && application.is_start_half && application.is_end_half);
+        let box = (isSameDay && (application.half[0] === "1") && (application.half[1] === "1"));
         setErrorBox(box)
-    }, [application.start_date, application.end_date, application.is_start_half, application.is_end_half])
+    }, [application.startdate, application.enddate, application.half])
 
     return <Paper className={classes.root}>
         <FormControl error={errorBox}>
@@ -80,10 +79,10 @@ const LeaveAdd = () => {
                     <TextField
                         fullWidth
                         label="Name"
-                        onChange={ (event) => {setApplication({...application, name: event.target.value});} }
+                        onChange={ (event) => {setApplication({...application, user: event.target.value});} }
                         variant='outlined'
                         margin="normal"
-                        value={application.name}
+                        value={application.user}
                         select
                     >
                         {leaveContext.allUsers.map((item) => (
@@ -104,9 +103,9 @@ const LeaveAdd = () => {
                             inputVariant="outlined"
                             label="Start date"
                             format={DATE_FORMAT.LABEL_DATEFNS}
-                            value={application.start_date}
+                            value={application.startdate}
                             onChange={(date) => {
-                                setApplication({...application, start_date: date});
+                                setApplication({...application, startdate: date});
                             }}
                             className={classes.dateField}
                         />
@@ -121,9 +120,9 @@ const LeaveAdd = () => {
                             inputVariant="outlined"
                             label="End date"
                             format={DATE_FORMAT.LABEL_DATEFNS}
-                            value={application.end_date}
+                            value={application.enddate}
                             onChange={(date) => {
-                                setApplication({...application, end_date: date}); 
+                                setApplication({...application, enddate: date}); 
                             }}
                             className={classes.dateField}
                         />
@@ -134,9 +133,11 @@ const LeaveAdd = () => {
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    checked={application.is_start_half}
-                                    onChange={event => setApplication({...application, is_start_half: event.target.checked})}
-                                    name="isStartHalf"
+                                    checked={application.half[0] === "1"}
+                                    onChange={event => setApplication({
+                                        ...application, 
+                                        half: Number(event.target.checked).toString() + application.half[1]
+                                    })}
                                     color="primary"
                                 />
                             }
@@ -148,9 +149,10 @@ const LeaveAdd = () => {
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    checked={application.is_end_half}
-                                    onChange={event => setApplication({...application, is_end_half: event.target.checked})}
-                                    name="isEndHalf"
+                                    checked={application.half[1] === "1"}
+                                    onChange={event => setApplication({
+                                        ...application, 
+                                        half: application.half[0] + Number(event.target.checked).toString()})}
                                     color="primary"
                                 />
                             }
