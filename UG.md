@@ -55,35 +55,22 @@ There're 4 types of form:
 ## Leave App
 This app allow users to submit and organize application for leave.
 
-#### Concept
-
-* Leave applications contain:
-  * Username
-  * First and last day of leave (must be within the same year)
-  * Whether the leave on those 2 days are half-day or not
-  * Type of leave (e.g. Medical, Childcare, ...)
-  * Additional note
-  * Application status (either pending, approved or rejected)
-
 #### Use cases
-  * Normal users:
-    * Can submit leave application for themself
-    * Can delete their pending applications
-    * Can view their applications (either pending, approved or rejected)
-    * Can view statistics of their leave days
-  * Admin users:
-    * Can submit leave application for anyone
-    * Can approve or reject any pending application
-    * Can view and delete any application
-    * Can view statistics of anyone's leave days
-  * Both users:
-    * Can see a list of users on leave on a particular day, separated into groups
-    * Can view holidays of a particular year
+  * Normal users can:
+    * Manage their leave applications: 
+      * Create and submit applications
+      * Cancel (delete) their pending applications
+      * View all of their applications (either pending, approved or rejected)
+    * View statistics of their leave days
+    * View a list of users on leave on a particular day, separated into groups
+    * View holidays of a particular year
+  * Admin users can:
+    * Perform any action normal users can, without user restriction (i.e. can manage leave applications of anyone)
+    * Approve or reject any pending application
 
-#### Minimal backend configuration
-* executing `python manage.py leave_init <year>`
-  * Config entries object `holidays_<year>` is a list of holiday in that year with format "YYYYMMDD"
-  * Config entries object `leaves_type_<year>` contains information about different types of leaves
+#### Configuration
+  * To edit holidays: edit entries (format "YYYYMMDD") into Config entries object `holidays_<year>` 
+  * To edit leave types: edit entries in the Config entries object `leaves_type_<year>` 
 
 ## Main App
 To be completed
