@@ -224,7 +224,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
             }
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
-        leave_status = {group.name: {} for group in Group.objects.filter(name__startswith='leave_app_')}
+        prefix = "leave_app__"
+
+        leave_status = {group.name[len(prefix):]: {} for group in Group.objects.filter(name__startswith=prefix)}
         leave_status['all'] = {}
         
         for user in User.objects.all():
@@ -234,8 +236,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
             # '-' = work, otherwise = leave
             leave = mask_value[(2 * day_in_year - 2):(2 * day_in_year)]
 
-            for group in user.groups.filter(name__startswith='leave_app_'):
-                leave_status[group.name][user.username] = leave
+            for group in user.groups.filter(name__startswith=prefix):
+                leave_status[group.name[len(prefix):]][user.username] = leave
 
             leave_status['all'][user.username] = leave
 
