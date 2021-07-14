@@ -3,12 +3,14 @@ import { DatePicker } from "@material-ui/pickers";
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { 
+    Button,
     Card, 
     CardContent, 
     Chip, 
     Divider, 
     List, 
     ListItem, 
+    ListItemSecondaryAction, 
     ListItemText, 
     ListSubheader, 
     makeStyles, 
@@ -17,7 +19,7 @@ import {
     Tooltip,
     Typography,
 } from "@material-ui/core";
-import { useHolidays, useLeaveUsers } from "./hooks";
+import { useAddHoliday, useDeleteHoliday, useHolidays, useLeaveUsers } from "./hooks";
 import { message } from "antd";
 import moment from "moment";
 import { DATE_FORMAT } from "./constants";
@@ -45,6 +47,9 @@ const StaticDatePicker = ({signal}) => {
     const [year, setYear] = useState(new Date().getFullYear());
     const fetchHoliday = useHolidays();
     const fetchLeaveUsers = useLeaveUsers();
+    const [isEditHoliday, setIsEditHoliday] = useState(false);
+    const deleteHoliday = useDeleteHoliday();
+    const addHoliday = useAddHoliday();
 
     const classes = useStyles();
 
@@ -79,6 +84,14 @@ const StaticDatePicker = ({signal}) => {
             setLeaveUsers(fetchLeaveUsers.data)
         }
     }, [fetchLeaveUsers.loading, fetchLeaveUsers.data, fetchLeaveUsers.error])
+
+    useEffect(() => {
+        if (!deleteHoliday.loading) return;
+        if (deleteHoliday.error) {
+            console.error(deleteHoliday.error);
+            message.error("Error deleting holiday.");
+        }
+    }, [deleteHoliday.loading, deleteHoliday.data, deleteHoliday.error])
 
     // render holidays differently
     const renderDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => { 
@@ -132,7 +145,14 @@ const StaticDatePicker = ({signal}) => {
                     ))}
                 </List>
             </Paper>
-            <ListSubheader className={classes.list}>Holidays</ListSubheader>
+            <ListSubheader className={classes.list}>
+                Holidays
+                <ListItemSecondaryAction>
+                    <Button variant="contained" onClick={() => setIsEditHoliday(edit => !edit)}>
+                        {isEditHoliday ? "Done" : "Edit"}
+                    </Button>
+                </ListItemSecondaryAction>
+            </ListSubheader>
             <Paper>
                 <div className={classes.yearInput}>
                     <TextField 
@@ -154,6 +174,16 @@ const StaticDatePicker = ({signal}) => {
                                             ? "Passed"
                                             : `${moment(item.date).diff(moment().startOf('day'), 'days')} day(s) left`
                                     } />
+                                {isEditHoliday && <ListItemSecondaryAction>
+                                    <Button 
+                                        onClick={() => {
+                                            deleteHoliday.execute({date: moment(item.date).format(DATE_FORMAT.VALUE)})
+                                            setHolidays(holidays => holidays.filter(holiday => holiday.date != item.date))
+                                        }}
+                                    >
+                                        Remove
+                                    </Button>
+                                </ListItemSecondaryAction>}
                             </ListItem>
                             <Divider/>
                         </Fragment>)

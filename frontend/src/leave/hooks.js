@@ -194,5 +194,7 @@ export {
   useDeleteLeave,
   useStat,
   useHolidays,
+  useAddHoliday,
+  useDeleteHoliday,
   useLeaveUsers,
 }
