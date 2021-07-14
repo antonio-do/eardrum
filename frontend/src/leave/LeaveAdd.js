@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Link, useHistory } from 'react-router-dom';
 import { LeaveContext, useNewLeave } from './hooks';
 import moment from 'moment';
-import { DATE_FORMAT, STATUS_TYPES } from './constants';
+import { DATE_FORMAT } from './constants';
 import { message } from 'antd';
 
 const useStyles = makeStyles((theme) => ({

@@ -5,8 +5,7 @@ import { useDeleteLeave, useGetLeaveAll, useUpdateLeave, LeaveContext  } from '.
 import { message, Spin } from 'antd';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
-import { DATE_FORMAT, STATUS_TYPES } from './constants';
-import moment from "moment"
+import { STATUS_TYPES } from './constants';
 
 const LeavePending = ({reload, signal}) => {
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -53,19 +52,22 @@ const LeavePending = ({reload, signal}) => {
     switch (mode) {
       case APPROVE:
         setOpenApproveDialog(true);
-        setDialogTitle("Approve this leave request?")
-        setDialogContent(item)
+        setDialogTitle("Approve this leave request?");
+        setDialogContent(item);
         return;
       case REJECT:
         setOpenRejectDialog(true);
-        setDialogTitle("Reject this leave request?")
-        setDialogContent(item)
+        setDialogTitle("Reject this leave request?");
+        setDialogContent(item);
         return;
       case DELETE:
         setOpenDeleteDialog(true);
-        setDialogTitle("Delete this leave request?")
-        setDialogContent(item)
+        setDialogTitle("Delete this leave request?");
+        setDialogContent(item);
         return;
+      default:
+        message.error("Something went wrong");
+        console.error("Unexpected action: " + mode);
     }
   }
 
@@ -80,6 +82,9 @@ const LeavePending = ({reload, signal}) => {
       case DELETE:
         await deleteLeave.execute({id: id});
         break;
+      default:
+        message.error("Something went wrong");
+        console.error("Unexpected action: " + mode);
     }
     reload();
   }
@@ -107,6 +112,8 @@ const LeavePending = ({reload, signal}) => {
           case REJECT:
             message.success("Leave request rejected");
             break;
+          default:
+            console.error("Unexpected action: " + actionType)
         }
     }
   }, [updateLeave.loading, updateLeave.data, updateLeave.error])

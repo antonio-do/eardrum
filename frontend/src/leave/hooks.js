@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 
 import axios from 'axios';
 import moment from 'moment';
@@ -111,8 +111,8 @@ const useLeaveUsers = () => actionOnCall(options => ({
 }), response => {
   let data = [];
   const toStatus = (str) => {
-    let morningOff = (str[0] != '-')
-    let afternoonOff = (str[1] != '-')
+    let morningOff = (str[0] !== '-')
+    let afternoonOff = (str[1] !== '-')
     if (morningOff && afternoonOff) return "all-day off";
     else if (morningOff) return "morning off";
     else if (afternoonOff) return "afternoon off";
@@ -121,7 +121,7 @@ const useLeaveUsers = () => actionOnCall(options => ({
   for (const group in response.data.leave_status) {
     let obj = {}
     // remove prefix "leave_app_" (if any) and replace all underscores with blank spaces
-    obj.group = group.replace("leave_app_", "").replace(/[_]/g, (m) => (m == '_' ? " " : m))
+    obj.group = group.replace("leave_app_", "").replace(/[_]/g, (m) => (m === '_' ? " " : m))
     obj.users = Object.entries(response.data.leave_status[group])
                         .map(entry => ({name: entry[0], status: toStatus(entry[1])}))
     data.push(obj)
@@ -159,7 +159,7 @@ function useHolidays() {
       })
       .catch((error) => {
         // year could be either an integer or a string representing an integer
-        if ((Number.isInteger(options.year) || !isNaN(options.year)) && error.response && error.response.status == 404) {
+        if ((Number.isInteger(options.year) || !isNaN(options.year)) && error.response && error.response.status === 404) {
           setData([]);
         } else {
           setError(error)

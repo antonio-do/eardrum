@@ -83,7 +83,7 @@ const StaticDatePicker = ({signal}) => {
     // render holidays differently
     const renderDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => { 
         const isHoliday = (day) => {
-            return holidays.find(item => {return item.date.getTime() == day.getTime()});
+            return holidays.find(item => {return item.date.getTime() === day.getTime()});
         }
         if (day.getTime() === selectedDate.getTime()) {
             return React.cloneElement(dayComponent, {style: {textDecorationLine: 'underline'}});
@@ -120,7 +120,7 @@ const StaticDatePicker = ({signal}) => {
                                     <Fragment>
                                         <Typography variant="h6" className={classes.chips}>{item.group}</Typography>
                                         {item.users.map(user => 
-                                            ((user.status != '') && <Tooltip title={user.status} >
+                                            ((user.status !== '') && <Tooltip title={user.status} >
                                                 <Chip label={user.name} className={classes.chips}/>
                                             </Tooltip>)
                                         )}

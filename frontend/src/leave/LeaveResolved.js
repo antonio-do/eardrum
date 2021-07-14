@@ -3,10 +3,9 @@ import { DataGrid } from '@material-ui/data-grid';
 import { Box, Typography, Button, Chip } from '@material-ui/core';
 import { LeaveContext, useGetLeaveAll, useDeleteLeave  } from './hooks';
 import { message, Spin } from 'antd';
-import moment from 'moment';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
-import { DATE_FORMAT, STATUS_TYPES } from './constants';
+import { STATUS_TYPES } from './constants';
 
 const LeaveResolved = ({year, signal, reload}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
@@ -73,7 +72,7 @@ const LeaveResolved = ({year, signal, reload}) => {
     <Chip 
       label={params.value} 
       color="primary"
-      variant={params.value == STATUS_TYPES.REJECTED ? "outlined" : "default"}/>
+      variant={params.value === STATUS_TYPES.REJECTED ? "outlined" : "default"}/>
   )
 
   const renderTypeCell = (params) => (
