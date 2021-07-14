@@ -197,8 +197,11 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
             stats = []
             for user in users:
-                mask = get_mask(user=user, year=year)
-                stat = json.loads(mask.summary)
+                try:
+                    mask = get_mask(user=user, year=year)
+                    stat = json.loads(mask.summary)
+                except LeaveMask.DoesNotExist:
+                    stat = {leave_type['name']: 0 for leave_type in leave_types}
                 stats.append({**stat, 'user': user.username})
 
             ret = {
