@@ -25,6 +25,7 @@ const LeaveResolved = ({year, signal, reload}) => {
     fetchApi();
   }, [signal, year])
 
+  //TODO: separate useGetLeaveAll to useGetLeavePending and useGetLeaveResolved
   useEffect(() => {
     if (getLeaveAll.data) {
       setResolvedRequests(getLeaveAll.data.filter(item => item.status !== "pending"));
@@ -86,14 +87,15 @@ const LeaveResolved = ({year, signal, reload}) => {
   return (
     <Box m={2}>
         <Typography variant="h5" gutterBottom>Resolved requests (year {year})</Typography>
-        {(getLeaveAll.loading) ? <Spin size="small"/> : <DataGrid
+        <DataGrid
             autoHeight 
             rows={resolvedRequests} 
             columns={columns}
             pagination
             pageSize={10}
             disableSelectionOnClick 
-        />}
+            loading={getLeaveAll.loading}
+        />
         <ConfirmDialog 
           onConfirm={() => onDeleteConfirm(leaveId)} 
           open={openDeleteDialog} 

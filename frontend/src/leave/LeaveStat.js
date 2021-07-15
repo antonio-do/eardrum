@@ -42,7 +42,7 @@ const LeaveCalendar = ({year, signal}) => {
     
     return <Box m={2}>
         <Typography variant="h5" gutterBottom>Statistic (year {year})</Typography>
-         {getStat.loading ? <Spin size="small"/> : <DataGrid
+         <DataGrid
             autoHeight
             rows={getStat.data}
             columns={columns}
@@ -50,7 +50,8 @@ const LeaveCalendar = ({year, signal}) => {
             pageSize={10}
             disableColumnMenu
             disableSelectionOnClick
-        />}
+            loading={getStat.loading}
+        />
     </Box>
 }
 

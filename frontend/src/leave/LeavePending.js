@@ -130,14 +130,15 @@ const LeavePending = ({reload, signal}) => {
   return (
     <Box m={2}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
-        {(getLeaveAll.loading) ? <Spin size="small"/> : <DataGrid
+        <DataGrid
             autoHeight 
             rows={getLeaveAll.data} 
             columns={columns}
             pagination
             pageSize={10}
             disableSelectionOnClick 
-        />}
+            loading={getLeaveAll.loading}
+        />
         <ConfirmDialog 
           onConfirm={() => onActionConfirm(leaveId, APPROVE)} 
           open={openApproveDialog} 

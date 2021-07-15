@@ -10,6 +10,7 @@ import {
     Chip, 
     Divider, 
     Grid, 
+    LinearProgress, 
     List, 
     ListItem, 
     ListItemSecondaryAction, 
@@ -21,7 +22,7 @@ import {
     Tooltip,
     Typography,
 } from "@material-ui/core";
-import { useAddHoliday, useDeleteHoliday, useHolidays, useLeaveUsers } from "./hooks";
+import { useAddHoliday, useDeleteHoliday, useHolidays, useLeaveUsers, useRecalculateMasks } from "./hooks";
 import { message } from "antd";
 import moment from "moment";
 import { DATE_FORMAT } from "./constants";
@@ -48,11 +49,11 @@ const StaticDatePicker = ({signal, reload}) => {
     const [year, setYear] = useState(new Date().getFullYear());
     const fetchHoliday = useHolidays();
     const fetchLeaveUsers = useLeaveUsers();
-
     const [isEditHoliday, setIsEditHoliday] = useState(false);
     const deleteHoliday = useDeleteHoliday();
     const addHoliday = useAddHoliday();
-    const [holiday, setHoliday] = useState(null)
+    const [holiday, setHoliday] = useState(null);
+    const recalculateMasks = useRecalculateMasks();
 
     const classes = useStyles();
 
@@ -76,7 +77,7 @@ const StaticDatePicker = ({signal, reload}) => {
         await deleteHoliday.execute({date: holiday})
         handleError(deleteHoliday, "Error deleting holiday.");
         if (!deleteHoliday.error) {
-            fetchHoliday.execute({year: year})
+            await fetchHoliday.execute({year: year})
             handleError(deleteHoliday, "Error fetching holidays");
         }
     }
@@ -85,9 +86,18 @@ const StaticDatePicker = ({signal, reload}) => {
         await addHoliday.execute({date: holiday})
         handleError(addHoliday, "Error adding holiday.");
         if (!addHoliday.error) {
-            fetchHoliday.execute({year: year})
+            await fetchHoliday.execute({year: year})
             handleError(fetchHoliday, "Error fetching holidays.");
         }
+    }
+
+    const onDoneEdit = async () => {
+        if (isEditHoliday) {
+            await recalculateMasks.execute({year: year});
+            handleError(recalculateMasks, "Error updating statistics", "Statistics updated");
+            reload();
+        }
+        setIsEditHoliday(edit => !edit)
     }
 
     // render holidays differently
@@ -121,6 +131,7 @@ const StaticDatePicker = ({signal, reload}) => {
             </Paper>
             <Divider/>
             <ListSubheader className={classes.list}>Users on leave ({moment(date).format("DD/MM/YYYY")})</ListSubheader>
+            {fetchLeaveUsers.loading && <LinearProgress/>}
             <Paper style={{overflow: 'auto'}}>
                 <List>
                     {fetchLeaveUsers.data.map(item => (
@@ -145,21 +156,18 @@ const StaticDatePicker = ({signal, reload}) => {
             <ListSubheader className={classes.list}>
                 Holidays
                 <ListItemSecondaryAction>
-                    <Button variant="contained" onClick={() => {
-                        if (isEditHoliday) {
-                            reload();
-                        }
-                        setIsEditHoliday(edit => !edit)
-                    }}>
+                    <Button variant="contained" onClick={onDoneEdit}>
                         {isEditHoliday ? "Done" : "Edit"}
                     </Button>
                 </ListItemSecondaryAction>
             </ListSubheader>
+            {fetchHoliday.loading && <LinearProgress/>}
             <Paper>
                 <div className={classes.yearInput}>
                     <TextField 
                         label="Year" 
                         type="number" 
+                        disabled={isEditHoliday}
                         defaultValue={year} 
                         fullWidth
                         onChange={(event) => setYear(event.target.value)}
@@ -178,6 +186,8 @@ const StaticDatePicker = ({signal, reload}) => {
                                 format={DATE_FORMAT.LABEL_DATEFNS}
                                 value={holiday}
                                 onChange={(date) => setHoliday(date)}
+                                minDate={new Date(Number(year), 0, 1)}
+                                maxDate={new Date(Number(year), 11, 31)}
                             />
                             </Grid>
                             <Grid item container direction="column" xs={4}>

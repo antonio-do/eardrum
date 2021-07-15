@@ -10,6 +10,7 @@ import LeaveAdd from './LeaveAdd';
 import LeaveMainPage from './LeaveMainPage';
 import { LeaveContext, useCurrentUser, useLeaveContext } from './hooks';
 import { message, Spin } from 'antd';
+import { LinearProgress } from '@material-ui/core';
 
 const LeaveApp = () => {
   let { path } = useRouteMatch();
@@ -30,7 +31,7 @@ const LeaveApp = () => {
     }
   }, [currentUser.data, currentUser.loading, currentUser.error])
 
-  if (currentUser.loading || leaveContext.loading) return <Spin size="large"/>
+  if (currentUser.loading || leaveContext.loading) return <LinearProgress/>
 
   if (currentUser.error || leaveContext.error) return <div>Something went wrong</div>
   
