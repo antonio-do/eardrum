@@ -132,7 +132,7 @@ const useLeaveUsers = () => actionOnCall(options => ({
 // options: { date: string }
 const useAddHoliday = () => actionOnCall(options => ({
   method: 'post',
-  url: routes.api.addHoliday,
+  url: routes.api.addHoliday(),
   data: { date: options.date }
 }))
 
@@ -184,6 +184,13 @@ function useHolidays() {
   return { execute, loading, data, error };
 }
 
+// options: { year: string }
+const useRecalculateMasks = () => actionOnCall(options => ({
+  method: 'post',
+  url: routes.api.recalculateMasks(),
+  data: { year: options.year }
+}))
+
 export {
   LeaveContext,
   useLeaveContext, 
@@ -197,4 +204,5 @@ export {
   useAddHoliday,
   useDeleteHoliday,
   useLeaveUsers,
+  useRecalculateMasks,
 }

@@ -14,5 +14,6 @@ export default {
         addHoliday: () => '/api/leave/holidays/',
         deleteHoliday: (date) => `/api/leave/holidays/?date=${date}`,
         leaveUsers: (date) => `/api/leave/leave_users?date=${date}`,
+        recalculateMasks: () => `/api/leave/recalculate_masks/`,
     }
 }

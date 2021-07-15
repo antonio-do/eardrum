@@ -43,6 +43,7 @@ const LeaveMainPage = () => {
   const [signal, setSignal] = useState(true);
   const classes = useStyles();
 
+  const reload = () => setSignal(signal => !signal);
 
   return (
     <div className={classes.root}>
@@ -50,11 +51,11 @@ const LeaveMainPage = () => {
             <Grid item xs={12} style={{ textAlign: 'end'}}>
                 <Button to='/leave/new' color="primary" variant="contained" component={ Link }>New</Button>
             </Grid>
-            <Grid item >
-                <LeaveCalendar signal={signal}/>
+            <Grid item style={{maxWidth: "350px"}}>
+                <LeaveCalendar signal={signal} reload={reload}/>
             </Grid>
             <Grid item style={{flexGrow: 1}}>
-                <LeavePending reload={() => setSignal(signal => !signal)} signal={signal}/>
+                <LeavePending reload={reload} signal={signal}/>
                 <Box mt={10}>
                   <DatePicker
                       views={["year"]}
@@ -66,7 +67,7 @@ const LeaveMainPage = () => {
                       autoOk
                     />
                   <LeaveStat year={year} signal={signal}/>
-                  <LeaveResolved year={year} signal={signal} reload={() => setSignal(signal => !signal)}/>
+                  <LeaveResolved year={year} signal={signal} reload={reload}/>
                 </Box>
             </Grid>
         </Grid>}

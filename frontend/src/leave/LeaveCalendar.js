@@ -1,13 +1,15 @@
 import React, { Fragment, useEffect, useState } from "react";
-import { DatePicker } from "@material-ui/pickers";
+import { DatePicker, KeyboardDatePicker } from "@material-ui/pickers";
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { 
+    Box,
     Button,
     Card, 
     CardContent, 
     Chip, 
     Divider, 
+    Grid, 
     List, 
     ListItem, 
     ListItemSecondaryAction, 
@@ -40,16 +42,18 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-const StaticDatePicker = ({signal}) => {
+const StaticDatePicker = ({signal, reload}) => {
     const [date, setDate] = useState(new Date());
     const [holidays, setHolidays] = useState([]);
     const [leaveUsers, setLeaveUsers] = useState([])
     const [year, setYear] = useState(new Date().getFullYear());
     const fetchHoliday = useHolidays();
     const fetchLeaveUsers = useLeaveUsers();
+
     const [isEditHoliday, setIsEditHoliday] = useState(false);
     const deleteHoliday = useDeleteHoliday();
     const addHoliday = useAddHoliday();
+    const [holiday, setHoliday] = useState(null)
 
     const classes = useStyles();
 
@@ -90,8 +94,20 @@ const StaticDatePicker = ({signal}) => {
         if (deleteHoliday.error) {
             console.error(deleteHoliday.error);
             message.error("Error deleting holiday.");
+        } else if (deleteHoliday.data) {
+            fetchHoliday.execute({year: year})
         }
     }, [deleteHoliday.loading, deleteHoliday.data, deleteHoliday.error])
+
+    useEffect(() => {
+        if (!addHoliday.loading) return;
+        if (addHoliday.error) {
+            console.error(addHoliday.error);
+            message.error("Error adding holiday.");
+        } else if (addHoliday.data) {
+            fetchHoliday.execute({year: year})
+        }
+    }, [addHoliday.loading, addHoliday.data, addHoliday.error])
 
     // render holidays differently
     const renderDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => { 
@@ -128,7 +144,7 @@ const StaticDatePicker = ({signal}) => {
                 <List>
                     {leaveUsers.map(item => (
                         <Fragment>
-                            <Card style={{display: 'flex', flexWrap: 'wrap', maxWidth: '310px'}}>
+                            <Card style={{display: 'flex', flexWrap: 'wrap'}}>
                                 <CardContent style={{padding: 5}}>
                                     <Fragment>
                                         <Typography variant="h6" className={classes.chips}>{item.group}</Typography>
@@ -148,7 +164,12 @@ const StaticDatePicker = ({signal}) => {
             <ListSubheader className={classes.list}>
                 Holidays
                 <ListItemSecondaryAction>
-                    <Button variant="contained" onClick={() => setIsEditHoliday(edit => !edit)}>
+                    <Button variant="contained" onClick={() => {
+                        if (isEditHoliday) {
+                            reload();
+                        }
+                        setIsEditHoliday(edit => !edit)
+                    }}>
                         {isEditHoliday ? "Done" : "Edit"}
                     </Button>
                 </ListItemSecondaryAction>
@@ -164,6 +185,31 @@ const StaticDatePicker = ({signal}) => {
                     />
                 </div>
                 <List>
+                    {isEditHoliday && <Box ml={1}>
+                        <Grid container direction="row" alignItems="center">
+                            <Grid item xs={8}>
+                            <DatePicker
+                                disableToolbar
+                                autoOk
+                                label="Add holiday"
+                                variant="inline"
+                                inputVariant="outlined"
+                                format={DATE_FORMAT.LABEL_DATEFNS}
+                                value={holiday}
+                                onChange={(date) => setHoliday(date)}
+                            />
+                            </Grid>
+                            <Grid item container direction="column" xs={4}>
+                                <Button onClick={() => { 
+                                    if (holiday === null) return;
+                                    setHoliday(null); 
+                                    addHoliday.execute({date: moment(holiday).format(DATE_FORMAT.VALUE)})
+                                }}>Add</Button>
+                                <Button onClick={() => setHoliday(null)}>Clear</Button>
+                            </Grid>
+                        </Grid>
+                    </Box>}
+                    <Divider/>
                     {holidays.map(item => 
                         (<Fragment>
                             <ListItem>
@@ -178,7 +224,6 @@ const StaticDatePicker = ({signal}) => {
                                     <Button 
                                         onClick={() => {
                                             deleteHoliday.execute({date: moment(item.date).format(DATE_FORMAT.VALUE)})
-                                            setHolidays(holidays => holidays.filter(holiday => holiday.date != item.date))
                                         }}
                                     >
                                         Remove
