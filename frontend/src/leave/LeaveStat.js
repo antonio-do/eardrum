@@ -4,25 +4,20 @@ import { DataGrid } from '@material-ui/data-grid';
 import { LeaveContext, useStat } from './hooks';
 import { message, Spin } from 'antd';
 import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
+import { handleError } from './helpers';
 
 const LeaveCalendar = ({year, signal}) => {
-    const [stat, setStat] = useState([]);
     const leaveContext = useContext(LeaveContext);
     const getStat = useStat();
-    
-    useEffect(() => {
-        getStat.execute({year: year});
-    }, [year, signal])
 
     useEffect(() => {
-        if (!getStat.loading) return;
-        if (getStat.error) {
-            console.error(getStat.error);
-            message.error("Error fetching statistic.");
-        } else if (getStat.data) {
-            setStat(getStat.data)            
+        const fetchApi = async () => {
+            getStat.execute({year: year});
+            handleError(getStat, "Error fetching statistics.");
         }
-    }, [getStat.loading, getStat.data, getStat.error])
+
+        fetchApi();
+    }, [year, signal])
 
     const columns = [{ 
         field: 'user', 
@@ -49,7 +44,7 @@ const LeaveCalendar = ({year, signal}) => {
         <Typography variant="h5" gutterBottom>Statistic (year {year})</Typography>
          {getStat.loading ? <Spin size="small"/> : <DataGrid
             autoHeight
-            rows={stat}
+            rows={getStat.data}
             columns={columns}
             pagination
             pageSize={10}

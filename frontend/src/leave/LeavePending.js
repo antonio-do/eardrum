@@ -6,9 +6,9 @@ import { message, Spin } from 'antd';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
 import { STATUS_TYPES } from './constants';
+import { handleError } from './helpers';
 
 const LeavePending = ({reload, signal}) => {
-  const [pendingRequests, setPendingRequests] = useState([]);
   const updateLeave = useUpdateLeave();
   const deleteLeave = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
@@ -20,27 +20,14 @@ const LeavePending = ({reload, signal}) => {
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
   const [dialogTitle, setDialogTitle] = useState({})
   const [dialogContent, setDialogContent] = useState({})
-  const [actionType, setActionType] = useState("")
 
   useEffect(() => {
-    getLeaveAll.execute({status: STATUS_TYPES.PENDING});
+    const fetchApi = async () => {
+      await getLeaveAll.execute({status: STATUS_TYPES.PENDING});
+      handleError(getLeaveAll, "Error fetching leave requests.");
+    }
+    fetchApi();
   }, [signal])
-
-  useEffect(() => {
-    if (!getLeaveAll.data && getLeaveAll.error) {
-      console.error(getLeaveAll.error);
-      message.error("Error fetching leave requests.");
-    }
-    if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
-      setPendingRequests(getLeaveAll.data.map(item => ({
-        ...item,
-        half: (item.half.replace(/[01]/g, (m) => ({
-          '0': '[ False ]',
-          '1': '[ True ]'
-        }[m])))
-      })));
-    }
-  }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
 
   const APPROVE = "approve";
   const REJECT = "reject";
@@ -48,7 +35,6 @@ const LeavePending = ({reload, signal}) => {
 
   const onAction = (item, mode) => {
     setLeaveId(item.id);
-    setActionType(mode);
     switch (mode) {
       case APPROVE:
         setOpenApproveDialog(true);
@@ -75,12 +61,15 @@ const LeavePending = ({reload, signal}) => {
     switch (mode) {
       case APPROVE:
         await updateLeave.execute({id: id, data: {status: STATUS_TYPES.APPROVED}});
+        handleError(updateLeave, "Something went wrong", "Leave request approved");
         break;
       case REJECT:
         await updateLeave.execute({id: id, data: {status: STATUS_TYPES.REJECTED}});
+        handleError(updateLeave, "Something went wrong", "Leave request rejected");
         break;
       case DELETE:
         await deleteLeave.execute({id: id});
+        handleError(deleteLeave, "Something went wrong", "Leave request deleted");
         break;
       default:
         message.error("Something went wrong");
@@ -88,35 +77,6 @@ const LeavePending = ({reload, signal}) => {
     }
     reload();
   }
-
-  useEffect(() => {
-    if (deleteLeave.loading) return;
-    if (deleteLeave.error) {
-      message.error("Something went wrong");
-      return;
-    } else if (deleteLeave.data) {
-      message.success("Leave request deleted");
-    }
-  }, [deleteLeave.loading, deleteLeave.data, deleteLeave.error])
-
-  useEffect(() => {
-    if (updateLeave.loading) return;
-    if (updateLeave.error) {
-      message.error("Something went wrong");
-      return;
-    } else if (updateLeave.data) {
-        switch(actionType) {
-          case APPROVE:
-            message.success("Leave request approved");
-            break;
-          case REJECT:
-            message.success("Leave request rejected");
-            break;
-          default:
-            console.error("Unexpected action: " + actionType)
-        }
-    }
-  }, [updateLeave.loading, updateLeave.data, updateLeave.error])
 
   const renderNoteCell = (params) => (
     params.row.note === "" 
@@ -153,8 +113,12 @@ const LeavePending = ({reload, signal}) => {
     { field: 'startdate', headerName: 'Start date', type: 'string', flex: 1, },
     { field: 'enddate', headerName: 'End date', type: 'string', flex: 1, },
     { field: 'type', headerName: 'Type', type: 'string', flex: 1, sortable: false, renderCell: renderTypeCell, },
-    { field: 'half', headerName: 'Half-day leave', type: 'string', flex: 1, 
-      description: "Whether the leave request apply for half-day leave on the first and last day, respectively", sortable: false, },
+    { field: 'beautified_half', headerName: 'Half-day leave', type: 'string', flex: 1, 
+      description: "Whether the leave request apply for half-day leave on the first and last day, respectively", sortable: false,
+      valueGetter: (params) => params.getValue(params.id, "half").replace(/[01]/g, (m) => ({
+        '0': '[ False ]',
+        '1': '[ True ]'
+      }[m]))} ,
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
       renderCell: renderNoteCell, sortable: false, },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false, 
@@ -168,7 +132,7 @@ const LeavePending = ({reload, signal}) => {
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
         {(getLeaveAll.loading) ? <Spin size="small"/> : <DataGrid
             autoHeight 
-            rows={pendingRequests} 
+            rows={getLeaveAll.data} 
             columns={columns}
             pagination
             pageSize={10}

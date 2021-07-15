@@ -33,9 +33,9 @@ const useCurrentUser = () => fetchOnStart(routes.api.currentUser(), response => 
 
 
 
-const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, ) => {
+const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, initialData = null ) => {
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
+  const [response, setResponse] = useState(initialData);
   const [error, setError] = useState(null);
 
   const execute = async (options) => {
@@ -64,7 +64,7 @@ const useGetLeaveAll = (context) => actionOnCall(options => ({
     status: item.status,
     note: item.note,
   }))
-})
+}, [])
 
 // options: { data: object }
 const useNewLeave = () => actionOnCall(options => ({
@@ -102,7 +102,7 @@ const useStat = () => actionOnCall(options => ({
     ...item,
     id: item.user,
   }))
-})
+}, [])
 
 // options: { date: string }
 const useLeaveUsers = () => actionOnCall(options => ({
@@ -127,7 +127,7 @@ const useLeaveUsers = () => actionOnCall(options => ({
     data.push(obj)
   }
   return data;
-})
+}, [])
 
 // options: { date: string }
 const useAddHoliday = () => actionOnCall(options => ({
@@ -144,41 +144,41 @@ const useDeleteHoliday = () => actionOnCall(options => ({
 
 function useHolidays() {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [error, setError]= useState(null);
 
-  const execute = (options) => {
+  const execute = async (options) => {
     setLoading(true);
-    axios({
-      method: 'get', 
-      url: routes.api.holidays(options.year),
-    })
-      .then((response) => {
-        let unsortedHolidays = response.data.map((item) => ({
-          "id" : item,
-          "date": moment(item, DATE_FORMAT.VALUE).toDate(),
-        }))
+    try {
+      let response = await axios({
+        method: 'get', 
+        url: routes.api.holidays(options.year),
+      })
+        
+      let unsortedHolidays = response.data.map((item) => ({
+        "id" : item,
+        "date": moment(item, DATE_FORMAT.VALUE).toDate(),
+      }))
 
-        unsortedHolidays.sort((holiday1, holiday2) => {
-          let now = moment().startOf('day')
-          let dif1 = moment(holiday1.date).diff(now, 'days');
-          let dif2 = moment(holiday2.date).diff(now, 'days');
-          // if today is between holiday1 and holiday2
-          if (dif1 < 0 ^ dif2 < 0) return dif1 < dif2 ? 1 : -1;
-          // if today is either sooner or later than both holiday1 and holiday2
-          return dif1 < dif2 ? -1 : 1
-        });
-        setData(unsortedHolidays)
-      })
-      .catch((error) => {
-        // year could be either an integer or a string representing an integer
-        if ((Number.isInteger(options.year) || !isNaN(options.year)) && error.response && error.response.status === 404) {
-          setData([]);
-        } else {
-          setError(error)
-        }
-      })
-      .finally(() => setLoading(false));
+      unsortedHolidays.sort((holiday1, holiday2) => {
+        let now = moment().startOf('day')
+        let dif1 = moment(holiday1.date).diff(now, 'days');
+        let dif2 = moment(holiday2.date).diff(now, 'days');
+        // if today is between holiday1 and holiday2
+        if (dif1 < 0 ^ dif2 < 0) return dif1 < dif2 ? 1 : -1;
+        // if today is either sooner or later than both holiday1 and holiday2
+        return dif1 < dif2 ? -1 : 1
+      });
+      setData(unsortedHolidays)
+    } catch(error) {
+      // year could be either an integer or a string representing an integer
+      if ((Number.isInteger(options.year) || !isNaN(options.year)) && error.response && error.response.status === 404) {
+        setData([]);
+      } else {
+        setError(error)
+      }
+    }
+    setLoading(false);
   }
 
   return { execute, loading, data, error };

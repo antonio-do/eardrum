@@ -25,6 +25,7 @@ import { useAddHoliday, useDeleteHoliday, useHolidays, useLeaveUsers } from "./h
 import { message } from "antd";
 import moment from "moment";
 import { DATE_FORMAT } from "./constants";
+import { handleError } from "./helpers";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -44,8 +45,6 @@ const useStyles = makeStyles(theme => ({
 
 const StaticDatePicker = ({signal, reload}) => {
     const [date, setDate] = useState(new Date());
-    const [holidays, setHolidays] = useState([]);
-    const [leaveUsers, setLeaveUsers] = useState([])
     const [year, setYear] = useState(new Date().getFullYear());
     const fetchHoliday = useHolidays();
     const fetchLeaveUsers = useLeaveUsers();
@@ -58,61 +57,43 @@ const StaticDatePicker = ({signal, reload}) => {
     const classes = useStyles();
 
     useEffect(() => {
-        fetchLeaveUsers.execute({date: moment().format("YYYYMMDD")})
-    }, [])
-
-    useEffect(() => {
-        fetchHoliday.execute({year: year});
-    }, [year])
-
-    useEffect(() => {
-        if (!fetchHoliday.loading) return;
-        if (fetchHoliday.error) {
-            console.error(fetchHoliday.error);
-            message.error("Error fetching holidays.");
-        } else if (fetchHoliday.data) {
-            setHolidays(fetchHoliday.data)            
+        const fetchApi = async () => {
+            await fetchLeaveUsers.execute({date: moment(date).format("YYYYMMDD")})
+            handleError(fetchLeaveUsers, "Error fetching leave users.");
         }
-    }, [fetchHoliday.loading, fetchHoliday.data, fetchHoliday.error])
-
-    useEffect(() => {
-        fetchLeaveUsers.execute({date: moment(date).format("YYYYMMDD")});
+        fetchApi();
     }, [date, signal])
 
     useEffect(() => {
-        if (!fetchLeaveUsers.loading) return;
-        if (fetchLeaveUsers.error) {
-            console.error(fetchHoliday.error);
-            message.error("Error fetching leave users.");
-        } else if (fetchLeaveUsers.data) {
-            setLeaveUsers(fetchLeaveUsers.data)
+        const fetchApi = async () => {
+            await fetchHoliday.execute({year: year});
+            handleError(fetchHoliday, "Error fetching holidays.");
         }
-    }, [fetchLeaveUsers.loading, fetchLeaveUsers.data, fetchLeaveUsers.error])
+        fetchApi();
+    }, [year])
 
-    useEffect(() => {
-        if (!deleteHoliday.loading) return;
-        if (deleteHoliday.error) {
-            console.error(deleteHoliday.error);
-            message.error("Error deleting holiday.");
-        } else if (deleteHoliday.data) {
+    const onDeleteHoliday = async (holiday) => {
+        await deleteHoliday.execute({date: holiday})
+        handleError(deleteHoliday, "Error deleting holiday.");
+        if (!deleteHoliday.error) {
             fetchHoliday.execute({year: year})
+            handleError(deleteHoliday, "Error fetching holidays");
         }
-    }, [deleteHoliday.loading, deleteHoliday.data, deleteHoliday.error])
+    }
 
-    useEffect(() => {
-        if (!addHoliday.loading) return;
-        if (addHoliday.error) {
-            console.error(addHoliday.error);
-            message.error("Error adding holiday.");
-        } else if (addHoliday.data) {
+    const onAddHoliday = async (holiday) => {
+        await addHoliday.execute({date: holiday})
+        handleError(addHoliday, "Error adding holiday.");
+        if (!addHoliday.error) {
             fetchHoliday.execute({year: year})
+            handleError(fetchHoliday, "Error fetching holidays.");
         }
-    }, [addHoliday.loading, addHoliday.data, addHoliday.error])
+    }
 
     // render holidays differently
     const renderDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => { 
         const isHoliday = (day) => {
-            return holidays.find(item => {return item.date.getTime() === day.getTime()});
+            return fetchHoliday.data.find(item => {return item.date.getTime() === day.getTime()});
         }
         if (day.getTime() === selectedDate.getTime()) {
             return React.cloneElement(dayComponent, {style: {textDecorationLine: 'underline'}});
@@ -142,7 +123,7 @@ const StaticDatePicker = ({signal, reload}) => {
             <ListSubheader className={classes.list}>Users on leave ({moment(date).format("DD/MM/YYYY")})</ListSubheader>
             <Paper style={{overflow: 'auto'}}>
                 <List>
-                    {leaveUsers.map(item => (
+                    {fetchLeaveUsers.data.map(item => (
                         <Fragment>
                             <Card style={{display: 'flex', flexWrap: 'wrap'}}>
                                 <CardContent style={{padding: 5}}>
@@ -203,14 +184,14 @@ const StaticDatePicker = ({signal, reload}) => {
                                 <Button onClick={() => { 
                                     if (holiday === null) return;
                                     setHoliday(null); 
-                                    addHoliday.execute({date: moment(holiday).format(DATE_FORMAT.VALUE)})
+                                    onAddHoliday(moment(holiday).format(DATE_FORMAT.VALUE))
                                 }}>Add</Button>
                                 <Button onClick={() => setHoliday(null)}>Clear</Button>
                             </Grid>
                         </Grid>
                     </Box>}
                     <Divider/>
-                    {holidays.map(item => 
+                    {fetchHoliday.data.map(item => 
                         (<Fragment>
                             <ListItem>
                                 <ListItemText 
@@ -223,7 +204,7 @@ const StaticDatePicker = ({signal, reload}) => {
                                 {isEditHoliday && <ListItemSecondaryAction>
                                     <Button 
                                         onClick={() => {
-                                            deleteHoliday.execute({date: moment(item.date).format(DATE_FORMAT.VALUE)})
+                                            onDeleteHoliday(moment(item.date).format(DATE_FORMAT.VALUE))
                                         }}
                                     >
                                         Remove

@@ -6,6 +6,7 @@ import { message, Spin } from 'antd';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
 import { STATUS_TYPES } from './constants';
+import { handleError } from './helpers';
 
 const LeaveResolved = ({year, signal, reload}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
@@ -17,24 +18,18 @@ const LeaveResolved = ({year, signal, reload}) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   useEffect(() => {
-    getLeaveAll.execute({year: year});
+    const fetchApi = async () => {
+      await getLeaveAll.execute({year: year});
+      handleError(getLeaveAll, "Error fetching leave requests.");
+    }
+    fetchApi();
   }, [signal, year])
 
   useEffect(() => {
-    if (!getLeaveAll.data && getLeaveAll.error) {
-      console.error(getLeaveAll.error);
-      message.error("Error fetching leave requests.");
+    if (getLeaveAll.data) {
+      setResolvedRequests(getLeaveAll.data.filter(item => item.status !== "pending"));
     }
-    if (getLeaveAll.data && !getLeaveAll.loading && !getLeaveAll.error) {
-      setResolvedRequests(getLeaveAll.data.filter(item => item.status !== "pending").map(item => ({
-        ...item,
-        half: (item.half.replace(/[01]/g, (m) => ({
-          '0': '[ False ]',
-          '1': '[ True ]'
-        }[m])))
-      })));
-    }
-  }, [getLeaveAll.data, getLeaveAll.error, getLeaveAll.loading])
+  }, [getLeaveAll.data])
 
   const onDelete = (item) => {
     setLeaveId(item.id);
@@ -44,18 +39,9 @@ const LeaveResolved = ({year, signal, reload}) => {
 
   const onDeleteConfirm = async (id) => {
     await deleteLeave.execute({id: id});
+    handleError(deleteLeave, "Something went wrong", "Leave request deleted");
     reload();
   }
-
-  useEffect(() => {
-    if (deleteLeave.loading) return;
-    if (deleteLeave.error) {
-      message.error("Something went wrong");
-      return;
-    } else if (deleteLeave.data) {
-      message.success("Leave request deleted");
-    }
-  }, [deleteLeave.loading, deleteLeave.data, deleteLeave.error])
 
   const renderActionButton = (params) => (
     <Button color='primary' style={{margin: 5}} onClick={() => onDelete(params.row)}>
@@ -84,8 +70,12 @@ const LeaveResolved = ({year, signal, reload}) => {
     { field: 'startdate', headerName: 'Start date', type: 'string', flex: 1, },
     { field: 'enddate', headerName: 'End date', type: 'string', flex: 1, },
     { field: 'type', headerName: 'Type', type: 'string', flex: 1, sortable: false, renderCell: renderTypeCell },
-    { field: 'half', headerName: 'Half-day leave', type: 'string', flex: 1, 
-      description: "Whether the leave request apply for half-day leave on the first and last day, respectively", sortable: false, },
+    { field: 'beautified_half', headerName: 'Half-day leave', type: 'string', flex: 1, 
+      description: "Whether the leave request apply for half-day leave on the first and last day, respectively", sortable: false,
+      valueGetter: (params) => params.getValue(params.id, "half").replace(/[01]/g, (m) => ({
+        '0': '[ False ]',
+        '1': '[ True ]'
+      }[m])), },
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
     renderCell: renderNoteCell, sortable: false },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false, renderCell: renderStatusCell },

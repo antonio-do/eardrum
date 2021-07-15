@@ -7,6 +7,7 @@ import { LeaveContext, useNewLeave } from './hooks';
 import moment from 'moment';
 import { DATE_FORMAT } from './constants';
 import { message } from 'antd';
+import { handleError } from './helpers';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -47,19 +48,13 @@ const LeaveAdd = () => {
 
     const onSubmit = async () => {
         await newLeave.execute({data: application})
-    }
-
-    useEffect(() => {
-        if (newLeave.loading) return;
-        if (newLeave.error) {
-            message.error("Something went wrong");
-            return;
-        } else if (newLeave.data) {
+        handleError(newLeave, "Error submitting leave request.")
+        if (!newLeave.error) {
             message.success("Leave request submitted");
             history.replace("/leave");
         }
-    }, [newLeave.loading, newLeave.data, newLeave.error])
-
+    }
+    
     useEffect(() => {
         let start = application.startdate
         let end = application.enddate
