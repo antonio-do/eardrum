@@ -9,7 +9,7 @@ import {
 import LeaveAdd from './LeaveAdd';
 import LeaveMainPage from './LeaveMainPage';
 import { LeaveContext, useCurrentUser, useLeaveContext } from './hooks';
-import { message, Spin } from 'antd';
+import { message } from 'antd';
 import { LinearProgress } from '@material-ui/core';
 
 const LeaveApp = () => {

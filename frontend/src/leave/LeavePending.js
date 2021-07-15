@@ -2,7 +2,7 @@ import React, { useEffect, useState, Fragment, useContext } from 'react';
 import { DataGrid } from '@material-ui/data-grid';
 import { Box, Button, Typography, Chip } from '@material-ui/core';
 import { useDeleteLeave, useGetLeaveAll, useUpdateLeave, LeaveContext  } from './hooks';
-import { message, Spin } from 'antd';
+import { message } from 'antd';
 import CustomPopover from './components/CustomPopover.js';
 import ConfirmDialog from './components/ConfirmDialog';
 import { STATUS_TYPES } from './constants';
