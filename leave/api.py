@@ -1,6 +1,7 @@
 import json
 import datetime
 import copy
+import calendar
 
 from django.contrib.auth.models import User, Group
 from django.forms.models import model_to_dict
@@ -318,6 +319,31 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 'message': 'no year provided'
             }
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+    
+        holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split()
+        holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1
+                            for item in holidays]
+        first_sat = 6 - (datetime.datetime(int(year), 1, 1).weekday() + 1) % 7
+        mask = ['-'] * ((366 if calendar.isleap(int(year)) else 365) * 2)
+        for holiday in holidays_in_year:
+            mask[2 * holiday] = '0'
+            mask[2 * holiday + 1] = '0'
+        for saturday in range(first_sat, len(mask) // 2, 7):
+            mask[2 * saturday] = '0'
+            mask[2 * saturday + 1] = '0'
+        for sunday in range(first_sat + 1, len(mask) // 2, 7):
+            mask[2 * sunday] = '0'
+            mask[2 * sunday + 1] = '0'
+
+        leave_type_config = ConfigEntry.objects.get(name='leave_context')
+        leave_types = json.loads(leave_type_config.extra)['leave_types']
+        summary = json.dumps({leave_type['name']: 0 for leave_type in leave_types}, indent=2)
+
+        mask_name = '__{}'.format(year)
+        (leave_mask, _) = LeaveMask.objects.get_or_create(name=mask_name)
+        leave_mask.value = ''.join(mask)
+        leave_mask.summary = summary
+        leave_mask.save()
 
         success = []
         failed = []
@@ -335,7 +361,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 mask.summary = base_mask.summary
                 accumulate_mask(mask, leaves)
                 
-                success.append({'user': user.username})
+                success.append({'user': user.username}) 
 
             except Exception as e:
                 failed.append({'user': user.username, 'error': str(e)})
