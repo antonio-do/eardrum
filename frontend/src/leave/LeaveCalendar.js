@@ -97,7 +97,7 @@ const LeaveCalendar = ({refreshCount}) => {
             <Paper style={{overflow: 'auto'}}>
                 <List>
                     {fetchLeaveUsers.data.map(item => (
-                        <Fragment>
+                        <Fragment key={item.group}>
                             <Card style={{display: 'flex', flexWrap: 'wrap'}}>
                                 <CardContent style={{padding: 5}}>
                                     <Fragment>
