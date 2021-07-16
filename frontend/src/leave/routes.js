@@ -11,8 +11,6 @@ export default {
         leaveDetail: (id) => `/api/leave/${id}/`,
         statistics: (year) => `/api/leave/statistics/?year=${year}`,
         holidays: (year) => `/api/leave/holidays/?year=${year}`,
-        addHoliday: () => '/api/leave/holidays/',
-        deleteHoliday: (date) => `/api/leave/holidays/?date=${date}`,
         leaveUsers: (date) => `/api/leave/leave_users?date=${date}`,
         recalculateMasks: () => `/api/leave/recalculate_masks/`,
     }

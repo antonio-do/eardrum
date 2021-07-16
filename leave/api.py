@@ -212,7 +212,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
                 try:
                     holidays_entry = ConfigEntry.objects.get(name='holidays_{}'.format(year))
-                    unique_holidays = '\r\n'.join(set(holidays))
+                    unique_holidays = '\n'.join(set(holidays))
                     holidays_entry.extra = unique_holidays
                     holidays_entry.save(update_fields=["extra"])
                     return Response(status=status.HTTP_204_NO_CONTENT)

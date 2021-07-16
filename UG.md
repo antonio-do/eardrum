@@ -70,7 +70,6 @@ This app allow users to submit and organize application for leave.
     * Edit holidays
 
 #### Configuration
-  * To edit holidays: edit entries (format "YYYYMMDD") into Config entries object `holidays_<year>` 
   * To edit leave types: edit entries in the Config entries object `leaves_type_<year>` 
 
 ## Main App

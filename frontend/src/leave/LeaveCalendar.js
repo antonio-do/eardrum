@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-const StaticDatePicker = ({signal}) => {
+const LeaveCalendar = ({refreshCount}) => {
     const [date, setDate] = useState(new Date());
     const [year, setYear] = useState(new Date().getFullYear());
     const fetchHoliday = useHolidays();
@@ -47,7 +47,7 @@ const StaticDatePicker = ({signal}) => {
             handleError(fetchLeaveUsers, "Error fetching leave users.");
         }
         fetchApi();
-    }, [date, signal])
+    }, [date, refreshCount])
 
     // currently only update holiday of a particular year when user pick any date within the same 
     // year on the calendar. Options: either find a way to detect when user change year view, load
@@ -58,7 +58,7 @@ const StaticDatePicker = ({signal}) => {
             handleError(fetchHoliday, "Error fetching holidays.");
         }
         fetchApi();
-    }, [year, signal])
+    }, [year, refreshCount])
 
     // render holidays differently
     const renderDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => { 
@@ -120,4 +120,4 @@ const StaticDatePicker = ({signal}) => {
     );
 };
 
-export default StaticDatePicker;
+export default LeaveCalendar;

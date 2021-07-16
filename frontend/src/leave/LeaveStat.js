@@ -5,7 +5,7 @@ import { LeaveContext, useStat } from './hooks';
 import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
 import { handleError } from './helpers';
 
-const LeaveCalendar = ({year, signal}) => {
+const LeaveStat = ({year, refreshCount}) => {
     const leaveContext = useContext(LeaveContext);
     const getStat = useStat();
 
@@ -16,7 +16,7 @@ const LeaveCalendar = ({year, signal}) => {
         }
 
         fetchApi();
-    }, [year, signal])
+    }, [year, refreshCount])
 
     const columns = [{ 
         field: 'user', 
@@ -54,4 +54,4 @@ const LeaveCalendar = ({year, signal}) => {
     </Box>
 }
 
-export default LeaveCalendar
+export default LeaveStat

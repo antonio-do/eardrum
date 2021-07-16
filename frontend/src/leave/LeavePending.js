@@ -8,7 +8,7 @@ import ConfirmDialog from './components/ConfirmDialog';
 import { STATUS_TYPES } from './constants';
 import { handleError } from './helpers';
 
-const LeavePending = ({reload, signal}) => {
+const LeavePending = ({refresh, refreshCount}) => {
   const updateLeave = useUpdateLeave();
   const deleteLeave = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
@@ -27,7 +27,7 @@ const LeavePending = ({reload, signal}) => {
       handleError(getLeaveAll, "Error fetching leave requests.");
     }
     fetchApi();
-  }, [signal])
+  }, [refreshCount])
 
   const APPROVE = "approve";
   const REJECT = "reject";
@@ -75,7 +75,7 @@ const LeavePending = ({reload, signal}) => {
         message.error("Something went wrong");
         console.error("Unexpected action: " + mode);
     }
-    reload();
+    refresh();
   }
 
   const renderNoteCell = (params) => (

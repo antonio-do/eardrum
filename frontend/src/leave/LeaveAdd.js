@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { makeStyles } from '@material-ui/styles';
 import { Link, useHistory } from 'react-router-dom';
-import { LeaveContext, useNewLeave } from './hooks';
+import { LeaveContext, useAddLeave } from './hooks';
 import moment from 'moment';
 import { DATE_FORMAT } from './constants';
 import { message } from 'antd';
@@ -39,7 +39,7 @@ const LeaveAdd = () => {
         half: "00",
         status: "",
     });
-    const newLeave = useNewLeave() 
+    const addLeave = useAddLeave() 
     const [errorDate, setErrorDate] = useState(false);
     const [errorBox, setErrorBox] = useState(false);
     
@@ -47,9 +47,9 @@ const LeaveAdd = () => {
     const classes = useStyles();
 
     const onSubmit = async () => {
-        await newLeave.execute({data: application})
-        handleError(newLeave, "Error submitting leave request.")
-        if (!newLeave.error) {
+        await addLeave.execute({data: application})
+        handleError(addLeave, "Error submitting leave request.")
+        if (!addLeave.error) {
             message.success("Leave request submitted");
             history.replace("/leave");
         }

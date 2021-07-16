@@ -38,13 +38,13 @@ const useStyles = makeStyles(theme => ({
 const LeaveMainPage = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [date, setDate] = useState(new Date());
-  // signal to pass to both pending and resolved list: when an action in pending list is performed
-  // (i.e. delete, approve, reject), the pending list toggle the signal while the resolved list
-  // listen for signal and reload if the signal is changed
-  const [signal, setSignal] = useState(true);
+  const [refreshCount, setRefreshCount] = useState(0);
   const classes = useStyles();
 
-  const reload = () => setSignal(signal => !signal);
+  const refresh = () => {
+    console.log(refreshCount);
+    setRefreshCount(refreshCount => refreshCount + 1)
+  };
 
   return (
     <div className={classes.root}>
@@ -53,11 +53,11 @@ const LeaveMainPage = () => {
                 <Button to='/leave/new' color="primary" variant="contained" component={ Link }>New</Button>
             </Grid>
             <Grid item style={{maxWidth: "350px"}}>
-                <LeaveCalendar signal={signal} reload={reload}/>
-                <LeaveHoliday signal={signal} reload={reload}/>
+                <LeaveCalendar refreshCount={refreshCount}/>
+                <LeaveHoliday refresh={refresh}/>
             </Grid>
             <Grid item style={{flexGrow: 1}}>
-                <LeavePending reload={reload} signal={signal}/>
+                <LeavePending refresh={refresh} refreshCount={refreshCount}/>
                 <Box mt={10}>
                   <DatePicker
                       views={["year"]}
@@ -68,8 +68,8 @@ const LeaveMainPage = () => {
                       onYearChange={(date) => setYear(date.getFullYear())}
                       autoOk
                     />
-                  <LeaveStat year={year} signal={signal}/>
-                  <LeaveResolved year={year} signal={signal} reload={reload}/>
+                  <LeaveStat year={year} refreshCount={refreshCount}/>
+                  <LeaveResolved year={year} refreshCount={refreshCount} refresh={refresh}/>
                 </Box>
             </Grid>
         </Grid>}

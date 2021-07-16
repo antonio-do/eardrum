@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-const LeaveHoliday = ({signal, reload}) => {
+const LeaveHoliday = ({refresh}) => {
     const [year, setYear] = useState(new Date().getFullYear());
     const fetchHolidays = useHolidays();
     const [isEditHoliday, setIsEditHoliday] = useState(false);
@@ -82,7 +82,7 @@ const LeaveHoliday = ({signal, reload}) => {
             if (!patchHolidays.error && isEditHoliday) {
                 await recalculateMasks.execute({year: year});
                 handleError(recalculateMasks, "Error updating statistics", "Statistics updated");
-                reload();
+                refresh();
             }
         }
         setIsEditHoliday(edit => !edit)

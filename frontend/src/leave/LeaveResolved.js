@@ -7,7 +7,7 @@ import ConfirmDialog from './components/ConfirmDialog';
 import { STATUS_TYPES } from './constants';
 import { handleError } from './helpers';
 
-const LeaveResolved = ({year, signal, reload}) => {
+const LeaveResolved = ({year, refreshCount, refresh}) => {
   const [resolvedRequests, setResolvedRequests] = useState([]);
   const deleteLeave = useDeleteLeave();
   const [leaveId, setLeaveId] = useState(0);
@@ -22,7 +22,7 @@ const LeaveResolved = ({year, signal, reload}) => {
       handleError(getLeaveAll, "Error fetching leave requests.");
     }
     fetchApi();
-  }, [signal, year])
+  }, [refreshCount, year])
 
   //TODO: separate useGetLeaveAll to useGetLeavePending and useGetLeaveResolved
   useEffect(() => {
@@ -40,7 +40,7 @@ const LeaveResolved = ({year, signal, reload}) => {
   const onDeleteConfirm = async (id) => {
     await deleteLeave.execute({id: id});
     handleError(deleteLeave, "Something went wrong", "Leave request deleted");
-    reload();
+    refresh();
   }
 
   const renderActionButton = (params) => (
