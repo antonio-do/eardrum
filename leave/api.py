@@ -172,7 +172,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         return Response(res)
 
-    @decorators.action(methods=['GET', 'POST', 'DELETE'], detail=False)
+    @decorators.action(methods=['GET', 'POST', 'DELETE', 'PATCH'], detail=False)
     def holidays(self, request, *args, **kargs):    
         if request.method == "GET":
             year = request.query_params.get('year')
@@ -235,6 +235,42 @@ class LeaveViewSet(mixins.CreateModelMixin,
             else:
                 ret = {
                     "message": "date not provided or not in the correct format (YYYYMMDD)"
+                }
+
+                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+
+        elif request.method == "PATCH":
+            year = request.query_params.get('year')
+            year = "2021"
+            _, year = self.get_validated_query_value('year', year)
+            if year is not None:
+                holidays = request.data.get('holidays').split()
+                for holiday in holidays:
+                    _, validated_holiday = self.get_validated_query_value('date', holiday)
+                    if validated_holiday is None:
+                        ret = {
+                            "message": "some holiday is not in correct format"
+                        }
+                        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+                    elif validated_holiday[:4] != year:
+                        ret = {
+                            "message": "some holiday is not in correct year"
+                        }
+                        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+
+                try:
+                    holidays_entry = ConfigEntry.objects.get(name='holidays_{}'.format(year))
+                    unique_holidays = '\r\n'.join(set(holidays))
+                    holidays_entry.extra = unique_holidays
+                    holidays_entry.save(update_fields=["extra"])
+                    return Response(status=status.HTTP_204_NO_CONTENT)
+                    
+                except ConfigEntry.DoesNotExist:
+                    return Response(status=status.HTTP_404_NOT_FOUND)
+
+            else:
+                ret = {
+                    "message": "year not provided or not in the correct format (YYYY)"
                 }
 
                 return Response(ret, status=status.HTTP_400_BAD_REQUEST)

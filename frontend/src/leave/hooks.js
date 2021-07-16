@@ -4,6 +4,7 @@ import axios from 'axios';
 import moment from 'moment';
 import routes from './routes';
 import { DATE_FORMAT } from './constants';
+import { holidayComparator } from './helpers';
 
 const LeaveContext = createContext({
   currentUser: null,
@@ -67,7 +68,7 @@ const useGetLeaveAll = (context) => actionOnCall(options => ({
 }, [])
 
 // options: { data: object }
-const useNewLeave = () => actionOnCall(options => ({
+const useAddLeave = () => actionOnCall(options => ({
   method: 'post',
   url: routes.api.leaveAll(),
   data: {
@@ -142,6 +143,13 @@ const useDeleteHoliday = () => actionOnCall(options => ({
   url: routes.api.deleteHoliday(options.date),
 }))
 
+// options: { year: string, holidays: array of dates}
+const usePatchHolidays = () => actionOnCall(options => ({
+  method: 'patch',
+  url: routes.api.holidays(options.year),
+  data: {holidays: options.holidays.map(date => moment(date).format(DATE_FORMAT.VALUE)).join(" ")}
+}))
+
 function useHolidays() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
@@ -160,15 +168,7 @@ function useHolidays() {
         "date": moment(item, DATE_FORMAT.VALUE).toDate(),
       }))
 
-      unsortedHolidays.sort((holiday1, holiday2) => {
-        let now = moment().startOf('day')
-        let dif1 = moment(holiday1.date).diff(now, 'days');
-        let dif2 = moment(holiday2.date).diff(now, 'days');
-        // if today is between holiday1 and holiday2
-        if (dif1 < 0 ^ dif2 < 0) return dif1 < dif2 ? 1 : -1;
-        // if today is either sooner or later than both holiday1 and holiday2
-        return dif1 < dif2 ? -1 : 1
-      });
+      unsortedHolidays.sort(holidayComparator);
       setData(unsortedHolidays)
     } catch(error) {
       // year could be either an integer or a string representing an integer
@@ -196,7 +196,7 @@ export {
   useLeaveContext, 
   useCurrentUser,
   useGetLeaveAll, 
-  useNewLeave, 
+  useAddLeave, 
   useUpdateLeave, 
   useDeleteLeave,
   useStat,
@@ -205,4 +205,5 @@ export {
   useDeleteHoliday,
   useLeaveUsers,
   useRecalculateMasks,
+  usePatchHolidays,
 }
