@@ -1,13 +1,8 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { DatePicker } from "@material-ui/pickers";
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
 import { 
     Box,
     Button,
-    Card, 
-    CardContent, 
-    Chip, 
     Divider, 
     Grid, 
     LinearProgress, 
@@ -19,8 +14,6 @@ import {
     makeStyles, 
     Paper, 
     TextField, 
-    Tooltip,
-    Typography,
 } from "@material-ui/core";
 import { LeaveContext, useHolidays, usePatchHolidays, useRecalculateMasks } from "./hooks";
 import moment from "moment";

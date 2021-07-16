@@ -3,28 +3,20 @@ import { DatePicker } from "@material-ui/pickers";
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { 
-    Box,
-    Button,
     Card, 
     CardContent, 
     Chip, 
     Divider, 
-    Grid, 
     LinearProgress, 
     List, 
-    ListItem, 
-    ListItemSecondaryAction, 
-    ListItemText, 
     ListSubheader, 
     makeStyles, 
     Paper, 
-    TextField, 
     Tooltip,
     Typography,
 } from "@material-ui/core";
-import { useAddHoliday, useDeleteHoliday, useHolidays, useLeaveUsers, useRecalculateMasks } from "./hooks";
+import { useHolidays, useLeaveUsers } from "./hooks";
 import moment from "moment";
-import { DATE_FORMAT } from "./constants";
 import { handleError } from "./helpers";
 
 const useStyles = makeStyles(theme => ({
