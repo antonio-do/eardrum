@@ -22,10 +22,10 @@ import {
     Tooltip,
     Typography,
 } from "@material-ui/core";
-import { useAddHoliday, useDeleteHoliday, useHolidays, useLeaveUsers, useRecalculateMasks } from "./hooks";
+import { useHolidays, usePatchHolidays, useRecalculateMasks } from "./hooks";
 import moment from "moment";
 import { DATE_FORMAT } from "./constants";
-import { handleError } from "./helpers";
+import { handleError, holidayComparator } from "./helpers";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -42,43 +42,49 @@ const useStyles = makeStyles(theme => ({
 
 const LeaveHoliday = ({signal, reload}) => {
     const [year, setYear] = useState(new Date().getFullYear());
-    const fetchHoliday = useHolidays();
+    const fetchHolidays = useHolidays();
     const [isEditHoliday, setIsEditHoliday] = useState(false);
-    const deleteHoliday = useDeleteHoliday();
-    const addHoliday = useAddHoliday();
     const [holiday, setHoliday] = useState(null);
     const recalculateMasks = useRecalculateMasks();
+    const [holidays, setHolidays] = useState([]);
+    const patchHolidays = usePatchHolidays();
 
     const classes = useStyles();
 
     useEffect(() => {
         const fetchApi = async () => {
-            await fetchHoliday.execute({year: year});
-            handleError(fetchHoliday, "Error fetching holidays.");
+            await fetchHolidays.execute({year: year});
+            handleError(fetchHolidays, "Error fetching holidays.");
         }
         fetchApi();
     }, [year])
 
-    const handleDeleteHoliday = async (holiday) => {
-        await deleteHoliday.execute({date: holiday})
-        handleError(deleteHoliday, "Error deleting holiday.");
-        if (!deleteHoliday.error) {
-            await fetchHoliday.execute({year: year})
-            handleError(deleteHoliday, "Error fetching holidays");
+    useEffect(() => {
+        if (fetchHolidays.data) {
+            // shallow copy
+            setHolidays(fetchHolidays.data.slice())
         }
+    }, [fetchHolidays.data])
+
+    const handleDeleteHoliday = (holiday) => {
+        setHolidays(holidays => holidays.filter(item => item.date !== holiday))
     }
 
-    const handleAddHoliday = async (holiday) => {
-        await addHoliday.execute({date: holiday})
-        handleError(addHoliday, "Error adding holiday.");
-        if (!addHoliday.error) {
-            await fetchHoliday.execute({year: year})
-            handleError(fetchHoliday, "Error fetching holidays.");
-        }
+    const handleAddHoliday = (holiday) => {
+        setHolidays(holidays => {
+            let holiday_id = moment(holiday).format(DATE_FORMAT.VALUE)
+            let holiday_date = moment(holiday).startOf('day').toDate();
+            if (holidays.map(holiday => holiday.id).includes(holiday_id)) return holidays;
+            let new_holidays = holidays.concat([{id: holiday_id, date: holiday_date}])
+            new_holidays.sort(holidayComparator);
+            return new_holidays;
+        });
     }
 
     const onDoneEdit = async () => {
-        if (isEditHoliday) {
+        await patchHolidays.execute({year: year, holidays: holidays});
+        handleError(patchHolidays, "Error updating holidays");
+        if (!patchHolidays.error && isEditHoliday) {
             await recalculateMasks.execute({year: year});
             handleError(recalculateMasks, "Error updating statistics", "Statistics updated");
             reload();
@@ -96,7 +102,7 @@ const LeaveHoliday = ({signal, reload}) => {
                     </Button>
                 </ListItemSecondaryAction>
             </ListSubheader>
-            {fetchHoliday.loading && <LinearProgress/>}
+            {fetchHolidays.loading && <LinearProgress/>}
             <Paper>
                 <div className={classes.yearInput}>
                     <TextField 
@@ -128,15 +134,15 @@ const LeaveHoliday = ({signal, reload}) => {
                             <Grid item container direction="column" xs={4}>
                                 <Button onClick={() => { 
                                     if (holiday === null) return;
-                                    setHoliday(null); 
-                                    handleAddHoliday(moment(holiday).format(DATE_FORMAT.VALUE))
+                                    handleAddHoliday(holiday)
+                                    setHoliday(null);
                                 }}>Add</Button>
                                 <Button onClick={() => setHoliday(null)}>Clear</Button>
                             </Grid>
                         </Grid>
                     </Box>}
                     <Divider/>
-                    {fetchHoliday.data.map(item => 
+                    {holidays.map(item => 
                         (<Fragment>
                             <ListItem>
                                 <ListItemText 
@@ -149,7 +155,7 @@ const LeaveHoliday = ({signal, reload}) => {
                                 {isEditHoliday && <ListItemSecondaryAction>
                                     <Button 
                                         onClick={() => {
-                                            handleDeleteHoliday(moment(item.date).format(DATE_FORMAT.VALUE))
+                                            handleDeleteHoliday(item.date)
                                         }}
                                     >
                                         Remove

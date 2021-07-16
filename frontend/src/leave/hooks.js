@@ -130,24 +130,11 @@ const useLeaveUsers = () => actionOnCall(options => ({
   return data;
 }, [])
 
-// options: { date: string }
-const useAddHoliday = () => actionOnCall(options => ({
-  method: 'post',
-  url: routes.api.addHoliday(),
-  data: { date: options.date }
-}))
-
-// options: { date: string }
-const useDeleteHoliday = () => actionOnCall(options => ({
-  method: 'delete',
-  url: routes.api.deleteHoliday(options.date),
-}))
-
 // options: { year: string, holidays: array of dates}
 const usePatchHolidays = () => actionOnCall(options => ({
   method: 'patch',
   url: routes.api.holidays(options.year),
-  data: {holidays: options.holidays.map(date => moment(date).format(DATE_FORMAT.VALUE)).join(" ")}
+  data: {holidays: options.holidays.map(date => date.id).join(" ")}
 }))
 
 function useHolidays() {
@@ -201,8 +188,6 @@ export {
   useDeleteLeave,
   useStat,
   useHolidays,
-  useAddHoliday,
-  useDeleteHoliday,
   useLeaveUsers,
   useRecalculateMasks,
   usePatchHolidays,

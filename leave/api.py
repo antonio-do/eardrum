@@ -172,7 +172,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         return Response(res)
 
-    @decorators.action(methods=['GET', 'POST', 'DELETE', 'PATCH'], detail=False)
+    @decorators.action(methods=['GET', 'PATCH'], detail=False)
     def holidays(self, request, *args, **kargs):    
         if request.method == "GET":
             year = request.query_params.get('year')
@@ -187,57 +187,6 @@ class LeaveViewSet(mixins.CreateModelMixin,
                     return Response(holidays)
             else:
                 return Response(None, status=status.HTTP_404_NOT_FOUND)
-
-        elif request.method == "POST":
-            date = request.data.get('date')
-            _, date = self.get_validated_query_value('date', date)
-            if date is not None:
-                year = date[:4]
-
-                (config_entry, create) = ConfigEntry.objects.get_or_create(name='holidays_{}'.format(year))
-                if config_entry.extra is None:
-                    config_entry.extra = ""
-                if date not in config_entry.extra:
-                    config_entry.extra = '\n'.join(config_entry.extra.split() + [date])
-                    config_entry.save(update_fields=['extra'])
-                
-                return Response({'date': date}, status=status.HTTP_201_CREATED)
-            else:
-                ret = {
-                    "message": "date not provided or not in the correct format (YYYYMMDD)"
-                }
-
-                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-
-        elif request.method == "DELETE":
-            date = request.query_params.get('date')
-            _, date = self.get_validated_query_value('date', date)
-            if date is not None:
-                year = date[:4]
-
-                try: 
-                    config_entry = ConfigEntry.objects.get(name='holidays_{}'.format(year))
-                
-                except ConfigEntry.DoesNotExist:
-                    return Response(status=status.HTTP_404_NOT_FOUND)
-                
-                else:
-                    if config_entry.extra is None:
-                        config_entry.extra = ""
-
-                    if date in config_entry.extra:
-                        config_entry.extra = '\n'.join([holiday for holiday in config_entry.extra.split() if holiday != date])
-                        config_entry.save(update_fields=['extra'])
-                        return Response(status=status.HTTP_204_NO_CONTENT)
-                    else:
-                        return Response(status=status.HTTP_404_NOT_FOUND)
-                
-            else:
-                ret = {
-                    "message": "date not provided or not in the correct format (YYYYMMDD)"
-                }
-
-                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
         elif request.method == "PATCH":
             year = request.query_params.get('year')
