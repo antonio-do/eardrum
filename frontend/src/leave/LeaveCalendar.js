@@ -86,7 +86,6 @@ const LeaveCalendar = ({refreshCount}) => {
                         value={date}
                         renderDay={renderDay}
                         onChange={setDate}
-                        onYearChange={(date) => console.log(date)}
                     />
                 </MuiPickersUtilsProvider>
             </Paper>

@@ -42,7 +42,6 @@ const LeaveMainPage = () => {
   const classes = useStyles();
 
   const refresh = () => {
-    console.log(refreshCount);
     setRefreshCount(refreshCount => refreshCount + 1)
   };
 
