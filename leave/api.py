@@ -189,8 +189,11 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 return Response(None, status=status.HTTP_404_NOT_FOUND)
 
         elif request.method == "PATCH":
+            if not self.is_admin_user():
+                return Response(status=status.HTTP_403_FORBIDDEN)
+
             year = request.query_params.get('year')
-            year = "2021"
+
             _, year = self.get_validated_query_value('year', year)
             if year is not None:
                 holidays = request.data.get('holidays').split()

@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useContext, useEffect, useState } from "react";
 import { DatePicker } from "@material-ui/pickers";
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
@@ -22,7 +22,7 @@ import {
     Tooltip,
     Typography,
 } from "@material-ui/core";
-import { useHolidays, usePatchHolidays, useRecalculateMasks } from "./hooks";
+import { LeaveContext, useHolidays, usePatchHolidays, useRecalculateMasks } from "./hooks";
 import moment from "moment";
 import { DATE_FORMAT } from "./constants";
 import { handleError, holidayComparator } from "./helpers";
@@ -48,6 +48,7 @@ const LeaveHoliday = ({signal, reload}) => {
     const recalculateMasks = useRecalculateMasks();
     const [holidays, setHolidays] = useState([]);
     const patchHolidays = usePatchHolidays();
+    const leaveContext = useContext(LeaveContext);
 
     const classes = useStyles();
 
@@ -82,12 +83,14 @@ const LeaveHoliday = ({signal, reload}) => {
     }
 
     const onDoneEdit = async () => {
-        await patchHolidays.execute({year: year, holidays: holidays});
-        handleError(patchHolidays, "Error updating holidays");
-        if (!patchHolidays.error && isEditHoliday) {
-            await recalculateMasks.execute({year: year});
-            handleError(recalculateMasks, "Error updating statistics", "Statistics updated");
-            reload();
+        if (isEditHoliday) {
+            await patchHolidays.execute({year: year, holidays: holidays});
+            handleError(patchHolidays, "Error updating holidays");
+            if (!patchHolidays.error && isEditHoliday) {
+                await recalculateMasks.execute({year: year});
+                handleError(recalculateMasks, "Error updating statistics", "Statistics updated");
+                reload();
+            }
         }
         setIsEditHoliday(edit => !edit)
     }
@@ -96,11 +99,11 @@ const LeaveHoliday = ({signal, reload}) => {
         <Paper className={classes.root}>
             <ListSubheader className={classes.list}>
                 Holidays
-                <ListItemSecondaryAction>
+                {leaveContext.currentUser.is_admin && <ListItemSecondaryAction>
                     <Button variant="contained" onClick={onDoneEdit}>
                         {isEditHoliday ? "Done" : "Edit"}
                     </Button>
-                </ListItemSecondaryAction>
+                </ListItemSecondaryAction>}
             </ListSubheader>
             {fetchHolidays.loading && <LinearProgress/>}
             <Paper>
@@ -115,7 +118,7 @@ const LeaveHoliday = ({signal, reload}) => {
                     />
                 </div>
                 <List>
-                    {isEditHoliday && <Box ml={1}>
+                    {leaveContext.currentUser.is_admin && isEditHoliday && <Box ml={1}>
                         <Grid container direction="row" alignItems="center">
                             <Grid item xs={8}>
                             <DatePicker
@@ -152,7 +155,7 @@ const LeaveHoliday = ({signal, reload}) => {
                                             ? "Passed"
                                             : `${moment(item.date).diff(moment().startOf('day'), 'days')} day(s) left`
                                     } />
-                                {isEditHoliday && <ListItemSecondaryAction>
+                                {leaveContext.currentUser.is_admin && isEditHoliday && <ListItemSecondaryAction>
                                     <Button 
                                         onClick={() => {
                                             handleDeleteHoliday(item.date)
