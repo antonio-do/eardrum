@@ -9,6 +9,7 @@ import LeaveStat from './LeaveStat';
 import LeavePending from './LeavePending';
 import LeaveResolved from './LeaveResolved';
 import { DatePicker } from "@material-ui/pickers";
+import LeaveHoliday from './LeaveHoliday';
 
 // Note: makeStyles must be imported from @material-ui/core to use theme.spacing or theme.breakpoints
 // TODO: refactor layout in src/App.js
@@ -53,6 +54,7 @@ const LeaveMainPage = () => {
             </Grid>
             <Grid item style={{maxWidth: "350px"}}>
                 <LeaveCalendar signal={signal} reload={reload}/>
+                <LeaveHoliday signal={signal} reload={reload}/>
             </Grid>
             <Grid item style={{flexGrow: 1}}>
                 <LeavePending reload={reload} signal={signal}/>
