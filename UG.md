@@ -67,6 +67,7 @@ This app allow users to submit and organize application for leave.
   * Admin users can:
     * Perform any action normal users can, without user restriction (i.e. can manage leave applications of anyone)
     * Approve or reject any pending application
+    * Edit holidays
 
 #### Configuration
   * To edit holidays: edit entries (format "YYYYMMDD") into Config entries object `holidays_<year>` 
