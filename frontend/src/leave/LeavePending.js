@@ -115,20 +115,20 @@ const LeavePending = ({refresh, refreshCount}) => {
 
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
-    { field: 'startdate', headerName: 'Start date', type: 'string', flex: 1, },
-    { field: 'enddate', headerName: 'End date', type: 'string', flex: 1, },
+    { field: 'startdate', headerName: 'Start date', type: 'string', flex: 1, filterable: false, },
+    { field: 'enddate', headerName: 'End date', type: 'string', flex: 1, filterable: false, },
     { field: 'type', headerName: 'Type', type: 'string', flex: 1, sortable: false, renderCell: renderTypeCell, },
     { field: 'beautified_half', headerName: 'Half-day leave', type: 'string', flex: 1, 
       description: "Whether the leave request apply for half-day leave on the first and last day, respectively", sortable: false,
       valueGetter: (params) => params.getValue(params.id, "half").replace(/[01]/g, (m) => ({
         '0': '[ False ]',
         '1': '[ True ]'
-      }[m])), } ,
+      }[m])), filterable: false, } ,
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
-      renderCell: renderNoteCell, sortable: false, },
+      renderCell: renderNoteCell, sortable: false, filterable: false, },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false, 
       renderCell: renderStatusCell, },
-    { field: 'action', headerName: 'Action', disableColumnMenu: true, sortable: false, 
+    { field: 'action', headerName: 'Action', disableColumnMenu: true, 
       renderCell: renderActionButtons , width: (leaveContext.currentUser.is_admin) * 160 + 80, }, 
   ].map(obj => ({...obj, renderHeader: renderHeader}));
 
