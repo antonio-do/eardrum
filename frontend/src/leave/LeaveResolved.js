@@ -65,6 +65,11 @@ const LeaveResolved = ({year, refreshCount, refresh}) => {
     <Chip label={params.value} variant="outlined"/>
   )
 
+  //https://github.com/mui-org/material-ui-x/issues/898
+  const renderHeader = (params) => (
+    <div style={{wrapText: true, overflow: "hidden", lineHeight: "20px", whiteSpace: "normal"}}>{params.colDef.headerName}</div>
+  )
+
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
     { field: 'startdate', headerName: 'Start date', type: 'string', flex: 1, },
@@ -81,7 +86,7 @@ const LeaveResolved = ({year, refreshCount, refresh}) => {
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false, renderCell: renderStatusCell },
     { field: 'action', headerName: 'Action', disableColumnMenu: true, sortable: false, 
       renderCell: renderActionButton , width: 100, hide: !leaveContext.currentUser.is_admin, },
-  ];
+  ].map(obj => ({...obj, renderHeader: renderHeader}));;
 
   return (
     <Box m={2}>

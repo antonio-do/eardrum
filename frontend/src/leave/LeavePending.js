@@ -87,14 +87,14 @@ const LeavePending = ({refresh, refreshCount}) => {
   const renderActionButtons = (params) => (
     <Fragment>
       {leaveContext.currentUser.is_admin 
-        && <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.row, APPROVE)}>
+        && <Button color='primary' style={{margin: 5}} size="small" onClick={() => onAction(params.row, APPROVE)}>
           Approve
       </Button>}
       {leaveContext.currentUser.is_admin 
-        && <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.row, REJECT)}>
+        && <Button color='primary' style={{margin: 5}} size="small" onClick={() => onAction(params.row, REJECT)}>
           Reject
       </Button>}
-      <Button color='primary' style={{margin: 5}} onClick={() => onAction(params.row, DELETE)}>
+      <Button color='primary' style={{margin: 5}} size="small" onClick={() => onAction(params.row, DELETE)}>
           Delete
       </Button>
     </Fragment>
@@ -108,6 +108,11 @@ const LeavePending = ({refresh, refreshCount}) => {
     <Chip label={params.value} variant="outlined"/>
   )
 
+  //https://github.com/mui-org/material-ui-x/issues/898
+  const renderHeader = (params) => (
+    <div style={{wrapText: true, overflow: "hidden", lineHeight: "20px", whiteSpace: "normal"}}>{params.colDef.headerName}</div>
+  )
+
   const columns = [
     { field: 'user', headerName: 'User', type: 'string', flex: 1, },
     { field: 'startdate', headerName: 'Start date', type: 'string', flex: 1, },
@@ -118,20 +123,20 @@ const LeavePending = ({refresh, refreshCount}) => {
       valueGetter: (params) => params.getValue(params.id, "half").replace(/[01]/g, (m) => ({
         '0': '[ False ]',
         '1': '[ True ]'
-      }[m]))} ,
+      }[m])), } ,
     { field: 'note', headerName: 'Note', type: 'string', flex: 1,
       renderCell: renderNoteCell, sortable: false, },
     { field: 'status', headerName: 'Status', type: 'string', flex: 1, sortable: false, 
       renderCell: renderStatusCell, },
     { field: 'action', headerName: 'Action', disableColumnMenu: true, sortable: false, 
-      renderCell: renderActionButtons , width: (leaveContext.currentUser.is_admin) * 200 + 100},
-  ];
+      renderCell: renderActionButtons , width: (leaveContext.currentUser.is_admin) * 160 + 80, }, 
+  ].map(obj => ({...obj, renderHeader: renderHeader}));
 
   return (
     <Box m={2}>
         <Typography variant="h5" gutterBottom>Pending requests</Typography>
         <DataGrid
-            autoHeight 
+            autoHeight
             rows={getLeaveAll.data} 
             columns={columns}
             pagination
