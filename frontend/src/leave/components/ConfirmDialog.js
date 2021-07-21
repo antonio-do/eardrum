@@ -1,8 +1,10 @@
-import React from 'react';
-import { Dialog, DialogContent, DialogActions, Button, DialogTitle, Table, TableRow, TableCell, Chip } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogActions, Button, DialogTitle, Table, TableRow, TableCell, Chip, TextField } from '@material-ui/core';
 import { STATUS_TYPES } from '../constants';
 
-export default ({ content, onConfirm, open, setOpen, title }) => {
+export default ({ content, onConfirm, open, setOpen, title, isReject = false, setNewNote}) => {
+    const [reason, setReason] = useState("")
+
     let item = JSON.stringify(content) === "{}" ? {} : ({
         'User': content['user'],
         'Half day leave on the first day': content['half'][0] === "0" ? "No" : "Yes",
@@ -37,6 +39,24 @@ export default ({ content, onConfirm, open, setOpen, title }) => {
                             </TableRow>
                         )}
                     </Table>
+                    {isReject && <TableRow>
+                        <TableCell>Rejection reason</TableCell>
+                        <TableCell>
+                            <TextField
+                                onChange={ (event) => {
+                                    setReason(event.target.value); 
+                                    setNewNote(content['note'] + '\n===Rejecting reason===\n' + event.target.value);
+                                } }
+                                placeholder=" "
+                                variant='outlined'
+                                margin="normal"
+                                multiline
+                                rows={5}
+                                rowsMax={5}
+                                fullWidth
+                            />
+                        </TableCell>
+                    </TableRow>}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={ () => {onConfirm(); setOpen(false); }} color="primary">

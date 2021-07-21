@@ -20,6 +20,7 @@ const LeavePending = ({refresh, refreshCount}) => {
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
   const [dialogTitle, setDialogTitle] = useState({})
   const [dialogContent, setDialogContent] = useState({})
+  const [newNote, setNewNote] = useState("")
 
   useEffect(() => {
     const fetchApi = async () => {
@@ -64,7 +65,7 @@ const LeavePending = ({refresh, refreshCount}) => {
         handleError(updateLeave, "Something went wrong", "Leave request approved");
         break;
       case REJECT:
-        await updateLeave.execute({id: id, data: {status: STATUS_TYPES.REJECTED}});
+        await updateLeave.execute({id: id, data: {status: STATUS_TYPES.REJECTED, note: newNote}});
         handleError(updateLeave, "Something went wrong", "Leave request rejected");
         break;
       case DELETE:
@@ -162,6 +163,8 @@ const LeavePending = ({refresh, refreshCount}) => {
           setOpen={setOpenRejectDialog}
           content={dialogContent}
           title={dialogTitle}
+          isReject
+          setNewNote = {setNewNote}
         /> 
         <ConfirmDialog 
           onConfirm={() => onActionConfirm(leaveId, DELETE)} 
