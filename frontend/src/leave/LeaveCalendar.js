@@ -103,7 +103,7 @@ const LeaveCalendar = ({refreshCount}) => {
                                     <Fragment>
                                         <Typography variant="h6" className={classes.chips}>{item.group}</Typography>
                                         {item.users.map(user => 
-                                            ((user.status !== '') && <Tooltip title={user.status} >
+                                            ((user.status !== '') && <Tooltip title={user.status} key={user.name}>
                                                 <Chip label={user.name} className={classes.chips}/>
                                             </Tooltip>)
                                         )}

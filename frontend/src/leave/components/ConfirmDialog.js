@@ -27,36 +27,38 @@ export default ({ content, onConfirm, open, setOpen, title, isReject = false, se
             <DialogTitle>{title}</DialogTitle>
                 <DialogContent>
                     <Table>
-                    {/*TODO: use table*/}
-                        {Object.entries(item).map(([key, value]) => 
-                            <TableRow>
+                        <tbody> 
+                        {/*https://stackoverflow.com/questions/39915629/validatedomnesting-tr-cannot-appear-as-a-child-of-div*/}
+                            {Object.entries(item).map(([key, value]) => 
+                                <TableRow key={key}>
+                                    <TableCell>
+                                        {key}
+                                    </TableCell>
+                                    <TableCell>
+                                        {value}
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                            {isReject && <TableRow>
+                                <TableCell>Rejection reason</TableCell>
                                 <TableCell>
-                                    {key}
+                                    <TextField
+                                        onChange={ (event) => {
+                                            setReason(event.target.value); 
+                                            setNewNote(content['note'] + '\n===Rejecting reason===\n' + event.target.value);
+                                        } }
+                                        placeholder=" "
+                                        variant='outlined'
+                                        margin="normal"
+                                        multiline
+                                        rows={5}
+                                        rowsMax={5}
+                                        fullWidth
+                                    />
                                 </TableCell>
-                                <TableCell>
-                                    {value}
-                                </TableCell>
-                            </TableRow>
-                        )}
+                            </TableRow>}
+                        </tbody>
                     </Table>
-                    {isReject && <TableRow>
-                        <TableCell>Rejection reason</TableCell>
-                        <TableCell>
-                            <TextField
-                                onChange={ (event) => {
-                                    setReason(event.target.value); 
-                                    setNewNote(content['note'] + '\n===Rejecting reason===\n' + event.target.value);
-                                } }
-                                placeholder=" "
-                                variant='outlined'
-                                margin="normal"
-                                multiline
-                                rows={5}
-                                rowsMax={5}
-                                fullWidth
-                            />
-                        </TableCell>
-                    </TableRow>}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={ () => {onConfirm(); setOpen(false); }} color="primary">
