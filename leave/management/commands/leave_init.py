@@ -72,7 +72,7 @@ class Command(BaseCommand):
         # base leave mask for a specific year
         mask_name = '__{}'.format(year)
         if LeaveMask.objects.filter(name=mask_name).count() == 0:
-            holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split('\r\n')
+            holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split()
             holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1
                                 for item in holidays]
             first_sat = 6 - (datetime.datetime(year, 1, 1).weekday() + 1) % 7
@@ -90,7 +90,8 @@ class Command(BaseCommand):
             leave_type_config = ConfigEntry.objects.get(name='leave_context')
             leave_types = json.loads(leave_type_config.extra)['leave_types']
             summary = json.dumps({leave_type['name']: 0 for leave_type in leave_types}, indent=2)
+            capacity = json.dumps({leave_type['name']: leave_type['limitation'] for leave_type in leave_types}, indent=2)
 
-            leave_mask = LeaveMask(name=mask_name, value=''.join(mask), summary=summary)
+            leave_mask = LeaveMask(name=mask_name, value=''.join(mask), summary=summary, capacity=capacity)
             leave_mask.save()
             self.stdout.write(self.style.SUCCESS('LeaveMask[name={}] is created'.format(mask_name)))

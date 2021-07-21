@@ -309,6 +309,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             }
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
+        # Recalculate base mask object
         holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split()
         holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1
                             for item in holidays]
@@ -327,15 +328,18 @@ class LeaveViewSet(mixins.CreateModelMixin,
         leave_type_config = ConfigEntry.objects.get(name='leave_context')
         leave_types = json.loads(leave_type_config.extra)['leave_types']
         summary = json.dumps({leave_type['name']: 0 for leave_type in leave_types}, indent=2)
+        capacity = json.dumps({leave_type['name']: leave_type['limitation'] for leave_type in leave_types})
 
         mask_name = '__{}'.format(year)
         (leave_mask, _) = LeaveMask.objects.get_or_create(name=mask_name)
         leave_mask.value = ''.join(mask)
         leave_mask.summary = summary
+        leave_mask.capacity = capacity
         leave_mask.save()
 
         success = []
         failed = []
+        # Recaculate instance masks
         for user in User.objects.all():
             try:
                 mask = get_mask(user=user.username, year=year)
