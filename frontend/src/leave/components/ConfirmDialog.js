@@ -14,7 +14,7 @@ export default ({ content, onConfirm, open, setOpen, title }) => {
                     label={content['status']} 
                     color={content['status'] === STATUS_TYPES.PENDING ? "default" : "primary"}
                     variant={content['status'] === STATUS_TYPES.REJECTED ? "outlined" : "default"}/>,
-        'Note': content['note'].split('\n').map(line => <div>{line}</div>),
+        'Note': content['note'].split('\n').map((line, index) => <div key={index}>{line}</div>),
     })
     return (
         <Dialog
