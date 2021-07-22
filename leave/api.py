@@ -366,48 +366,56 @@ class LeaveViewSet(mixins.CreateModelMixin,
         }
         return Response(ret)
 
-    @decorators.action(methods=['PATCH'], detail=False)
+    @decorators.action(methods=['GET', 'PATCH'], detail=False)
     def capacity(self, request,*args, **kargs):
         year = request.query_params.get('year')
         _, year = self.get_validated_query_value('year', year)
 
-        success = []
-        failed = []
         if year is not None or LeaveMask.objects.filter(name='__{}'.format(year)).count() != 0:
-            for user, data in request.data.items():
-                try:
-                    mask_name = "{user}_{year}".format(user=user, year=year)
-                    if LeaveMask.objects.filter(name=mask_name).count() == 0:
-                        raise LeaveMask.DoesNotExist("User not exist")
+            if request.method == 'GET':
+                mask = lambda user: LeaveMask.objects.get(name="{user}_{year}".format(user=user.username, year=year))
+                data = {user.username: json.loads(mask(user).capacity) for user in User.objects.all()}
+                return Response({
+                    "capacity": data,
+                })
 
-                    user_mask = LeaveMask.objects.get(name="{user}_{year}".format(user=user, year=year))
+            elif request.method == 'PATCH':
+                success = []
+                failed= []
+                for user, data in request.data.items():
+                    try:
+                        mask_name = "{user}_{year}".format(user=user, year=year)
+                        if LeaveMask.objects.filter(name=mask_name).count() == 0:
+                            raise LeaveMask.DoesNotExist("User not exist")
 
-                    if not isinstance(data, dict):
-                        raise TypeError("Update data is not an object")
+                        user_mask = LeaveMask.objects.get(name="{user}_{year}".format(user=user, year=year))
 
-                    capacity = json.loads(user_mask.capacity)
-                    
-                    for leave_type in data:
-                        if capacity.get(leave_type) is None:
-                            raise KeyError("Leave type(s) not exist")
+                        if not isinstance(data, dict):
+                            raise TypeError("Update data is not an object")
 
-                        if not (type(data[leave_type]) is int or type(data[leave_type]) is float):
-                            raise TypeError("Leave capacity is not a number")
-
-                        capacity[leave_type] = data[leave_type]
-
-                    user_mask.capacity = json.dumps(capacity, indent=2)
-                    user_mask.save(update_fields=['capacity'])
-                    success.append({'user': user})
-
-                except Exception as e:
-                    failed.append({'user': user, 'error': str(e)})
+                        capacity = json.loads(user_mask.capacity)
                         
-            ret = {
-                'success': success,
-                'failed': failed,
-            }
-            return Response(ret)
+                        for leave_type in data:
+                            if capacity.get(leave_type) is None:
+                                raise KeyError("Leave type(s) not exist")
+
+                            if not (type(data[leave_type]) is int or type(data[leave_type]) is float):
+                                raise TypeError("Leave capacity is not a number")
+
+                            capacity[leave_type] = data[leave_type]
+
+                        user_mask.capacity = json.dumps(capacity, indent=2)
+                        user_mask.save(update_fields=['capacity'])
+                        success.append({'user': user})
+
+                    except Exception as e:
+                        failed.append({'user': user, 'error': str(e)})
+                            
+                ret = {
+                    'success': success,
+                    'failed': failed,
+                }
+                return Response(ret)
 
         else:
             return Response(None, status=status.HTTP_404_NOT_FOUND)
