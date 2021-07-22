@@ -178,6 +178,19 @@ const useRecalculateMasks = () => actionOnCall(options => ({
   data: { year: options.year }
 }))
 
+// options: { year: string }
+const useGetCapacities = () => actionOnCall(options => ({
+  method: 'get',
+  url: routes.api.capacity(options.year),
+}), response => response.data)
+
+// options: { year: year, capacities: { <user>: { <leave_type>: <limitation> } } }
+const usePatchCapacities = () => actionOnCall(options => ({
+  method: 'patch',
+  url: routes.api.capacity(options.year),
+  data: { data: capacities },
+}))
+
 export {
   LeaveContext,
   useLeaveContext, 
@@ -191,4 +204,6 @@ export {
   useLeaveUsers,
   useRecalculateMasks,
   usePatchHolidays,
+  useGetCapacities,
+  usePatchCapacities,
 }

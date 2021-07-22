@@ -13,5 +13,6 @@ export default {
         holidays: (year) => `/api/leave/holidays/?year=${year}`,
         leaveUsers: (date) => `/api/leave/leave_users?date=${date}`,
         recalculateMasks: () => `/api/leave/recalculate_masks/`,
+        capacity: (year) => `/api/leave/capacity/?year=${year}`,
     }
 }
