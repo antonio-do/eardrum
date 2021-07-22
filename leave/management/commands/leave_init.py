@@ -8,7 +8,7 @@ from django.core.management.base import (
 )
 
 from leave.models import ConfigEntry, LeaveMask
-
+from django.contrib.auth.models import User
 
 class Command(BaseCommand):
     help = "Create config for a year"
@@ -95,3 +95,16 @@ class Command(BaseCommand):
             leave_mask = LeaveMask(name=mask_name, value=''.join(mask), summary=summary, capacity=capacity)
             leave_mask.save()
             self.stdout.write(self.style.SUCCESS('LeaveMask[name={}] is created'.format(mask_name)))
+
+        # instance leave mask for the year for each user
+        for user in User.objects.all():
+            mask = LeaveMask.objects.get(name="__{year}".format(year=year))
+            user_mask_name = '{user}_{year}'.format(user=user, year=year)
+            if LeaveMask.objects.filter(name=user_mask_name).count() == 0:
+                mask.name = '{user}_{year}'.format(user=user, year=year)
+                mask.pk = None
+                mask.save()
+                self.stdout.write(self.style.SUCCESS('LeaveMask[name={}] is created'.format(user_mask_name)))
+            
+
+
