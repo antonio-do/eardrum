@@ -182,13 +182,19 @@ const useRecalculateMasks = () => actionOnCall(options => ({
 const useGetCapacities = () => actionOnCall(options => ({
   method: 'get',
   url: routes.api.capacity(options.year),
-}), response => response.data)
+}), response => {
+  return [Object.entries(response.data.capacities).map(([key, value]) => ({
+    id: key,
+    user: key,
+    ...value,
+  })), response.data.capacities]
+}, [[], {}])
 
 // options: { year: year, capacities: { <user>: { <leave_type>: <limitation> } } }
 const usePatchCapacities = () => actionOnCall(options => ({
   method: 'patch',
   url: routes.api.capacity(options.year),
-  data: { data: capacities },
+  data: options.capacities,
 }))
 
 export {

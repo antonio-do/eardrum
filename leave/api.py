@@ -376,7 +376,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 mask = lambda user: LeaveMask.objects.get(name="{user}_{year}".format(user=user.username, year=year))
                 data = {user.username: json.loads(mask(user).capacity) for user in User.objects.all()}
                 return Response({
-                    "capacity": data,
+                    "capacities": data,
                 })
 
             elif request.method == 'PATCH':
