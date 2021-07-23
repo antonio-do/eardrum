@@ -34,17 +34,27 @@ const useCurrentUser = () => fetchOnStart(routes.api.currentUser(), response => 
 
 
 
-const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, initialData = null ) => {
+const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, initialData = null, defaultOnError = {}) => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(initialData);
   const [error, setError] = useState(null);
 
   const execute = async (options) => {
     setLoading(true)
-    await axios(axiosConfigGetter(options))
-      .then((response) => setResponse(dataExtractor(response)))
-      .catch((error) => setError(error))
-      .finally(() => setLoading(false));
+    try {
+      let response = await axios(axiosConfigGetter(options))
+      setResponse(dataExtractor(response))
+    } catch (e) {
+      let status = e.response.status;
+      if (defaultOnError[status] !== undefined) {
+        setResponse(defaultOnError[status])
+      } else {
+        setError(e)
+      }
+    } finally {
+      setLoading(false);
+      console.log(error)
+    }
   };
 
   return { execute, loading, data: response, error };
@@ -103,7 +113,7 @@ const useStat = () => actionOnCall(options => ({
     ...item,
     id: item.user,
   }))
-}, [])
+}, [], {404: []})
 
 // options: { date: string }
 const useLeaveUsers = () => actionOnCall(options => ({
@@ -137,39 +147,18 @@ const usePatchHolidays = () => actionOnCall(options => ({
   data: {holidays: options.holidays.map(date => date.id).join(" ")}
 }))
 
-function useHolidays() {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState([]);
-  const [error, setError]= useState(null);
+const useHolidays = () => actionOnCall(options => ({
+  method: 'get',
+  url: routes.api.holidays(options.year),
+}), response => {
+  let unsortedHolidays = response.data.map((item) => ({
+    "id" : item,
+    "date": moment(item, DATE_FORMAT.VALUE).toDate(),
+  }))
 
-  const execute = async (options) => {
-    setLoading(true);
-    try {
-      let response = await axios({
-        method: 'get', 
-        url: routes.api.holidays(options.year),
-      })
-        
-      let unsortedHolidays = response.data.map((item) => ({
-        "id" : item,
-        "date": moment(item, DATE_FORMAT.VALUE).toDate(),
-      }))
-
-      unsortedHolidays.sort(holidayComparator);
-      setData(unsortedHolidays)
-    } catch(error) {
-      // year could be either an integer or a string representing an integer
-      if ((Number.isInteger(options.year) || !isNaN(options.year)) && error.response && error.response.status === 404) {
-        setData([]);
-      } else {
-        setError(error)
-      }
-    }
-    setLoading(false);
-  }
-
-  return { execute, loading, data, error };
-}
+  unsortedHolidays.sort(holidayComparator);
+  return unsortedHolidays;
+}, [], {404: []})
 
 // options: { year: string }
 const useRecalculateMasks = () => actionOnCall(options => ({
@@ -188,7 +177,7 @@ const useGetCapacities = () => actionOnCall(options => ({
     user: key,
     ...value,
   })), response.data.capacities]
-}, [[], {}])
+}, [[], {}], {404: [[], {}]})
 
 // options: { year: year, capacities: { <user>: { <leave_type>: <limitation> } } }
 const usePatchCapacities = () => actionOnCall(options => ({

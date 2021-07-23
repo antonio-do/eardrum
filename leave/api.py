@@ -252,7 +252,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                     mask = get_mask(user=user, year=year)
                     stat = json.loads(mask.summary)
                 except LeaveMask.DoesNotExist:
-                    stat = {leave_type['name']: 0 for leave_type in leave_types}
+                    return Response(None, status=status.HTTP_404_NOT_FOUND)
                 stats.append({**stat, 'user': user.username})
 
             ret = {
@@ -371,7 +371,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         year = request.query_params.get('year')
         _, year = self.get_validated_query_value('year', year)
 
-        if year is not None or LeaveMask.objects.filter(name='__{}'.format(year)).count() != 0:
+        if year is not None and LeaveMask.objects.filter(name='__{}'.format(year)).count() != 0:
             if request.method == 'GET':
                 users = User.objects.all()
                 if not self.is_admin_user():
