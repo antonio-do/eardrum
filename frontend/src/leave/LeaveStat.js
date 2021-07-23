@@ -17,6 +17,7 @@ const LeaveStat = ({year, refreshCount}) => {
     const [editRowsModel, setEditRowsModel] = useState({})
     const patchCapacities = usePatchCapacities();
     const [localRefreshCount, setLocalRefreshCount] = useState(0)
+    const [statWithCap, setStatWithCap] = useState([])
 
     useEffect(() => {
         const fetchApi = async () => {
@@ -37,10 +38,23 @@ const LeaveStat = ({year, refreshCount}) => {
     }, [year, localRefreshCount])
 
     useEffect(() => {
-        if (getCapacities.data) {
+        if (JSON.stringify(getCapacities.data[1]) !== '{}') {
             setTempCapacities(getCapacities.data[1]);
         }
     }, [getCapacities.data])
+
+    useEffect(() => {
+        if (JSON.stringify(getCapacities.data[1]) !== '{}' && getStat.data) {
+            let arr = JSON.parse(JSON.stringify(getStat.data))
+            arr.forEach(obj => {
+                leaveContext.leaveTypes.forEach(item => {
+                    console.log(getCapacities.data[1])
+                    obj[item.name] = obj[item.name] + '/' + getCapacities.data[1][obj.user][item.name]
+                })
+            })
+            setStatWithCap(arr)
+        }
+    }, [getCapacities.data, getStat.data])
 
     const statisticsColumns = [{ 
         field: 'user', 
@@ -51,9 +65,9 @@ const LeaveStat = ({year, refreshCount}) => {
         field: item.name, 
         renderHeader: (params) => (
             <Grid container direction="row">
-                <Typography gutterBottom>{item.label} (max: {item.limitation}d)</Typography>
+                <Typography gutterBottom>{item.label}</Typography>
                 <Tooltip title={`Number of ${item.label} leave days ` 
-                        + `spent for each user (max: ${item.limitation} days)`} >
+                        + `spent for each user/Maximum number of ${item.label} leave days for that user`} >
                     <HelpOutlineOutlinedIcon style={{marginLeft:5}} fontSize="small"/>
                 </Tooltip>
             </Grid>
@@ -124,7 +138,7 @@ const LeaveStat = ({year, refreshCount}) => {
         </Grid>
          <DataGrid
             autoHeight
-            rows={getStat.data}
+            rows={statWithCap}
             columns={statisticsColumns}
             pagination
             pageSize={10}
