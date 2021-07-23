@@ -71,6 +71,7 @@ const LeaveStat = ({year, refreshCount}) => {
         flex: 0.5,
     }].concat(leaveContext.leaveTypes.map((item) => ({ 
         field: item.name, 
+        headerName: item.label,
         type: 'string', 
         sortable: false,
         editable: leaveContext.currentUser.is_admin,
