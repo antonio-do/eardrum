@@ -373,13 +373,20 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
         if year is not None or LeaveMask.objects.filter(name='__{}'.format(year)).count() != 0:
             if request.method == 'GET':
+                users = User.objects.all()
+                if not self.is_admin_user():
+                    users = users.filter(username=self.request.user.username)
+
                 mask = lambda user: LeaveMask.objects.get(name="{user}_{year}".format(user=user.username, year=year))
-                data = {user.username: json.loads(mask(user).capacity) for user in User.objects.all()}
+                data = {user.username: json.loads(mask(user).capacity) for user in users}
                 return Response({
                     "capacities": data,
                 })
 
             elif request.method == 'PATCH':
+                if not self.is_admin_user():
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+
                 success = []
                 failed= []
                 for user, data in request.data.items():
@@ -394,7 +401,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                             raise TypeError("Update data is not an object")
 
                         capacity = json.loads(user_mask.capacity)
-                        
+
                         for leave_type in data:
                             if capacity.get(leave_type) is None:
                                 raise KeyError("Leave type(s) not exist")
@@ -410,7 +417,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
                     except Exception as e:
                         failed.append({'user': user, 'error': str(e)})
-                            
+
                 ret = {
                     'success': success,
                     'failed': failed,

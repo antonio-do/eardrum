@@ -5,12 +5,14 @@ import { DataGrid } from '@material-ui/data-grid';
 import { LeaveContext, useGetCapacities, usePatchCapacities, useStat } from './hooks';
 import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
 import { handleError } from './helpers';
+import { Fragment } from 'react';
 
 const LeaveStat = ({year, refreshCount}) => {
     const leaveContext = useContext(LeaveContext);
     const getStat = useStat();
-    const [open, setOpen] = useState(false);
+    const [openCapDialog, setOpenCapDialog] = useState(false);
     const getCapacities = useGetCapacities();
+    // local version of the capacities, to be submitted to API if required
     const [tempCapacities, setTempCapacities] = useState([])
     const [editRowsModel, setEditRowsModel] = useState({})
     const patchCapacities = usePatchCapacities();
@@ -71,7 +73,7 @@ const LeaveStat = ({year, refreshCount}) => {
         field: item.name, 
         type: 'string', 
         sortable: false,
-        editable: true,
+        editable: leaveContext.currentUser.is_admin,
         flex: 1, 
         disableColumnMenu: true,
     })))
@@ -99,14 +101,14 @@ const LeaveStat = ({year, refreshCount}) => {
     }
 
     const onSubmit = async () => {
-        setOpen(false)
+        setOpenCapDialog(false)
         await patchCapacities.execute({year: year, capacities: tempCapacities})
         handleError(patchCapacities, "Error updating leave capacities", "Leave capacities updated successfully")
         setLocalRefreshCount(count => count + 1)
     }
 
     const onCancel = () => {
-        setOpen(false)
+        setOpenCapDialog(false)
         setTempCapacities(getCapacities.data[1])
     }
     
@@ -116,7 +118,7 @@ const LeaveStat = ({year, refreshCount}) => {
                 <Typography variant="h5" gutterBottom>Statistic (year {year})</Typography>
             </Grid>
             <Grid item>
-                <Button variant="outlined" onClick={() => setOpen(true)}>Edit leave capacity</Button>
+                <Button variant="outlined" onClick={() => setOpenCapDialog(true)}>{leaveContext.currentUser.is_admin ? "View/Edit" : "View"} leave capacity</Button>
             </Grid>
         </Grid>
          <DataGrid
@@ -128,7 +130,7 @@ const LeaveStat = ({year, refreshCount}) => {
             disableSelectionOnClick
             loading={getStat.loading}
         />
-        <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth='lg'>
+        <Dialog open={openCapDialog} onClose={() => setOpenCapDialog(false)} fullWidth maxWidth='lg'>
             <DialogTitle>Leave capacity</DialogTitle>
             <DialogContent>
                 <DataGrid
@@ -145,12 +147,18 @@ const LeaveStat = ({year, refreshCount}) => {
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={onSubmit} color="primary">
-                    Submit
-                </Button>
-                <Button onClick={onCancel} color="primary" autoFocus>
-                    Cancel
-                </Button>
+                {leaveContext.currentUser.is_admin 
+                    ?   <Fragment>
+                            <Button onClick={onSubmit} color="primary">
+                                Submit
+                            </Button>
+                            <Button onClick={onCancel} color="primary" autoFocus>
+                                Cancel
+                            </Button>
+                        </Fragment>
+                    :   <Button onClick={() => setOpenCapDialog(false)} color="primary">
+                            Back
+                        </Button>}
             </DialogActions>
         </Dialog>
     </Box>
