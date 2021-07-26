@@ -367,7 +367,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         return Response(ret)
 
     @decorators.action(methods=['GET', 'PATCH'], detail=False)
-    def capacity(self, request,*args, **kargs):
+    def capacity(self, request, *args, **kargs):
         year = request.query_params.get('year')
         _, year = self.get_validated_query_value('year', year)
 
@@ -377,8 +377,10 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 if not self.is_admin_user():
                     users = users.filter(username=self.request.user.username)
 
-                mask = lambda user: LeaveMask.objects.get(name="{user}_{year}".format(user=user.username, year=year))
-                data = {user.username: json.loads(mask(user).capacity) for user in users}
+                def mask_of(user):
+                    return LeaveMask.objects.get(name="{user}_{year}".format(user=user.username, year=year))
+
+                data = {user.username: json.loads(mask_of(user).capacity) for user in users}
                 return Response({
                     "capacities": data,
                 })
@@ -388,7 +390,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                     return Response(status=status.HTTP_403_FORBIDDEN)
 
                 success = []
-                failed= []
+                failed = []
                 for user, data in request.data.items():
                     try:
                         mask_name = "{user}_{year}".format(user=user, year=year)

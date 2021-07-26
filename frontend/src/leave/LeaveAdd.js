@@ -6,7 +6,6 @@ import { Link, useHistory } from 'react-router-dom';
 import { LeaveContext, useAddLeave } from './hooks';
 import moment from 'moment';
 import { DATE_FORMAT } from './constants';
-import { message } from 'antd';
 import { handleError } from './helpers';
 
 const useStyles = makeStyles((theme) => ({
