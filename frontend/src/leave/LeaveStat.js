@@ -21,8 +21,8 @@ const LeaveStat = ({year, refreshCount}) => {
 
     useEffect(() => {
         const fetchApi = async () => {
-            getStat.execute({year: year});
-            handleError(getStat, "Error fetching statistics.");
+            let result = getStat.execute({year: year});
+            handleError(result, "Error fetching statistics.");
         }
 
         fetchApi();
@@ -30,8 +30,8 @@ const LeaveStat = ({year, refreshCount}) => {
 
     useEffect(() => {
         const fetchApi = async () => {
-            await getCapacities.execute({year: year})
-            handleError(getCapacities, "Error fetching leave capacities");
+            let result = await getCapacities.execute({year: year})
+            handleError(result, "Error fetching leave capacities");
         }
 
         fetchApi();
@@ -48,7 +48,6 @@ const LeaveStat = ({year, refreshCount}) => {
             let arr = JSON.parse(JSON.stringify(getStat.data))
             arr.forEach(obj => {
                 leaveContext.leaveTypes.forEach(item => {
-                    console.log(getCapacities.data[1])
                     obj[item.name] = obj[item.name] + '/' + getCapacities.data[1][obj.user][item.name]
                 })
             })
@@ -117,8 +116,8 @@ const LeaveStat = ({year, refreshCount}) => {
 
     const onSubmit = async () => {
         setOpenCapDialog(false)
-        await patchCapacities.execute({year: year, capacities: tempCapacities})
-        handleError(patchCapacities, "Error updating leave capacities", "Leave capacities updated successfully")
+        let result = await patchCapacities.execute({year: year, capacities: tempCapacities})
+        handleError(result, "Error updating leave capacities", "Leave capacities updated successfully")
         setLocalRefreshCount(count => count + 1)
     }
 

@@ -33,31 +33,35 @@ const useLeaveContext = () => fetchOnStart(routes.api.context(), response => res
 const useCurrentUser = () => fetchOnStart(routes.api.currentUser(), response => response.data);
 
 
-
+// execute() return data and error since data and error of the outer object are asynchronously updated
 const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, initialData = null, defaultOnError = {}) => {
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(initialData);
+  const [data, setData] = useState(initialData);
   const [error, setError] = useState(null);
 
   const execute = async (options) => {
     setLoading(true)
+    let returnData = initialData;
+    let returnError = null;
     try {
-      let response = await axios(axiosConfigGetter(options))
-      setResponse(dataExtractor(response))
+      returnData = dataExtractor(await axios(axiosConfigGetter(options)))
     } catch (e) {
       let status = e.response.status;
       if (defaultOnError[status] !== undefined) {
-        setResponse(defaultOnError[status])
+        returnData = defaultOnError[status]
       } else {
-        setError(e)
+        returnError = e
       }
     } finally {
       setLoading(false);
-      console.log(error)
+      setData(returnData);
+      setError(returnError);
+      console.log(returnError)
+      return {data: returnData, error: returnError}
     }
   };
 
-  return { execute, loading, data: response, error };
+  return { execute, loading, data, error };
 }
  
 // options: { status: string, year: int, leaveContext: obj }

@@ -24,8 +24,8 @@ const LeavePending = ({refresh, refreshCount}) => {
 
   useEffect(() => {
     const fetchApi = async () => {
-      await getLeaveAll.execute({status: STATUS_TYPES.PENDING});
-      handleError(getLeaveAll, "Error fetching leave requests.");
+      let result = await getLeaveAll.execute({status: STATUS_TYPES.PENDING});
+      handleError(result, "Error fetching pending leave requests.");
     }
     fetchApi();
   }, [refreshCount])
@@ -59,18 +59,19 @@ const LeavePending = ({refresh, refreshCount}) => {
   }
 
   const onActionConfirm = async (id, mode) => {
+    let result;
     switch (mode) {
       case APPROVE:
-        await updateLeave.execute({id: id, data: {status: STATUS_TYPES.APPROVED}});
-        handleError(updateLeave, "Something went wrong", "Leave request approved");
+        result = await updateLeave.execute({id: id, data: {status: STATUS_TYPES.APPROVED}});
+        handleError(result, "Something went wrong", "Leave request approved");
         break;
       case REJECT:
-        await updateLeave.execute({id: id, data: {status: STATUS_TYPES.REJECTED, note: newNote}});
-        handleError(updateLeave, "Something went wrong", "Leave request rejected");
+        result = await updateLeave.execute({id: id, data: {status: STATUS_TYPES.REJECTED, note: newNote}});
+        handleError(result, "Something went wrong", "Leave request rejected");
         break;
       case DELETE:
-        await deleteLeave.execute({id: id});
-        handleError(deleteLeave, "Something went wrong", "Leave request deleted");
+        result = await deleteLeave.execute({id: id});
+        handleError(result, "Something went wrong", "Leave request deleted");
         break;
       default:
         message.error("Something went wrong");

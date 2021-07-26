@@ -18,8 +18,8 @@ const LeaveResolved = ({year, refreshCount, refresh}) => {
 
   useEffect(() => {
     const fetchApi = async () => {
-      await getLeaveAll.execute({year: year});
-      handleError(getLeaveAll, "Error fetching leave requests.");
+      let result = await getLeaveAll.execute({year: year});
+      handleError(result, "Error fetching resolved leave requests.");
     }
     fetchApi();
   }, [refreshCount, year])
@@ -38,8 +38,8 @@ const LeaveResolved = ({year, refreshCount, refresh}) => {
   }
 
   const onDeleteConfirm = async (id) => {
-    await deleteLeave.execute({id: id});
-    handleError(deleteLeave, "Something went wrong", "Leave request deleted");
+    let result = await deleteLeave.execute({id: id});
+    handleError(result, "Something went wrong", "Leave request deleted");
     refresh();
   }
 

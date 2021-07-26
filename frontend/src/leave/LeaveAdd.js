@@ -47,10 +47,9 @@ const LeaveAdd = () => {
     const classes = useStyles();
 
     const onSubmit = async () => {
-        await addLeave.execute({data: application})
-        handleError(addLeave, "Error submitting leave request.")
-        if (!addLeave.error) {
-            message.success("Leave request submitted");
+        let result = await addLeave.execute({data: application})
+        handleError(result, "Error submitting leave request.", "Leave request submitted")
+        if (!result.error) {
             history.replace("/leave");
         }
     }
