@@ -66,37 +66,23 @@ Not written yet.
 
 ####  Server
 
-*  Start the python virtual environment (refer to https://docs.python.org/3/tutorial/venv.html)
+*  ```pip install -r requirements```: Install modules (should use virtual environment).
 
-*  ```pip install -r requirements.txt```: Install modules (should use virtual environment).
-
-*  ```cp -r localconfigs.example localconfigs```: Copy configs.
-
-* Uncomment the following parts in localconfigs/settings.py: BASE_DIR, ALLOWED_HOSTS, STATICFILES_DIRS, and WEBPACK_LOADER.
-
+*  ```cp -r localconfigs.example localconfigs```: Copy configs (change it if needed).
 *  Modify eardrum/settings.py:
     * Comment out lines which contain ldap_backend or LDAP_SERVER.
     *  Change Static folders: ```os.path.join(BASE_DIR, 'frontend', 'build', 'static')``` to ```os.path.join(BASE_DIR, 'frontend', 'dist', 'static')```.
     *  Change Webpack stats file: ```'STATS_FILE': os.path.join(BASE_DIR, 'frontend', 'webpack-stats-prod.json')``` to ```'STATS_FILE': os.path.join(BASE_DIR, 'frontend', 'webpack-stats.json')```.
 
-* ```python manage.py migrate```: initialize database
-
-* ```python manage.py createsuperuser```: create superuser (if necessary)
-
-*  ```DJANGO_ENV=dev python manage.py runserver 0.0.0.0:8000```: Run server at ```0.0.0.0:8000```. Keep this terminal open.
-
-*  To use the User Guides app, create an object in `http://localhost:8000/admin/main/guideline/` with `key=user_guideline` and content taken from UG.md in the repository.
-
-* To use the Leave app, execute ```python manage.py leave_init 2021```.
+*  ```python manage.py runserver 0.0.0.0:8000```: Run server at ```0.0.0.0:8000```.
 
 ####  Client
 
 *  ```cd frontend```: cd to client app.
 
-*  ```npm install --legacy-peer-deps```: Instal packages.
+*  ```npm install```: Instal packages.
 
-*  ```npm run watch```: Watch for code changes, frontend will be updated whenever the code is changed (need to refresh the website to see the changes). Keep this terminal open.
-*  The web page will be available at localhost:8000.
+*  ```npm run watch```: Watch for code changes, frontend will be updated whenever the code is changed (need to refresh the website to see the changes).
 
 ###  Test
 Not written yet.
