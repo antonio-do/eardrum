@@ -12,9 +12,6 @@ const LeaveStat = ({year, refreshCount}) => {
     const getStat = useStat();
     const [openCapDialog, setOpenCapDialog] = useState(false);
     const getCapacities = useGetCapacities();
-    // local version of the capacities, to be submitted to API if required
-    const [tempCapacities, setTempCapacities] = useState([])
-    const [editRowsModel, setEditRowsModel] = useState({})
     const postCapacities = usePostCapacities();
     const [localRefreshCount, setLocalRefreshCount] = useState(0)
     const [statWithCap, setStatWithCap] = useState([])
@@ -39,12 +36,6 @@ const LeaveStat = ({year, refreshCount}) => {
 
         fetchApi();
     }, [year, localRefreshCount])
-
-    useEffect(() => {
-        if (JSON.stringify(getCapacities.data[1]) !== '{}') {
-            setTempCapacities(getCapacities.data[1]);
-        }
-    }, [getCapacities.data])
 
     useEffect(() => {
         if (JSON.stringify(getCapacities.data[1]) !== '{}' && getStat.data) {
@@ -89,7 +80,6 @@ const LeaveStat = ({year, refreshCount}) => {
 
     const onCancel = () => {
         setOpenCapDialog(false)
-        setTempCapacities(getCapacities.data[1])
     }
     
     return <Box m={2}>

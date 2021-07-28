@@ -1,7 +1,6 @@
 import json
 import datetime
 import copy
-import calendar
 
 from django.contrib.auth.models import User, Group
 from django.forms.models import model_to_dict
@@ -369,12 +368,12 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
             leave_types = get_leave_types()
             default_capacity = {leave_type['name']: leave_type['limitation'] for leave_type in leave_types}
-            
+
             def capacity_of(user):
                 mask = get_mask(user=user.username, year=year)
                 if mask.capacity == '':
                     return default_capacity.copy()
-                
+
                 copied_capacity = default_capacity.copy()
                 copied_capacity.update(json.loads(mask.capacity))
                 return copied_capacity
@@ -387,16 +386,16 @@ class LeaveViewSet(mixins.CreateModelMixin,
         elif request.method == 'POST':
             if not self.is_admin_user():
                 return Response(status=status.HTTP_403_FORBIDDEN)
-            
+
             user = request.data.get('user')
             typ = request.data.get('typ')
             limit = request.data.get('limit')
-            
+
             if User.objects.filter(username=user).count() == 0:
                 ret = {
                     "message": "User not exist"
                 }
-                
+
                 return Response(ret, status=status.HTTP_404_NOT_FOUND)
 
             user_mask = get_mask(user=user, year=year)
@@ -415,7 +414,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 ret = {
                     "message": "Capacity is not a number"
                 }
-                
+
                 return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
             new_capacity = json.loads(user_mask.capacity)

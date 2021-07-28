@@ -58,6 +58,7 @@ def accumulate_mask(mask, leave_requests):
     mask.summary = json.dumps(summary, indent=2)
     mask.save(update_fields=['value', 'summary'])
 
+
 def mask_from_holiday(year):
     holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split()
     holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1
@@ -75,6 +76,7 @@ def mask_from_holiday(year):
         mask[2 * sunday + 1] = '0'
 
     return ''.join(mask)
+
 
 def get_leave_types():
     leave_type_config = ConfigEntry.objects.get(name='leave_context')
