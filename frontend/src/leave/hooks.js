@@ -56,7 +56,6 @@ const actionOnCall = (axiosConfigGetter, dataExtractor = response => response, i
       setLoading(false);
       setData(returnData);
       setError(returnError);
-      console.log(returnError)
       return {data: returnData, error: returnError}
     }
   };
@@ -183,11 +182,15 @@ const useGetCapacities = () => actionOnCall(options => ({
   })), response.data.capacities]
 }, [[], {}], {404: [[], {}]})
 
-// options: { year: year, capacities: { <user>: { <leave_type>: <limitation> } } }
-const usePatchCapacities = () => actionOnCall(options => ({
-  method: 'patch',
+// options: { year: int, user: string, typ: string, limit: number }
+const usePostCapacities = () => actionOnCall(options => ({
+  method: 'post',
   url: routes.api.capacity(options.year),
-  data: options.capacities,
+  data: {
+    user: options.user,
+    typ: options.typ,
+    limit: options.limit,
+  },
 }))
 
 export {
@@ -204,5 +207,5 @@ export {
   useRecalculateMasks,
   usePatchHolidays,
   useGetCapacities,
-  usePatchCapacities,
+  usePostCapacities,
 }

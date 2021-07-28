@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Box, Typography, Tooltip, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core'
+import { Box, Typography, Tooltip, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem } from '@material-ui/core'
 import Grid from '@material-ui/core/Grid'
 import { DataGrid } from '@material-ui/data-grid';
-import { LeaveContext, useGetCapacities, usePatchCapacities, useStat } from './hooks';
+import { LeaveContext, useGetCapacities, usePostCapacities, useStat } from './hooks';
 import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
 import { handleError } from './helpers';
 import { Fragment } from 'react';
@@ -15,9 +15,12 @@ const LeaveStat = ({year, refreshCount}) => {
     // local version of the capacities, to be submitted to API if required
     const [tempCapacities, setTempCapacities] = useState([])
     const [editRowsModel, setEditRowsModel] = useState({})
-    const patchCapacities = usePatchCapacities();
+    const postCapacities = usePostCapacities();
     const [localRefreshCount, setLocalRefreshCount] = useState(0)
     const [statWithCap, setStatWithCap] = useState([])
+    const [editCapUser, setEditCapUser] = useState(leaveContext.currentUser.username)
+    const [editCapType, setEditCapType] = useState(leaveContext.leaveTypes[0].name)
+    const [editCapLimit, setEditCapLimit] = useState("0")
 
     useEffect(() => {
         const fetchApi = async () => {
@@ -77,46 +80,9 @@ const LeaveStat = ({year, refreshCount}) => {
         disableColumnMenu: true,
     })))
 
-    const capacitiesColumns = [{ 
-        field: 'user', 
-        headerName: 'User', 
-        type: 'string', 
-        flex: 0.5,
-    }].concat(leaveContext.leaveTypes.map((item) => ({ 
-        field: item.name, 
-        headerName: item.label,
-        type: 'string', 
-        sortable: false,
-        editable: leaveContext.currentUser.is_admin,
-        flex: 1, 
-        disableColumnMenu: true,
-    })))
-    
-    // https://material-ui.com/components/data-grid/editing/
-    const handleEditCellChange = ({ id, field, props }) => {
-        const data = props; // Fix eslint value is missing in prop-types for JS files
-        const isValid = !isNaN(data.value);
-        const newState = {};
-        newState[id] = {
-          ...editRowsModel[id],
-        }
-        if (!isNaN(data.value)) data.value = Number(data.value)
-        newState[id][field] = { ...props, error: !isValid }
-
-        setEditRowsModel((state) => ({ ...state, ...newState }));
-    }
-
-    const handleEditCellChangeCommitted = (params) => {
-        setTempCapacities(temp => {
-            let obj = JSON.parse(JSON.stringify(temp));
-            obj[params.id][params.field] = Number(params.props.value);
-            return obj
-        })
-    }
-
     const onSubmit = async () => {
         setOpenCapDialog(false)
-        let result = await patchCapacities.execute({year: year, capacities: tempCapacities})
+        let result = await postCapacities.execute({year: year, user: editCapUser, typ: editCapType, limit: Number(editCapLimit)})
         handleError(result, "Error updating leave capacities", "Leave capacities updated successfully")
         setLocalRefreshCount(count => count + 1)
     }
@@ -131,9 +97,9 @@ const LeaveStat = ({year, refreshCount}) => {
             <Grid item>
                 <Typography variant="h5" gutterBottom>Statistic (year {year})</Typography>
             </Grid>
-            <Grid item>
-                <Button variant="outlined" onClick={() => setOpenCapDialog(true)}>{leaveContext.currentUser.is_admin ? "View/Edit" : "View"} leave capacity</Button>
-            </Grid>
+            {leaveContext.currentUser.is_admin && <Grid item>
+                <Button variant="outlined" onClick={() => setOpenCapDialog(true)}>Edit leave capacity</Button>
+            </Grid>}
         </Grid>
          <DataGrid
             autoHeight
@@ -144,20 +110,47 @@ const LeaveStat = ({year, refreshCount}) => {
             disableSelectionOnClick
             loading={getStat.loading}
         />
-        <Dialog open={openCapDialog} onClose={() => setOpenCapDialog(false)} fullWidth maxWidth='lg'>
-            <DialogTitle>Leave capacity</DialogTitle>
+       {leaveContext.currentUser.is_admin && <Dialog open={openCapDialog} onClose={() => setOpenCapDialog(false)}>
+            <DialogTitle>Edit leave capacity</DialogTitle>
             <DialogContent>
-                <DataGrid
-                    autoHeight
-                    rows={getCapacities.data[0]}
-                    columns={capacitiesColumns}
-                    pagination
-                    pageSize={10}
-                    loading={getCapacities.loading}
-                    editRowsModel={editRowsModel}
-                    disableSelectionOnClick
-                    onEditCellChange={handleEditCellChange}
-                    onEditCellChangeCommitted={handleEditCellChangeCommitted}
+                <TextField
+                    fullWidth
+                    label="Name"
+                    variant='outlined'
+                    margin="normal"
+                    value={editCapUser}
+                    onChange={(event) => {setEditCapUser(event.target.value)}}
+                    select
+                >
+                    {leaveContext.allUsers.map((item) => (
+                        <MenuItem key={item.username} value={item.username}>
+                            {item.username}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                <TextField
+                    fullWidth
+                    label="Type"
+                    variant='outlined'
+                    margin="normal"
+                    value={ editCapType }
+                    onChange={(event) => {setEditCapType(event.target.value)}}
+                    select
+                >
+                    {leaveContext.leaveTypes.map((type) => (
+                        <MenuItem key={type.name} value={type.name}>
+                            {type.label}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                <TextField
+                    fullWidth
+                    label="Days"
+                    variant='outlined'
+                    margin="normal"
+                    type='number'
+                    value={ editCapLimit }
+                    onChange={(event) => {setEditCapLimit(event.target.value)}}
                 />
             </DialogContent>
             <DialogActions>
@@ -174,7 +167,7 @@ const LeaveStat = ({year, refreshCount}) => {
                             Back
                         </Button>}
             </DialogActions>
-        </Dialog>
+        </Dialog>}
     </Box>
 }
 
