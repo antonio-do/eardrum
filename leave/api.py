@@ -25,6 +25,8 @@ from .serializers import LeaveSerializer
 from .helpers import (
     get_mask,
     accumulate_mask,
+    mask_from_holiday,
+    get_leave_types,
 )
 
 Response = response.Response
@@ -310,32 +312,16 @@ class LeaveViewSet(mixins.CreateModelMixin,
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
         # Recalculate base mask object
-        holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split()
-        holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1
-                            for item in holidays]
-        first_sat = 6 - (datetime.datetime(int(year), 1, 1).weekday() + 1) % 7
-        mask = ['-'] * ((366 if calendar.isleap(int(year)) else 365) * 2)
-        for holiday in holidays_in_year:
-            mask[2 * holiday] = '0'
-            mask[2 * holiday + 1] = '0'
-        for saturday in range(first_sat, len(mask) // 2, 7):
-            mask[2 * saturday] = '0'
-            mask[2 * saturday + 1] = '0'
-        for sunday in range(first_sat + 1, len(mask) // 2, 7):
-            mask[2 * sunday] = '0'
-            mask[2 * sunday + 1] = '0'
-
-        leave_type_config = ConfigEntry.objects.get(name='leave_context')
-        leave_types = json.loads(leave_type_config.extra)['leave_types']
-        summary = json.dumps({leave_type['name']: 0 for leave_type in leave_types}, indent=2)
-        capacity = json.dumps({leave_type['name']: leave_type['limitation'] for leave_type in leave_types})
-
-        mask_name = '__{}'.format(year)
-        (leave_mask, _) = LeaveMask.objects.get_or_create(name=mask_name)
-        leave_mask.value = ''.join(mask)
-        leave_mask.summary = summary
-        leave_mask.capacity = capacity
-        leave_mask.save()
+        try:
+            leave_mask = LeaveMask.objects.get(name='__{}'.format(year))
+        except LeaveMask.DoesNotExist:
+            ret = {
+                'message': 'base mask cannot be found'
+            }
+            return Response(ret, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            leave_mask.value = mask_from_holiday(year)
+            leave_mask.save(update_fields=['value'])
 
         success = []
         failed = []
@@ -348,7 +334,6 @@ class LeaveViewSet(mixins.CreateModelMixin,
                                               status='approved',
                                               active=True)
 
-                # assumption: base_mask exists for every year leave request exist
                 base_mask = get_mask(user='_', year=year)
                 mask.value = base_mask.value
                 mask.summary = base_mask.summary
@@ -371,74 +356,71 @@ class LeaveViewSet(mixins.CreateModelMixin,
         year = request.query_params.get('year')
         _, year = self.get_validated_query_value('year', year)
 
-
-        if year is not None and LeaveMask.objects.filter(name='__{}'.format(year)).count() != 0:
-            if request.method == 'GET':
-                users = User.objects.all()
-                if not self.is_admin_user():
-                    users = users.filter(username=self.request.user.username)
-
-                default_capacity = json.loads(LeaveMask.objects.get(name="__{}".format(year)).capacity)
-                
-                def capacity_of(user):
-                    mask = LeaveMask.objects.get(name="{user}_{year}".format(user=user.username, year=year))
-                    if mask.capacity == '':
-                        return default_capacity
-                    
-                    copied_capacity = default_capacity.copy()
-                    copied_capacity.update(json.loads(mask.capacity))
-                    return copied_capacity
-                        
-
-                data = {user.username: capacity_of(user) for user in users}
-                return Response({
-                    "capacities": data,
-                })
-
-            elif request.method == 'POST':
-                if not self.is_admin_user():
-                    return Response(status=status.HTTP_403_FORBIDDEN)
-                
-                
-                user = request.data.get('user')
-                typ = request.data.get('typ')
-                limit = request.data.get('limit')
-                
-                mask_name = "{user}_{year}".format(user=user, year=year)
-                
-                if User.objects.filter(username=user).count() == 0:
-                    ret = {
-                        "message": "User not exist"
-                    }
-                    
-                    return Response(ret, status=status.HTTP_404_NOT_FOUND)
-
-                user_mask = get_mask(user=user, year=year)
-
-                leave_type_config = ConfigEntry.objects.get(name='leave_context')
-                leave_types = json.loads(leave_type_config.extra)['leave_types']
-                typ_list = [leave_type.get('name') for leave_type in leave_types]
-
-                if typ not in typ_list:
-                    ret = {
-                        "message": "Leave type not exist"
-                    }
-
-                    return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-
-                if not (type(limit) is int or type(limit) is float):
-                    ret = {
-                        "message": "Capacity is not a number"
-                    }
-                    
-                    return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-
-                new_capacity = json.loads(user_mask.capacity)
-                new_capacity[typ] = limit
-                user_mask.capacity = json.dumps(new_capacity, indent=2)
-                user_mask.save(update_fields=['capacity'])
-
-                return Response(status=status.HTTP_204_NO_CONTENT)
-
-        else:
+        if year is None:
             return Response(None, status=status.HTTP_404_NOT_FOUND)
+
+        if LeaveMask.objects.filter(name='__{}'.format(year)).count() == 0:
+            return Response(None, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'GET':
+            users = User.objects.all()
+            if not self.is_admin_user():
+                users = users.filter(username=self.request.user.username)
+
+            leave_types = get_leave_types()
+            default_capacity = {leave_type['name']: leave_type['limitation'] for leave_type in leave_types}
+            
+            def capacity_of(user):
+                mask = get_mask(user=user.username, year=year)
+                if mask.capacity == '':
+                    return default_capacity.copy()
+                
+                copied_capacity = default_capacity.copy()
+                copied_capacity.update(json.loads(mask.capacity))
+                return copied_capacity
+
+            data = {user.username: capacity_of(user) for user in users}
+            return Response({
+                "capacities": data,
+            })
+
+        elif request.method == 'POST':
+            if not self.is_admin_user():
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            
+            user = request.data.get('user')
+            typ = request.data.get('typ')
+            limit = request.data.get('limit')
+            
+            if User.objects.filter(username=user).count() == 0:
+                ret = {
+                    "message": "User not exist"
+                }
+                
+                return Response(ret, status=status.HTTP_404_NOT_FOUND)
+
+            user_mask = get_mask(user=user, year=year)
+
+            leave_types = get_leave_types()
+            typ_list = [leave_type.get('name') for leave_type in leave_types]
+
+            if typ not in typ_list:
+                ret = {
+                    "message": "Leave type not exist"
+                }
+
+                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+
+            if not (type(limit) is int or type(limit) is float):
+                ret = {
+                    "message": "Capacity is not a number"
+                }
+                
+                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+
+            new_capacity = json.loads(user_mask.capacity)
+            new_capacity[typ] = limit
+            user_mask.capacity = json.dumps(new_capacity, indent=2)
+            user_mask.save(update_fields=['capacity'])
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
