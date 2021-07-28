@@ -317,7 +317,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             ret = {
                 'message': 'base mask cannot be found'
             }
-            return Response(ret, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(ret, status=status.HTTP_404_NOT_FOUND)
         else:
             leave_mask.value = mask_from_holiday(year)
             leave_mask.save(update_fields=['value'])
