@@ -8,20 +8,24 @@ from .models import (
     ConfigEntry,
 )
 
+from django.db import IntegrityError
+
 
 def get_mask(**kwargs):
     user = kwargs.get("user")
     year = kwargs.get("year")
 
     mask_name = "{user}_{year}".format(user=user, year=year)
+
+    # encounter race condition if checking whether the mask is exist before create one
     try:
-        mask = LeaveMask.objects.get(name=mask_name)
-        return mask
-    except LeaveMask.DoesNotExist:
         mask = LeaveMask.objects.get(name="__{year}".format(year=year))
         mask.name = mask_name
         mask.pk = None
         mask.save()
+        return mask
+    except IntegrityError:
+        mask = LeaveMask.objects.get(name=mask_name)
         return mask
 
 
