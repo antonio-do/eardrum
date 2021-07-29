@@ -11,9 +11,7 @@ from .models import (
 from django.db import IntegrityError
 
 
-def get_mask(**kwargs):
-    user = kwargs.get("user")
-    year = kwargs.get("year")
+def get_mask(user, year):
 
     mask_name = "{user}_{year}".format(user=user, year=year)
 

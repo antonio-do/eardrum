@@ -140,8 +140,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
             instance.save(update_fields=['active'])
 
             if instance.status == 'approved':
-                mask = get_mask(user=instance.user, year=instance.year)
-                base_mask = get_mask(user='_', year=instance.year)
+                mask = get_mask(instance.user, instance.year)
+                base_mask = get_mask('_', instance.year)
                 mask.value = base_mask.value
                 mask.summary = base_mask.summary
 
@@ -157,7 +157,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         if (instance.status != "approved"):
             return
 
-        mask = get_mask(user=instance.user, year=instance.year)
+        mask = get_mask(instance.user, instance.year)
         accumulate_mask(mask, [instance])
 
     @decorators.action(methods=['GET'], detail=False)
@@ -250,7 +250,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             stats = []
             for user in users:
                 try:
-                    mask = get_mask(user=user, year=year)
+                    mask = get_mask(user, year)
                     stat = json.loads(mask.summary)
                 except LeaveMask.DoesNotExist:
                     return Response(None, status=status.HTTP_404_NOT_FOUND)
@@ -282,7 +282,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         leave_status['all'] = {}
 
         for user in User.objects.all():
-            mask_value = get_mask(user=user.username, year=date[:4]).value
+            mask_value = get_mask(user.username, date[:4]).value
             day_in_year = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday
 
             # '-' = work, otherwise = leave
@@ -327,13 +327,13 @@ class LeaveViewSet(mixins.CreateModelMixin,
         # Recaculate instance masks
         for user in User.objects.all():
             try:
-                mask = get_mask(user=user.username, year=year)
+                mask = get_mask(user.username, year)
                 leaves = Leave.objects.filter(user=user.username,
                                               year=year,
                                               status='approved',
                                               active=True)
 
-                base_mask = get_mask(user='_', year=year)
+                base_mask = get_mask('_', year)
                 mask.value = base_mask.value
                 mask.summary = base_mask.summary
                 accumulate_mask(mask, leaves)
@@ -370,7 +370,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             default_capacity = {leave_type['name']: leave_type['limitation'] for leave_type in leave_types}
 
             def capacity_of(user):
-                mask = get_mask(user=user.username, year=year)
+                mask = get_mask(user.username, year)
                 if mask.capacity == '':
                     return default_capacity.copy()
 
@@ -398,7 +398,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
                 return Response(ret, status=status.HTTP_404_NOT_FOUND)
 
-            user_mask = get_mask(user=user, year=year)
+            user_mask = get_mask(user, year)
 
             leave_types = get_leave_types()
             typ_list = [leave_type.get('name') for leave_type in leave_types]
