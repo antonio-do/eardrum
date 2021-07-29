@@ -63,8 +63,7 @@ def accumulate_mask(mask, leave_requests):
     mask.save(update_fields=['value', 'summary'])
 
 
-def mask_from_holiday(year):
-    holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split()
+def mask_from_holiday(year, holidays):
     holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1
                         for item in holidays]
     first_sat = 6 - (datetime.datetime(int(year), 1, 1).weekday() + 1) % 7

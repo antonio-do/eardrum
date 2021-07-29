@@ -319,7 +319,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
             }
             return Response(ret, status=status.HTTP_404_NOT_FOUND)
         else:
-            leave_mask.value = mask_from_holiday(year)
+            leave_mask.value = mask_from_holiday(year, ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split())
             leave_mask.save(update_fields=['value'])
 
         success = []
