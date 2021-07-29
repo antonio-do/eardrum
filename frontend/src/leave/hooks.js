@@ -173,7 +173,7 @@ const useRecalculateMasks = () => actionOnCall(options => ({
 // options: { year: string }
 const useGetCapacities = () => actionOnCall(options => ({
   method: 'get',
-  url: routes.api.capacity(options.year),
+  url: routes.api.getCapacity(options.year),
 }), response => {
   return [Object.entries(response.data.capacities).map(([key, value]) => ({
     id: key,
@@ -185,7 +185,7 @@ const useGetCapacities = () => actionOnCall(options => ({
 // options: { year: int, user: string, typ: string, limit: number }
 const usePostCapacities = () => actionOnCall(options => ({
   method: 'post',
-  url: routes.api.capacity(options.year),
+  url: routes.api.updateCapacity(options.year),
   data: {
     user: options.user,
     typ: options.typ,

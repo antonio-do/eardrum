@@ -70,10 +70,31 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
             return value if value in leave_statuses else None
 
+        def validate_typ(value):
+            leave_types = get_leave_types()
+            typ_list = [leave_type.get('name') for leave_type in leave_types]
+            return value if value in typ_list else None
+
+        def validate_user(value):
+            try:
+                User.objects.get(username=value)
+                return value
+            except User.DoesNotExist:
+                return None
+
+        def validate_number(value):
+            if (type(value) is int) or (type(value) is float):
+                return value
+            else:
+                return None
+
         validation_funcs = {
             'year': validate_year,
             'status': validate_status,
             'date': validate_date,
+            'typ': validate_typ,
+            'user': validate_user,
+            'number': validate_number,
         }
 
         return (fieldname, (
@@ -340,15 +361,15 @@ class LeaveViewSet(mixins.CreateModelMixin,
         }
         return Response(ret)
 
-    @decorators.action(methods=['GET', 'POST'], detail=False)
-    def capacity(self, request, *args, **kargs):
+    @decorators.action(methods=['GET'], detail=False)
+    def get_capacity(self, request, *args, **kargs):
         year = request.query_params.get('year')
         _, year = self.get_validated_query_value('year', year)
 
         if year is None:
             return Response(None, status=status.HTTP_404_NOT_FOUND)
 
-        if request.method == 'GET':
+        else:
             users = User.objects.all()
             if not self.is_admin_user():
                 users = users.filter(username=self.request.user.username)
@@ -365,43 +386,24 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 "capacities": data,
             })
 
-        elif request.method == 'POST':
-            if not self.is_admin_user():
-                return Response(status=status.HTTP_403_FORBIDDEN)
 
-            user = request.data.get('user')
-            typ = request.data.get('typ')
-            limit = request.data.get('limit')
+    @decorators.action(methods=['POST'], detail=False, permission_classes=[permissions.IsAdminUser])
+    def update_capacity(self, request, *args, **kargs):
+        year = request.query_params.get('year')
+        _, year = self.get_validated_query_value('year', year)
 
-            if User.objects.filter(username=user).count() == 0:
-                ret = {
-                    "message": "User not exist"
-                }
+        if year is None:
+            return Response(None, status=status.HTTP_404_NOT_FOUND)
+        else:
+            _, user = self.get_validated_query_value('user', request.data.get('user'))
+            _, typ = self.get_validated_query_value('typ', request.data.get('typ'))
+            _, limit = self.get_validated_query_value('number', request.data.get('limit') )
 
-                return Response(ret, status=status.HTTP_404_NOT_FOUND)
-
-            user_mask = get_mask(user, year)
-
-            leave_types = get_leave_types()
-            typ_list = [leave_type.get('name') for leave_type in leave_types]
-
-            if typ not in typ_list:
-                ret = {
-                    "message": "Leave type not exist"
-                }
-
-                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-
-            if not (type(limit) is int or type(limit) is float):
-                ret = {
-                    "message": "Capacity is not a number"
-                }
-
-                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-
-            new_capacity = json.loads(user_mask.capacity)
-            new_capacity[typ] = limit
-            user_mask.capacity = json.dumps(new_capacity, indent=2)
-            user_mask.save(update_fields=['capacity'])
+            if None not in [user, typ, limit]:
+                user_mask = get_mask(user, year)
+                new_capacity = json.loads(user_mask.capacity)
+                new_capacity[typ] = limit
+                user_mask.capacity = json.dumps(new_capacity, indent=2)
+                user_mask.save(update_fields=['capacity'])
 
             return Response(status=status.HTTP_204_NO_CONTENT)
