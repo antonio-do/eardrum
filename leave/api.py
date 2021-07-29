@@ -22,6 +22,7 @@ from .models import (
 from .serializers import LeaveSerializer
 
 from .helpers import (
+    get_base_mask,
     get_mask,
     accumulate_mask,
     mask_from_holiday,
@@ -249,11 +250,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
             stats = []
             for user in users:
-                try:
-                    mask = get_mask(user, year)
-                    stat = json.loads(mask.summary)
-                except LeaveMask.DoesNotExist:
-                    return Response(None, status=status.HTTP_404_NOT_FOUND)
+                mask = get_mask(user, year)
+                stat = json.loads(mask.summary)
                 stats.append({**stat, 'user': user.username})
 
             ret = {
@@ -310,17 +308,9 @@ class LeaveViewSet(mixins.CreateModelMixin,
             }
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
-        # Recalculate base mask object
-        try:
-            leave_mask = LeaveMask.objects.get(name='__{}'.format(year))
-        except LeaveMask.DoesNotExist:
-            ret = {
-                'message': 'base mask cannot be found'
-            }
-            return Response(ret, status=status.HTTP_404_NOT_FOUND)
-        else:
-            leave_mask.value = mask_from_holiday(year, ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split())
-            leave_mask.save(update_fields=['value'])
+        leave_mask = get_base_mask(year)
+        leave_mask.value = mask_from_holiday(year, ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split())
+        leave_mask.save(update_fields=['value'])
 
         success = []
         failed = []
@@ -358,9 +348,6 @@ class LeaveViewSet(mixins.CreateModelMixin,
         if year is None:
             return Response(None, status=status.HTTP_404_NOT_FOUND)
 
-        if LeaveMask.objects.filter(name='__{}'.format(year)).count() == 0:
-            return Response(None, status=status.HTTP_404_NOT_FOUND)
-
         if request.method == 'GET':
             users = User.objects.all()
             if not self.is_admin_user():
@@ -371,12 +358,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
             def capacity_of(user):
                 mask = get_mask(user.username, year)
-                if mask.capacity == '':
-                    return default_capacity.copy()
-
-                copied_capacity = default_capacity.copy()
-                copied_capacity.update(json.loads(mask.capacity))
-                return copied_capacity
+                return {**default_capacity, **json.loads(mask.capacity)}
 
             data = {user.username: capacity_of(user) for user in users}
             return Response({
