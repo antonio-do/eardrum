@@ -8,9 +8,6 @@ from .models import (
     ConfigEntry,
 )
 
-from django.db import IntegrityError
-
-
 
 def mask_from_holiday(year, holidays):
     holidays_in_year = [datetime.datetime.strptime(item, '%Y%m%d').timetuple().tm_yday - 1
@@ -33,8 +30,8 @@ def mask_from_holiday(year, holidays):
 def get_mask(user, year):
     mask_name = "{user}_{year}".format(user=user, year=year)
     base_mask = get_base_mask(year)
-    mask, created = LeaveMask.objects.get_or_create(name=mask_name, 
-                                                    defaults={'value': base_mask.value, 
+    mask, created = LeaveMask.objects.get_or_create(name=mask_name,
+                                                    defaults={'value': base_mask.value,
                                                               'summary': base_mask.summary,
                                                               'capacity': base_mask.capacity})
     return mask
@@ -53,8 +50,8 @@ def get_base_mask(year):
 
     capacity = '{}'
 
-    mask, created = LeaveMask.objects.get_or_create(name="__{}".format(year), defaults={'value': value, 
-                                                                                        'summary': summary, 
+    mask, created = LeaveMask.objects.get_or_create(name="__{}".format(year), defaults={'value': value,
+                                                                                        'summary': summary,
                                                                                         'capacity': capacity})
     return mask
 

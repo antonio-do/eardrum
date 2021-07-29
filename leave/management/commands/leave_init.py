@@ -1,5 +1,4 @@
 import datetime
-import calendar
 import json
 from collections import namedtuple
 
@@ -7,7 +6,7 @@ from django.core.management.base import (
     BaseCommand,
 )
 
-from leave.models import ConfigEntry, LeaveMask
+from leave.models import ConfigEntry
 
 
 class Command(BaseCommand):

@@ -17,7 +17,6 @@ from rest_framework import (
 from .models import (
     Leave,
     ConfigEntry,
-    LeaveMask,
 )
 from .serializers import LeaveSerializer
 
@@ -330,7 +329,8 @@ class LeaveViewSet(mixins.CreateModelMixin,
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
         leave_mask = get_base_mask(year)
-        leave_mask.value = mask_from_holiday(year, ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split())
+        leave_mask.value = mask_from_holiday(year,
+                                             ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split())
         leave_mask.save(update_fields=['value'])
 
         success = []
@@ -386,7 +386,6 @@ class LeaveViewSet(mixins.CreateModelMixin,
                 "capacities": data,
             })
 
-
     @decorators.action(methods=['POST'], detail=False, permission_classes=[permissions.IsAdminUser])
     def update_capacity(self, request, *args, **kargs):
         year = request.query_params.get('year')
@@ -397,7 +396,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
         else:
             _, user = self.get_validated_query_value('user', request.data.get('user'))
             _, typ = self.get_validated_query_value('typ', request.data.get('typ'))
-            _, limit = self.get_validated_query_value('number', request.data.get('limit') )
+            _, limit = self.get_validated_query_value('number', request.data.get('limit'))
 
             if None not in [user, typ, limit]:
                 user_mask = get_mask(user, year)
