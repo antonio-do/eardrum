@@ -52,8 +52,13 @@ def get_base_mask(year):
 
         capacity = '{}'
 
-        mask = LeaveMask(name="__{}".format(year), value=value, summary=summary, capacity=capacity)
-        mask.save()
+        defaults = {
+            'value': value,
+            'summary': summary,
+            'capacity': capacity,
+        }
+
+        mask, _ = LeaveMask.objects.get_or_create(name="__{}".format(year), defaults=defaults)
         return mask
 
 
@@ -93,3 +98,5 @@ def accumulate_mask(mask, leave_requests):
 def get_leave_types():
     leave_type_config = ConfigEntry.objects.get(name='leave_context')
     return json.loads(leave_type_config.extra)['leave_types']
+
+    
