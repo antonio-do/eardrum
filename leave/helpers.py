@@ -30,35 +30,35 @@ def mask_from_holiday(year, holidays):
 def get_mask(user, year):
     mask_name = "{user}_{year}".format(user=user, year=year)
     base_mask = get_base_mask(year)
-    mask, created = LeaveMask.objects.get_or_create(name=mask_name,
-                                                    defaults={'value': base_mask.value,
-                                                              'summary': base_mask.summary,
-                                                              'capacity': base_mask.capacity})
+    mask, _ = LeaveMask.objects.get_or_create(name=mask_name,
+                                              defaults={'value': base_mask.value,
+                                                        'summary': base_mask.summary,
+                                                        'capacity': base_mask.capacity})
     return mask
 
 
 def get_base_mask(year):
-    print(year)
     try:
-        holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split()
-    except ConfigEntry.DoesNotExist:
-        holidays = []
-    value = mask_from_holiday(year, holidays)
+        return LeaveMask.objects.get(name="__{}".format(year))
+    except LeaveMask.DoesNotExist:
+        try:
+            holidays = ConfigEntry.objects.get(name="holidays_{}".format(year)).extra.split()
+        except ConfigEntry.DoesNotExist:
+            holidays = []
+        value = mask_from_holiday(year, holidays)
 
-    leave_types = get_leave_types()
-    summary = json.dumps({leave_type['name']: 0 for leave_type in leave_types}, indent=2)
+        leave_types = get_leave_types()
+        summary = json.dumps({leave_type['name']: 0 for leave_type in leave_types}, indent=2)
 
-    capacity = '{}'
+        capacity = '{}'
 
-    mask, created = LeaveMask.objects.get_or_create(name="__{}".format(year), defaults={'value': value,
-                                                                                        'summary': summary,
-                                                                                        'capacity': capacity})
-    return mask
+        mask = LeaveMask(name="__{}".format(year), value=value, summary=summary, capacity=capacity)
+        mask.save()
+        return mask
 
 
 def accumulate_mask(mask, leave_requests):
-    leave_type_config = ConfigEntry.objects.get(name='leave_context')
-    leave_types = json.loads(leave_type_config.extra)['leave_types']
+    leave_types = get_leave_types()
 
     arr = list(mask.value)
 

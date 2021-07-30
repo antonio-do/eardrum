@@ -162,7 +162,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
 
             if instance.status == 'approved':
                 mask = get_mask(instance.user, instance.year)
-                base_mask = get_mask('_', instance.year)
+                base_mask = get_base_mask(instance.year)
                 mask.value = base_mask.value
                 mask.summary = base_mask.summary
 
@@ -344,7 +344,7 @@ class LeaveViewSet(mixins.CreateModelMixin,
                                               status='approved',
                                               active=True)
 
-                base_mask = get_mask('_', year)
+                base_mask = get_base_mask(year)
                 mask.value = base_mask.value
                 mask.summary = base_mask.summary
                 accumulate_mask(mask, leaves)
