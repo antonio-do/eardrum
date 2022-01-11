@@ -34,7 +34,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # EMAIL_HOST_USER = 'ffdc281369db60'
 # EMAIL_HOST_PASSWORD = '1853bac36133c3'
 # EMAIL_PORT = '2525'
-# 
+#
 # STATICFILES_DIRS = (
 #     # We do this so that django's collectstatic copies or our bundles to the
 #     # STATIC_ROOT or syncs them to whatever storage we use.

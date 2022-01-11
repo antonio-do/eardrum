@@ -127,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'account.ldap_backend.LDAPBackend',
+    # 'account.ldap_backend.LDAPBackend',
 ]
 
 
@@ -195,7 +195,7 @@ WEBPACK_LOADER_DEFAULT = {
 }
 
 WEBPACK_LOADER = get_config_of('WEBPACK_LOADER', WEBPACK_LOADER_DEFAULT)
-LDAP_SERVER = getattr(localconfigs, 'LDAP_SERVER')
+# LDAP_SERVER = getattr(localconfigs, 'LDAP_SERVER')
 EMAIL_HOST = get_config_of('EMAIL_HOST', 'smtp.mailtrap.io')
 EMAIL_HOST_USER = get_config_of('EMAIL_HOST_USER', 'ffdc281369db60')
 EMAIL_HOST_PASSWORD = get_config_of('EMAIL_HOST_PASSWORD', '1853bac36133c3')

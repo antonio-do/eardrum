@@ -49,7 +49,6 @@ router.register('leave', leave_api.LeaveViewSet)
 
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('admin/', admin.site.urls),
-    path('api/okrs/<int:okr_id>/notify/', okr_viewsets.OKRNotifyView.as_view()),
     path('api/', include(router.urls)),
     url(r'^markdownx/', include('markdownx.urls')),
     url(r'^swagger/', swagger_schema_view),

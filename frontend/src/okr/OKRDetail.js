@@ -327,7 +327,7 @@ class OKRDetail extends Component {
     try {
       await axios({
         method: 'get',
-        url: url.OKR_FETCH_ONE(this.props.okr.id)+"notify/",
+        url: url.OKRURL('notify')(this.props.okr.id),
       });
       this.props.dispatch(enqueueSnackbar({
         message: API_MESSAGES.ON_NOTIFY_MENTOR,

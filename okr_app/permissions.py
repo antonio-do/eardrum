@@ -23,4 +23,4 @@ class IsOKROwner(BasePermission):
 
 class IsOKRMentor(BasePermission):
     def has_object_permission(self, request, view, okr):
-        return okr.issuer.mentorship.checkMentor(request.user)
+        return okr.issuer.mentorship.isMentor(request.user)

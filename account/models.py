@@ -1,11 +1,10 @@
 # flake8: noqa
 from django.db import models
 from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.contrib.auth.models import User
 
 from auditlog.registry import auditlog
-
+from . import signals
 # Create your models here.
 
 
@@ -28,22 +27,11 @@ class Mentorship(models.Model):
 
     def get_mentors_name(self):
         if len(self.mentor.all()) > 0:
-            return ", ".join([m.username for m in self.mentor.all()])
+            return ", ".join(self.mentor.values_list('username', flat=True))
         return "-"
 
-    def checkMentor(self, user):
-        return user in self.mentor.all()
-        
-    @receiver(post_save, sender=User)
-    def create_user_mentorship(sender, instance, created, **kwargs):
-        if created:
-            Mentorship.objects.create(user=instance)
-
-    @receiver(post_save, sender=User)
-    def save_user_mentorship(sender, instance, **kwargs):
-        if hasattr(instance, 'mentorship'):
-            instance.mentorship.save()
-        else:
-            pass
+    def isMentor(self, user):
+        return self.mentor.filter(id=user.id).count() > 0
 
 auditlog.register(Mentorship, exclude_fields=['created_at', 'updated_at'])
+post_save.connect(signals.create_user_mentorship, sender = User, dispatch_uid="my_unique_identifier")
