@@ -30,10 +30,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'assets/media/')
 # MEDIA_URL = "/media/"
 #
-# EMAIL_HOST = 'smtp.mailtrap.io'
-# EMAIL_HOST_USER = 'ffdc281369db60'
-# EMAIL_HOST_PASSWORD = '1853bac36133c3'
-# EMAIL_PORT = '2525'
+# For Real SMTP email backend
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# For Development email backend
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# EMAIL_HOST = ''
+# EMAIL_HOST_USER = ''
+# EMAIL_HOST_PASSWORD = ''
+# EMAIL_PORT = ''
 #
 # STATICFILES_DIRS = (
 #     # We do this so that django's collectstatic copies or our bundles to the

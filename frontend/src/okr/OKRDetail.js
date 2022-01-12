@@ -327,7 +327,7 @@ class OKRDetail extends Component {
     try {
       await axios({
         method: 'get',
-        url: url.OKRURL('notify')(this.props.okr.id),
+        url: url.OKR_ACTION('notify')(this.props.okr.id),
       });
       this.props.dispatch(enqueueSnackbar({
         message: API_MESSAGES.ON_NOTIFY_MENTOR,
@@ -337,6 +337,7 @@ class OKRDetail extends Component {
       }))
       this.setState({openBackdrop: false}) 
     } catch (error) {
+      console.log(error)
       this.props.dispatch(enqueueSnackbar({
         message: API_MESSAGES.ON_NOTIFY_MENTOR_ERROR,
         options: {
